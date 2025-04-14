@@ -254,6 +254,7 @@ SERVICE_NAME: WinDefend
 
 ```
 
+
 ## psexec failed - maybe due to wrong arch
 ```
 msf6 exploit(windows/smb/psexec) > run
