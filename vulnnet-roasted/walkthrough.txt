@@ -248,6 +248,7 @@ Password:
 1111: VULNNET-RST\j-leet (SidTypeUser)
 ```
 
+
 ## Got an asrep hash 
 ```
 ┌──(kali㉿kali)-[~/thm/vulnnet]
