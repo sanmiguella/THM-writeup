@@ -1,7 +1,7 @@
 # 🔐 TryHackMe Writeups
 
 [![Platform](https://img.shields.io/badge/Platform-TryHackMe-red?style=for-the-badge&logo=tryhackme)](https://tryhackme.com)
-[![Boxes](https://img.shields.io/badge/Boxes-18-blueviolet?style=for-the-badge)]()
+[![Boxes](https://img.shields.io/badge/Boxes-19-blueviolet?style=for-the-badge)]()
 [![Focus](https://img.shields.io/badge/Focus-Realistic_Chains-informational?style=for-the-badge)]()
 
 Writeups for TryHackMe rooms. Emphasis on methodology, realistic attack chains, and understanding the *why* behind each step — not just dumping commands. Written as personal reference between professional engagements.
@@ -27,6 +27,7 @@ Each writeup covers: enumeration → initial access → privilege escalation, wi
 | [RootMe](./rootme/) | Easy | Linux | File upload bypass, SUID Python privesc |
 | [Service](./service/) | Easy | Linux | Docker abuse, service misconfiguration |
 | [Silver Platter](./silverplatter/) | Easy | Linux | Silverpeas CVE, lateral movement, sudoers misconfiguration |
+| [Source](./source/) | Easy | Linux | Webmin CVE-2019-15107 pre-auth RCE |
 | [Tomghost](./tomghost/) | Easy | Linux | Ghostcat (CVE-2020-1938), GPG key crack, zip2john |
 | [U.A. High School](./ua/) | Easy | Linux | PHP RCE, base64 credential leak, sudo env abuse |
 | [VulnNet: Internal](./vulnnet-internal/) | Easy | Linux | Redis RCE, SMB enumeration, TeamCity privesc |
