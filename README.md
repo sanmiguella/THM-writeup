@@ -1,7 +1,7 @@
 # 🔐 TryHackMe Writeups
 
 [![Platform](https://img.shields.io/badge/Platform-TryHackMe-red?style=for-the-badge&logo=tryhackme)](https://tryhackme.com)
-[![Boxes](https://img.shields.io/badge/Boxes-20-blueviolet?style=for-the-badge)]()
+[![Boxes](https://img.shields.io/badge/Boxes-21-blueviolet?style=for-the-badge)]()
 [![Focus](https://img.shields.io/badge/Focus-Realistic_Chains-informational?style=for-the-badge)]()
 
 Writeups for TryHackMe rooms. Emphasis on methodology, realistic attack chains, and understanding the *why* behind each step — not just dumping commands. Written as personal reference between professional engagements.
@@ -19,6 +19,7 @@ Each writeup covers: enumeration → initial access → privilege escalation, wi
 | [ColddBox: Easy](./colddbox/) | Easy | Linux | WPScan, reversePress, lxd privesc |
 | [Creative](./creative/) | Easy | Linux | SSRF, path traversal, SSH key abuse |
 | [CyberLens](./cyberlens/) | Easy | Windows | Apache Tika RCE, AlwaysInstallElevated |
+| [Dav](./dav/) | Easy | Linux | WebDAV default credentials, PHP shell upload via PUT, sudo cat arbitrary read |
 | [Gaming Server](./gamingServer/) | Easy | Linux | LFI, SSH key leak, lxd privesc |
 | [IDE](./ide/) | Easy | Linux | Anonymous FTP, Codiad 2.8.4 RCE (CVE-2018-14009), writable systemd service |
 | [Lazy Admin](./lazyadmin/) | Easy | Linux | SweetRice CMS exploit, sudo backup script abuse |
