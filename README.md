@@ -1,7 +1,7 @@
 # 🔐 TryHackMe Writeups
 
 [![Platform](https://img.shields.io/badge/Platform-TryHackMe-red?style=for-the-badge&logo=tryhackme)](https://tryhackme.com)
-[![Boxes](https://img.shields.io/badge/Boxes-22-blueviolet?style=for-the-badge)]()
+[![Boxes](https://img.shields.io/badge/Boxes-23-blueviolet?style=for-the-badge)]()
 [![Focus](https://img.shields.io/badge/Focus-Realistic_Chains-informational?style=for-the-badge)]()
 
 Writeups for TryHackMe rooms. Emphasis on methodology, realistic attack chains, and understanding the *why* behind each step — not just dumping commands. Written as personal reference between professional engagements.
@@ -14,6 +14,7 @@ Each writeup covers: enumeration → initial access → privilege escalation, wi
 
 | Room | Difficulty | OS | Key Techniques |
 |---|---|---|---|
+| [AnonForce](./anonforce/) | Easy | Linux | Anonymous FTP filesystem exposure, PGP passphrase crack, shadow hash cracking |
 | [Blueprint](./blueprint/) | Easy | Windows | Unpatched service exploit, hash dump, pass-the-hash |
 | [Chill Hack](./chill/) | Easy | Linux | Command injection + blacklist bypass, steganography, Docker group abuse |
 | [ColddBox: Easy](./colddbox/) | Easy | Linux | WPScan, reversePress, lxd privesc |
