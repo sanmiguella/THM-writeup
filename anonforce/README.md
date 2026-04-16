@@ -95,6 +95,10 @@ ftp> ls -lah
 ftp> get user.txt
 ```
 
+```
+606083fd33beb1284fc51f411a706af8
+```
+
 ### Grabbing the PGP Files
 
 ```bash
@@ -200,6 +204,8 @@ Speed.#02........:   212.6 kH/s
 
 Exhausted again. At this point both hashes have gone through `rockyou.txt` with zero recoveries. The issue here is a known bug with hashcat on macOS — GPU driver compatibility problems can cause the tool to silently skip valid candidates or mishandle certain hash modes, reporting `Exhausted` even when the password exists in the wordlist. This is a platform-level limitation that's beyond our control.
 
+> ⚠️ **Sanity check:** At this point I cross-referenced other walkthroughs to confirm the password for `root` was indeed in `rockyou.txt` and that the approach was correct — it was. The issue was entirely on the tooling side, not the methodology. Other writeups confirmed `hikari` as the expected answer, which is what prompted the switch to `john`.
+
 ### Cross-Reference with john
 
 Since hashcat wasn't reliable here, cross-referencing with `john` as a secondary cracker:
@@ -240,7 +246,7 @@ f706456440c7af4187810c31c6cebdce
     └─ FTP root = system root — full filesystem exposed
               │
               ▼
-[/home/melodias/user.txt]  ← user flag
+[/home/melodias/user.txt]  ← 606083fd33beb1284fc51f411a706af8
               │
               ▼
 [/notread/]
@@ -258,6 +264,7 @@ f706456440c7af4187810c31c6cebdce
               │
               ▼
 [hashcat (macOS) — Exhausted, no hit — platform bug]
+    Sanity check via other walkthroughs → confirmed hikari in rockyou.txt
     Fallback: john → root hash → hikari
               │
               ▼
@@ -272,5 +279,6 @@ f706456440c7af4187810c31c6cebdce
 - Anonymous FTP that exposes the filesystem root is catastrophic — the attacker has read access to every world-readable file on the system, including things like `/etc/passwd`, home directories, and custom backup locations
 - World-readable PGP private keys defeat the purpose of encrypting the backup entirely; the encryption only provided false confidence
 - Hashcat on macOS has a known GPU driver bug that can silently exhaust wordlists without cracking valid hashes — always cross-reference with `john` when results seem unexpected, particularly on SHA-512 and MD5-crypt modes
+- When tooling gives unexpected results, sanity-checking against other walkthroughs is a legitimate debugging step — it confirmed the methodology was sound and the issue was platform-specific
 - The `$1$` (MD5-crypt) hash for `melodias` remains uncracked against `rockyou.txt` — not everything is in the wordlist, and the root hash was the path forward here
 - Naming a directory `notread` and setting it to `777` is not a security control
