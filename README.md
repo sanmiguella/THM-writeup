@@ -1,7 +1,7 @@
 # 🔐 TryHackMe Writeups
 
 [![Platform](https://img.shields.io/badge/Platform-TryHackMe-red?style=for-the-badge&logo=tryhackme)](https://tryhackme.com)
-[![Boxes](https://img.shields.io/badge/Boxes-23-blueviolet?style=for-the-badge)]()
+[![Boxes](https://img.shields.io/badge/Boxes-24-blueviolet?style=for-the-badge)]()
 [![Focus](https://img.shields.io/badge/Focus-Realistic_Chains-informational?style=for-the-badge)]()
 
 Writeups for TryHackMe rooms. Emphasis on methodology, realistic attack chains, and understanding the *why* behind each step — not just dumping commands. Written as personal reference between professional engagements.
@@ -25,6 +25,7 @@ Each writeup covers: enumeration → initial access → privilege escalation, wi
 | [IDE](./ide/) | Easy | Linux | Anonymous FTP, Codiad 2.8.4 RCE (CVE-2018-14009), writable systemd service |
 | [Lazy Admin](./lazyadmin/) | Easy | Linux | SweetRice CMS exploit, sudo backup script abuse |
 | [Lian Yu](./lianyu/) | Easy | Linux | FTP enumeration, steganography, sudo pkexec |
+| [Library](./library/) | Easy | Linux | Username harvesting, SSH brute-force, sudo wildcard + Python script replacement |
 | [Mustacchio](./Mustacchio/) | Easy | Linux | XXE injection, SSH key crack, sudo path hijack |
 | [Pyrat](./pyrat/) | Easy | Linux | Python eval RCE, git history credential leak |
 | [RootMe](./rootme/) | Easy | Linux | File upload bypass, SUID Python privesc |
