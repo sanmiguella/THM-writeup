@@ -67,9 +67,3 @@ Every writeup follows the same skeleton:
 5. **Key Takeaways** — what the box teaches, why it matters in real engagements
 
 ---
-
-## ⚠️ Disclaimer
-
-These writeups are for educational purposes. All activity was performed on isolated TryHackMe lab environments. Don't be an idiot.
-
----
