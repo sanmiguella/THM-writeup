@@ -137,3 +137,22 @@ sudo su
 - Environment variables passed as CLI arguments (e.g., `-e PASSWORD=value`) are visible in process listings and logged by sudo — use Docker secrets or `.env` files instead
 - The `adm` group on Linux grants log read access; treat log files as potentially sensitive since they regularly capture credential material from misused CLI tools
 - Password reuse across services (`POSTGRES_PASSWORD` → system account) is a recurring real-world finding; use a password manager and unique credentials per service
+
+---
+
+## 🛠️ Tools Used
+
+| Tool | Purpose |
+| --- | --- |
+| `nmap` | Port and service enumeration |
+| `ffuf` | Virtual host enumeration |
+| Burp Suite | IDOR exploitation on /messages/ endpoint |
+| `ssh` | Login as tim with leaked credentials |
+| `grep` | Extract tyler's password from auth.log |
+
+## 🚩 Flags
+
+| Flag | Value |
+| --- | --- |
+| `user.txt` | `TBD` |
+| `root.txt` | `TBD` |

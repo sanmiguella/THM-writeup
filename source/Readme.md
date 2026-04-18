@@ -158,3 +158,20 @@ The flags tell the story: supply chain compromise (backdoored package) leads to 
 * Webmin runs as `root` by default. A vulnerability in it isn't just a web app compromise — it's immediate full host takeover.
 * The `webmin_1.890_all.deb` sitting in `/home/dark` makes the supply chain angle explicit: the room simulates a backdoored package intentionally installed on a system, mirroring real-world supply chain incidents.
 * Patch management on internet-facing admin panels is non-negotiable. A one-version-behind Webmin install is a root shell waiting to happen.
+
+---
+
+## 🛠️ Tools Used
+
+| Tool | Purpose |
+| --- | --- |
+| `nmap` | Port and service enumeration |
+| Python exploit | CVE-2019-15107 Webmin pre-auth RCE via password_change.cgi |
+| `nc` | Reverse shell listener |
+
+## 🚩 Flags
+
+| Flag | Value |
+| --- | --- |
+| `user.txt` | `THM{SUPPLY_CHAIN_COMPROMISE}` |
+| `root.txt` | `THM{UPDATE_YOUR_INSTALL}` |

@@ -149,3 +149,22 @@ ls -lah /bin/bash
 - SweetRice's ad manager executes arbitrary PHP — any CMS feature that saves user-controlled content to a PHP-executed file is a potential RCE vector
 - World-writable scripts called by root-owned sudo commands are an instant privesc; audit file permissions on anything in a sudoers entry
 - `sudo` entries for interpreters (`perl`, `python`, `bash`) with script arguments should be treated as shell access — the script's dependencies matter as much as the binary itself
+
+---
+
+## 🛠️ Tools Used
+
+| Tool | Purpose |
+| --- | --- |
+| `nmap` | Port and service enumeration |
+| `wget` | Download exposed MySQL backup file |
+| CrackStation | Online MD5 hash cracking |
+| `nc` | Reverse shell listener |
+| `perl` | Invoked via sudo to trigger world-writable script |
+
+## 🚩 Flags
+
+| Flag | Value |
+| --- | --- |
+| `user.txt` | `TBD` |
+| `root.txt` | `TBD` |

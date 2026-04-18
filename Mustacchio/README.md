@@ -238,3 +238,26 @@ root@mustacchio:/root# cat root.txt
 - SSH private keys in home directories are reachable via XXE if the web server runs as a sufficiently privileged user — principle of least privilege matters
 - SUID binaries calling system utilities without absolute paths are a reliable privesc; always use full paths (`/usr/bin/tail`) in any setuid context
 - Encrypted SSH keys only add friction — if the passphrase is in rockyou.txt it buys seconds, not security
+
+---
+
+## 🛠️ Tools Used
+
+| Tool | Purpose |
+| --- | --- |
+| `nmap` | Port and service enumeration |
+| `ffuf` | Directory bruteforce to find /custom/js/users.bak |
+| `wget` | Download SQLite backup file |
+| `sqlite3` | Extract admin credentials from database |
+| Burp Suite | Send XXE payload to admin panel, exfiltrate SSH key |
+| `ssh2john` | Extract hash from encrypted RSA private key |
+| `john` | Crack SSH key passphrase |
+| `ssh` | Login as barry with cracked key |
+| `strings` | Identify PATH hijack vector in SUID binary |
+
+## 🚩 Flags
+
+| Flag | Value |
+| --- | --- |
+| `user.txt` | `62d77a4d5f97d47c5aa38b3b2651b831` |
+| `root.txt` | `3223581420d906c4dd1a5f9b530393a5` |

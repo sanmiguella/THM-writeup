@@ -261,3 +261,23 @@ This room is about as far from a real engagement as it gets. Here's what you'd a
 * **Directory brute-forcing is a CTF mechanic, not a methodology.** In a real engagement you'd spider the application — Burp's crawler follows actual links, forms, and JS-rendered paths the way a real user would, surfacing real attack surface without hammering the server. In bug bounty specifically, aggressive fuzzing against a WAF-protected target gets your IP blocked before you find anything. Passive recon (JS file analysis, Wayback Machine, Google dorking) is how people actually work. The room hides paths that have zero inbound links by design — that's a puzzle constraint, not a lesson in enumeration.
 
 * **Zero MITRE ATT&CK coverage of consequence.** Web enumeration (T1595), credential reuse (T1078), and that's generously interpreted. This room teaches you to think like a CTF player, not like an attacker.
+
+---
+
+## 🛠️ Tools Used
+
+| Tool | Purpose |
+| --- | --- |
+| `nmap` | Port and service enumeration |
+| `ffuf` | Directory and file extension bruteforce |
+| `ftp` | Login as vigilante, retrieve image files |
+| hex editor | Fix corrupted PNG magic bytes |
+| `steghide` | Extract zip archive from JPEG |
+| `ssh` | Login as slade with extracted credentials |
+
+## 🚩 Flags
+
+| Flag | Value |
+| --- | --- |
+| `user.txt` | `THM{P30P7E_K33P_53CRET5__C0MPUT3R5_D0N'T}` |
+| `root.txt` | `THM{MY_W0RD_I5_MY_B0ND_IF_I_ACC3PT_YOUR_CONTRACT_THEN_IT_WILL_BE_COMPL3TED_OR_I'LL_BE_D34D}` |

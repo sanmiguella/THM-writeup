@@ -164,3 +164,22 @@ shell
 - Git repositories on disk (including `.git/config`) regularly contain credentials; always check `/opt`, `/var`, and home directories for `.git` folders post-foothold
 - Hidden endpoints in custom services can be discovered through source code review or brute-force; treating them as "security by obscurity" is not access control
 - Single-word passwords like `abc123` break in seconds against any common wordlist regardless of the protocol
+
+---
+
+## 🛠️ Tools Used
+
+| Tool | Purpose |
+| --- | --- |
+| `nmap` | Port and service enumeration |
+| `nc` | Connect to Python RAT REPL and receive reverse shell |
+| `socat` | Full PTY shell stabilisation |
+| `git` | Recover RAT source code via git reset --hard HEAD |
+| `brute.py` | Custom brute-force script for RAT admin endpoint password |
+
+## 🚩 Flags
+
+| Flag | Value |
+| --- | --- |
+| `user.txt` | `TBD` |
+| `root.txt` | `TBD` |

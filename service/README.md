@@ -164,3 +164,23 @@ SeDebugPrivilege, SeImpersonatePrivilege, SeTakeOwnershipPrivilege... (full set)
 - ASREPRoasting requires no credentials — any account with `UF_DONT_REQUIRE_PREAUTH` is vulnerable; audit this regularly with `Get-ADUser -Filter {DoesNotRequirePreAuth -eq $true}`
 - Server Operators group membership grants service control — treat it as a high-privilege group and restrict membership accordingly
 - Service `binPath` reconfiguration is a well-known Server Operators abuse path; monitor service config changes via Windows event ID 7040
+
+---
+
+## 🛠️ Tools Used
+
+| Tool | Purpose |
+| --- | --- |
+| `nmap` | Port and service enumeration |
+| `kerbrute` | Validate harvested usernames against Kerberos |
+| `impacket-GetNPUsers` | ASREPRoast accounts with pre-auth disabled |
+| `hashcat` | Crack AS-REP hash |
+| `evil-winrm` | WinRM shell as j.rock |
+| `sc.exe` | Reconfigure ADWS service binPath to add j.rock to local admins |
+
+## 🚩 Flags
+
+| Flag | Value |
+| --- | --- |
+| `user.txt` | `TBD` |
+| `root.txt` | `TBD` |

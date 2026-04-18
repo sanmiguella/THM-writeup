@@ -180,3 +180,23 @@ THM{pr1v1l3g3_3sc4l4t10n}
 * Apache's handling of `.php5` as executable PHP is a commonly overlooked misconfiguration — explicitly restrict execution to `.php` only in the upload directory, or better, store uploads outside the webroot entirely
 * SUID on general-purpose interpreters (Python, Perl, Ruby) is an instant root grant — audit regularly with `find / -perm -4000` and cross-reference against GTFOBins
 * The `-p` flag in `sh -p` is the critical detail that preserves SUID-inherited effective UID; without it the shell drops back to the real UID
+
+---
+
+## 🛠️ Tools Used
+
+| Tool | Purpose |
+| --- | --- |
+| `nmap` | Port and service enumeration |
+| `gobuster` | Directory bruteforce to find /panel/ and /uploads/ |
+| `nc` | Reverse shell listener |
+| `python3` | Shell stabilisation (pty.spawn) |
+| `curl` | Verify RCE via webshell cmd parameter |
+| `find` | SUID binary enumeration |
+
+## 🚩 Flags
+
+| Flag | Value |
+| --- | --- |
+| `user.txt` | `THM{y0u_g0t_a_sh3ll}` |
+| `root.txt` | `THM{pr1v1l3g3_3sc4l4t10n}` |
