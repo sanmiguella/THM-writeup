@@ -36,7 +36,7 @@ Each writeup covers: enumeration → initial access → privilege escalation, wi
 | [VulnNet: Internal](./vulnnet-internal/) | Easy | Linux | Redis RCE, SMB enumeration, TeamCity privesc |
 | [VulnNet: Node](./vulnnet-node/) | Easy | Linux | node-serialize deserialization RCE, npm sudo abuse, writable systemd service |
 | [VulnNet: Roasted](./vulnnet-roasted/) | Easy | Windows | AS-REP roasting, Kerberoasting, DCSync |
-| [VulnNet Entertainment](./vulnnet-entertainment/) | Medium | Linux | JS bundle subdomain leak, LFI via php://filter, ClipBucket 4.0 arbitrary file upload RCE |
+| [VulnNet Entertainment](./vulnnet-entertainment/) | Medium | Linux | JS bundle subdomain leak, LFI via php://filter, ClipBucket 4.0 file upload RCE, SSH backup crack, tar wildcard injection |
 | [Whiterose](./whiterose/) | Easy | Linux | IDOR, EJS prototype pollution RCE (CVE-2022-29078), sudoedit bypass (CVE-2023-22809) |
 
 ---
