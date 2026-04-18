@@ -247,3 +247,22 @@ Kernel 4.4.0 and Sudo 1.8.16 are both potentially vulnerable to other exploits, 
 - WebDAV `PUT` with no file type validation is equivalent to a remote file write primitive — always restrict uploadable extensions or disable WebDAV entirely if not needed
 - `sudo` entries for file read utilities (`cat`, `less`, `tail`, `head`) are often treated as "harmless" but grant full read access to the filesystem — `/etc/shadow`, SSH keys, and any secret file are all in scope
 - Kernel version and Sudo version enumeration matters — 4.4.0 + 1.8.16 is an old, unpatched stack, though glibc version can be the deciding factor in whether heap-based exploits land
+
+---
+
+## 🛠️ Tools Used
+
+| Tool | Purpose |
+| --- | --- |
+| `nmap` | Port and service enumeration |
+| `ffuf` | Directory bruteforce to discover /webdav |
+| `cadaver` | Authenticated WebDAV client for PHP shell upload |
+| `nc` | Reverse shell listener |
+| `python3` | Shell stabilisation (pty.spawn) |
+
+## 🚩 Flags
+
+| Flag | Value |
+| --- | --- |
+| `user.txt` | `449b40fe93f78a938523b7e4dcd66d2a` |
+| `root.txt` | `101101ddc16b0cdf65ba0b8a7af7afa5` |

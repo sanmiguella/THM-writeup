@@ -271,3 +271,28 @@ cat /root/proof.txt
 - Docker group membership is a de facto root grant — treat it as such in any audit
 - Internal-only services (`ss -ntl`) are often less hardened than externally exposed ones; always enumerate after gaining a foothold
 - Credential reuse across SSH, MySQL, and web portals is endemic — always try cracked hashes everywhere
+
+---
+
+## 🛠️ Tools Used
+
+| Tool | Purpose |
+| --- | --- |
+| `nmap` | Port and service enumeration |
+| `ftp` | Anonymous login, retrieve note.txt |
+| `ffuf` | Directory bruteforce to discover /secret/ |
+| `nc` | Reverse shell listener |
+| `python3` | Shell stabilisation (pty.spawn) |
+| `mysql` | Database credential enumeration |
+| `steghide` | Extract backup.zip from JPEG |
+| `zip2john` | Extract hash from encrypted zip |
+| `john` | Crack zip passphrase |
+| `ssh` | Persistent access via injected public key |
+| `docker` | Alpine container with host bind mount for root flag |
+
+## 🚩 Flags
+
+| Flag | Value |
+| --- | --- |
+| `user.txt` | `{USER-FLAG: e8vpd3323cfvlp0qpxxx9qtr5iq37oww}` |
+| `root.txt` | `{ROOT-FLAG: w18gfpn9xehsgd3tovhk0hby4gdp89bg}` |

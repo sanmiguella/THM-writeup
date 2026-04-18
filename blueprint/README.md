@@ -120,3 +120,22 @@ hashcat -m 1000 hash.txt ./kaonashi.txt
 - Web server processes on Windows should never run as SYSTEM; use a dedicated low-privilege service account
 - Architecture mismatch (x64 payload on x86 target) is a common failure on older Windows boxes — verify `arch` before generating payloads
 - `rockyou.txt` alone won't crack everything; maintain larger wordlists (kaonashi, hob064) for NT hashes
+
+---
+
+## 🛠️ Tools Used
+
+| Tool | Purpose |
+| --- | --- |
+| `nmap` | Port and service enumeration |
+| `exploit.py` | osCommerce 2.3.4 unauthenticated RCE via exposed install directory |
+| `msfvenom` | Generate x86 Windows reverse shell payload |
+| `nxc` | SMB command execution for payload delivery via certutil |
+| `hashcat` | Offline NTLM hash cracking |
+
+## 🚩 Flags
+
+| Flag | Value |
+| --- | --- |
+| `user.txt` | `TBD` |
+| `root.txt` | `TBD` |

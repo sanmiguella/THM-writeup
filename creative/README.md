@@ -187,3 +187,23 @@ root@m4lware:/home/saad#
 - Serving a home directory over an unauthenticated internal HTTP port is equivalent to leaving SSH keys in a public web root
 - `env_keep+=LD_PRELOAD` in sudoers is a critical misconfiguration — sudo should strip dangerous environment variables, not preserve them
 - Shell history files regularly contain plaintext credentials; always check `.bash_history`, `.zsh_history`, and similar during post-exploitation
+
+---
+
+## 🛠️ Tools Used
+
+| Tool | Purpose |
+| --- | --- |
+| `nmap` | Port and service enumeration |
+| `ffuf` | Subdomain and directory enumeration |
+| `ssh2john` | Extract hash from passphrase-protected SSH key |
+| `john` | Crack SSH key passphrase |
+| `ssh` | Login as saad with cracked private key |
+| `gcc` | Compile LD_PRELOAD shared library for privilege escalation |
+
+## 🚩 Flags
+
+| Flag | Value |
+| --- | --- |
+| `user.txt` | `TBD` |
+| `root.txt` | `TBD` |

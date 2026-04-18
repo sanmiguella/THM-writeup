@@ -150,3 +150,22 @@ whoami /priv
 - `AlwaysInstallElevated` is a Group Policy misconfiguration that effectively grants any local user SYSTEM-level install rights — it should never be enabled in production
 - Exposing metadata extraction services on publicly reachable ports dramatically expands the attack surface; filter at the network layer if Tika is required
 - Always verify both HKLM and HKCU for `AlwaysInstallElevated` — both must be set for the exploit to work, but both being set is far more common than expected
+
+---
+
+## 🛠️ Tools Used
+
+| Tool | Purpose |
+| --- | --- |
+| `nmap` | Port and service enumeration |
+| Python exploit | CVE-2018-1335 Apache Tika RCE via X-Tika-OCR header injection |
+| Metasploit | `web_delivery` module to stage Meterpreter via regsvr32 |
+| `msfvenom` | Generate malicious MSI for AlwaysInstallElevated escalation |
+| `nc` | Reverse shell listener |
+
+## 🚩 Flags
+
+| Flag | Value |
+| --- | --- |
+| `user.txt` | `TBD` |
+| `root.txt` | `TBD` |

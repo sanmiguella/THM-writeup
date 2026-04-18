@@ -155,3 +155,24 @@ The entire host filesystem is accessible under `/mnt/root` as root inside the co
 - HTML comments are visible in page source — never leak usernames, internal notes, or infrastructure hints in client-side code
 - LXD/LXC group membership is a root equivalent; treat it identically to `sudo ALL` and restrict it accordingly
 - Passphrase-protected SSH keys only slow down an attacker if the passphrase is strong; `letmein` falls in seconds against any common wordlist
+
+---
+
+## 🛠️ Tools Used
+
+| Tool | Purpose |
+| --- | --- |
+| `nmap` | Port and service enumeration |
+| `gobuster` | Directory bruteforce to find /secret/ |
+| `ssh2john` | Extract hash from passphrase-protected SSH key |
+| `john` | Crack SSH key passphrase |
+| `ssh-keygen` | Strip passphrase from private key |
+| `ssh` | Login as john with cracked private key |
+| `lxc` | Privileged Alpine container with host bind mount for root |
+
+## 🚩 Flags
+
+| Flag | Value |
+| --- | --- |
+| `user.txt` | `TBD` |
+| `root.txt` | `TBD` |

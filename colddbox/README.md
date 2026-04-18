@@ -347,3 +347,24 @@ The host's entire filesystem is accessible from inside the container as root, wi
 - `sudo` entries for `vim`, `ftp`, and `chmod` are instant root — all three are well-documented on GTFOBins and should never appear in a `sudoers` file in production
 - LXD/LXC group membership is effectively root access; treat it identically to `sudo ALL` in any security audit
 - Non-standard SSH ports (`4512`) don't add meaningful security — they'll be found by any full port scan
+
+---
+
+## 🛠️ Tools Used
+
+| Tool | Purpose |
+| --- | --- |
+| `nmap` | Port and service enumeration |
+| `wpscan` | WordPress user enumeration and credential brute-force |
+| `reversePress` | Package and deploy malicious WordPress plugin reverse shell |
+| `nc` | Reverse shell listener |
+| `python3` | Shell stabilisation (pty.spawn) |
+| `mysql` | Database dump and credential enumeration |
+| `lxc` | Privileged Alpine container with host bind mount for root |
+
+## 🚩 Flags
+
+| Flag | Value |
+| --- | --- |
+| `user.txt` | `RmVsaWNpZGFkZXMsIHByaW1lciBuaXZlbCBjb25zZWd1aWRvIQ==` |
+| `root.txt` | `wqFGZWxpY2lkYWRlcywgbcOhcXVpbmEgY29tcGxldGFkYSE=` |

