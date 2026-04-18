@@ -1,7 +1,7 @@
 # 🔐 TryHackMe Writeups
 
 [![Platform](https://img.shields.io/badge/Platform-TryHackMe-red?style=for-the-badge&logo=tryhackme)](https://tryhackme.com)
-[![Boxes](https://img.shields.io/badge/Boxes-24-blueviolet?style=for-the-badge)]()
+[![Boxes](https://img.shields.io/badge/Boxes-23-blueviolet?style=for-the-badge)]()
 [![Focus](https://img.shields.io/badge/Focus-Realistic_Chains-informational?style=for-the-badge)]()
 
 Writeups for TryHackMe rooms. Emphasis on methodology, realistic attack chains, and understanding the *why* behind each step — not just dumping commands. Written as personal reference between professional engagements.
@@ -14,7 +14,6 @@ Each writeup covers: enumeration → initial access → privilege escalation, wi
 
 | Room | Difficulty | OS | Key Techniques |
 |---|---|---|---|
-| [AnonForce](./anonforce/) | Easy | Linux | Anonymous FTP filesystem exposure, PGP passphrase crack, shadow hash cracking |
 | [Blueprint](./blueprint/) | Easy | Windows | Unpatched service exploit, hash dump, pass-the-hash |
 | [Chill Hack](./chill/) | Easy | Linux | Command injection + blacklist bypass, steganography, Docker group abuse |
 | [ColddBox: Easy](./colddbox/) | Easy | Linux | WPScan, reversePress, lxd privesc |
@@ -25,7 +24,6 @@ Each writeup covers: enumeration → initial access → privilege escalation, wi
 | [IDE](./ide/) | Easy | Linux | Anonymous FTP, Codiad 2.8.4 RCE (CVE-2018-14009), writable systemd service |
 | [Lazy Admin](./lazyadmin/) | Easy | Linux | SweetRice CMS exploit, sudo backup script abuse |
 | [Lian Yu](./lianyu/) | Easy | Linux | FTP enumeration, steganography, sudo pkexec |
-| [Library](./library/) | Easy | Linux | Username harvesting, SSH brute-force, sudo wildcard + Python script replacement |
 | [Mustacchio](./Mustacchio/) | Easy | Linux | XXE injection, SSH key crack, sudo path hijack |
 | [Pyrat](./pyrat/) | Easy | Linux | Python eval RCE, git history credential leak |
 | [RootMe](./rootme/) | Easy | Linux | File upload bypass, SUID Python privesc |
@@ -36,6 +34,7 @@ Each writeup covers: enumeration → initial access → privilege escalation, wi
 | [Tomghost](./tomghost/) | Easy | Linux | Ghostcat (CVE-2020-1938), GPG key crack, zip2john |
 | [U.A. High School](./ua/) | Easy | Linux | PHP RCE, base64 credential leak, sudo env abuse |
 | [VulnNet: Internal](./vulnnet-internal/) | Easy | Linux | Redis RCE, SMB enumeration, TeamCity privesc |
+| [VulnNet: Node](./vulnnet-node/) | Easy | Linux | node-serialize deserialization RCE, npm sudo abuse, writable systemd service |
 | [VulnNet: Roasted](./vulnnet-roasted/) | Easy | Windows | AS-REP roasting, Kerberoasting, DCSync |
 | [Whiterose](./whiterose/) | Easy | Linux | IDOR, EJS prototype pollution RCE (CVE-2022-29078), sudoedit bypass (CVE-2023-22809) |
 
@@ -65,5 +64,11 @@ Every writeup follows the same skeleton:
 3. **Privilege Escalation** — from foothold to root, with sudo/SUID/capability checks documented
 4. **Attack Chain** — ASCII diagram of the full kill chain
 5. **Key Takeaways** — what the box teaches, why it matters in real engagements
+
+---
+
+## ⚠️ Disclaimer
+
+These writeups are for educational purposes. All activity was performed on isolated TryHackMe lab environments. Don't be an idiot.
 
 ---
