@@ -6,7 +6,7 @@
 
 Writeups for TryHackMe rooms. Emphasis on methodology, realistic attack chains, and understanding the *why* behind each step — not just dumping commands. Written as personal reference between professional engagements.
 
-Each writeup covers: enumeration → initial access → privilege escalation, with an ASCII attack chain diagram and key takeaways.
+Each writeup covers: enumeration → initial access → privilege escalation, with an ASCII attack chain diagram, key takeaways, tools used, and captured flags.
 
 ---
 
@@ -69,6 +69,8 @@ Every writeup follows the same skeleton:
 3. **Privilege Escalation** — from foothold to root, with sudo/SUID/capability checks documented
 4. **Attack Chain** — ASCII diagram of the full kill chain
 5. **Key Takeaways** — what the box teaches, why it matters in real engagements
+6. **Tools Used** — table of every tool used during the engagement
+7. **Flags** — captured flag values
 
 ---
 
