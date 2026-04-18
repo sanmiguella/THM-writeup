@@ -47,10 +47,12 @@ Each room lives in its own folder with a `README.md` writeup following a consist
 ```
 THM-writeup/
 ├── <room>/
-│   └── README.md    ← full writeup
+│   └── README.md          ← full writeup
 ├── Powershell-Scripts/
-│   └── ...          ← utility scripts used during engagements
-└── README.md        ← this file
+│   └── ...                ← PowerShell utility scripts used during engagements
+├── Python-Scripts/
+│   └── ...                ← Python exploit and utility scripts
+└── README.md              ← this file
 ```
 
 ---
