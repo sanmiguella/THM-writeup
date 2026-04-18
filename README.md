@@ -53,6 +53,7 @@ THM-writeup/
 │   └── ...                ← exploit scripts written during engagements
 ├── Powershell-Scripts/
 │   └── ...                ← PowerShell utility scripts
+├── COMMANDS.md            ← personal command cheatsheet (nmap, ffuf, hydra, etc.)
 └── README.md              ← this file
 ```
 
@@ -67,6 +68,12 @@ Every writeup follows the same skeleton:
 3. **Privilege Escalation** — from foothold to root, with sudo/SUID/capability checks documented
 4. **Attack Chain** — ASCII diagram of the full kill chain
 5. **Key Takeaways** — what the box teaches, why it matters in real engagements
+
+---
+
+## 📋 Command Reference
+
+Commonly used commands across recon, enumeration, exploitation, and post-exploitation are documented in [COMMANDS.md](./COMMANDS.md). Covers nmap, ffuf, gobuster, feroxbuster, hydra, hash cracking, vhost fuzzing, shell stabilisation, and more.
 
 ---
 
