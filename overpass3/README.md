@@ -12,7 +12,7 @@
 ## 📋 Overview
 
 | Field | Details |
-|---|---|
+| --- | --- |
 | **Target** | `overpass3.thm` |
 | **OS** | CentOS Linux |
 | **Attack Surface** | Exposed backup directory, GPG-encrypted credential archive, FTP write access to webroot |
@@ -71,7 +71,7 @@ gpg --decrypt CustomerDetails.xlsx.gpg > CustomerDetails.xlsx
 Decrypted spreadsheet:
 
 | Name | Username | Password |
-|---|---|---|
+| --- | --- | --- |
 | Par. A. Doxx | `paradox` | `ShibesAreGreat123` |
 | 0day Montgomery | `0day` | `OllieIsTheBestDog` |
 | Muir Land | `muirlandoracle` | `A11D0gsAreAw3s0me` |
@@ -285,3 +285,27 @@ cat /root/root.flag
 - Internal-only services (check `ss -tulpn` after foothold) are always reachable via SSH local port forwarding — never skip post-foothold network enumeration
 - When Python is absent, `script /dev/null -c bash` is a reliable TTY upgrade fallback
 - Architecture mismatch between attacker and target machines blocks binary transfer — leverage the target's own binaries and manipulate attributes from the privileged NFS mount instead
+
+---
+
+## 🛠️ Tools Used
+
+| Tool | Purpose |
+| --- | --- |
+| `nmap` | Port scanning and service fingerprinting |
+| `ffuf` | Directory bruteforce |
+| `gpg` | Private key import and credential archive decryption |
+| `hydra` | FTP credential brute force |
+| `ftp` | Webroot enumeration and webshell upload |
+| `nc` | Reverse shell listener |
+| `ssh` | Stable shell, lateral movement, NFS port tunnelling |
+
+---
+
+## 🚩 Flags
+
+| Flag | Value |
+| --- | --- |
+| `web.flag` | `thm{0ae72f7870c3687129f7a824194be09d}` |
+| `user.flag` | `thm{3693fc86661faa21f16ac9508a43e1ae}` |
+| `root.flag` | `thm{a4f6adb70371a4bceb32988417456c44}` |
