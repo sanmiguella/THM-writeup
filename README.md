@@ -4,19 +4,18 @@
 [![Boxes](https://img.shields.io/badge/Boxes-25-blueviolet?style=for-the-badge)]()
 [![Focus](https://img.shields.io/badge/Focus-Realistic_Chains-informational?style=for-the-badge)]()
 
+<table align="right">
+<tr><th>📋 Contents</th></tr>
+<tr><td><a href="#-index">📁 Index</a></td></tr>
+<tr><td><a href="#%EF%B8%8F-structure">🗂️ Structure</a></td></tr>
+<tr><td><a href="#%EF%B8%8F-methodology">⚙️ Methodology</a></td></tr>
+<tr><td><a href="#-command-reference">📋 Command Reference</a></td></tr>
+<tr><td><a href="#%EF%B8%8F-disclaimer">⚠️ Disclaimer</a></td></tr>
+</table>
+
 Writeups for TryHackMe rooms. Emphasis on methodology, realistic attack chains, and understanding the *why* behind each step — not just dumping commands. Written as personal reference between professional engagements.
 
 Each writeup covers: enumeration → initial access → privilege escalation, with an ASCII attack chain diagram, key takeaways, tools used, and captured flags.
-
----
-
-## 📋 Table of Contents
-
-- [📁 Index](#-index)
-- [🗂️ Structure](#️-structure)
-- [⚙️ Methodology](#️-methodology)
-- [📋 Command Reference](#-command-reference)
-- [⚠️ Disclaimer](#️-disclaimer)
 
 ---
 
