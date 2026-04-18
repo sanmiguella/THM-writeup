@@ -1,7 +1,7 @@
 # 🔐 TryHackMe Writeups
 
 [![Platform](https://img.shields.io/badge/Platform-TryHackMe-red?style=for-the-badge&logo=tryhackme)](https://tryhackme.com)
-[![Boxes](https://img.shields.io/badge/Boxes-23-blueviolet?style=for-the-badge)]()
+[![Boxes](https://img.shields.io/badge/Boxes-24-blueviolet?style=for-the-badge)]()
 [![Focus](https://img.shields.io/badge/Focus-Realistic_Chains-informational?style=for-the-badge)]()
 
 Writeups for TryHackMe rooms. Emphasis on methodology, realistic attack chains, and understanding the *why* behind each step — not just dumping commands. Written as personal reference between professional engagements.
@@ -36,6 +36,7 @@ Each writeup covers: enumeration → initial access → privilege escalation, wi
 | [VulnNet: Internal](./vulnnet-internal/) | Easy | Linux | Redis RCE, SMB enumeration, TeamCity privesc |
 | [VulnNet: Node](./vulnnet-node/) | Easy | Linux | node-serialize deserialization RCE, npm sudo abuse, writable systemd service |
 | [VulnNet: Roasted](./vulnnet-roasted/) | Easy | Windows | AS-REP roasting, Kerberoasting, DCSync |
+| [VulnNet Entertainment](./vulnnet-entertainment/) | Medium | Linux | JS bundle subdomain leak, LFI via php://filter, ClipBucket 4.0 arbitrary file upload RCE |
 | [Whiterose](./whiterose/) | Easy | Linux | IDOR, EJS prototype pollution RCE (CVE-2022-29078), sudoedit bypass (CVE-2023-22809) |
 
 ---
