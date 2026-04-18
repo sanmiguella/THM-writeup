@@ -184,3 +184,24 @@ ls -lah /bin/bash
 - Redis with no authentication (or a weak password) exposed internally is a high-risk finding — it frequently stores session tokens, credentials, or other sensitive data
 - rsync modules with write access to SSH directories allow trivial key injection; always audit rsync module permissions and exposed paths
 - CI/CD systems (TeamCity, Jenkins, GitLab CI) running as root are a critical misconfiguration — they're effectively a root shell waiting to be triggered
+
+---
+
+## 🛠️ Tools Used
+
+| Tool | Purpose |
+| --- | --- |
+| `nmap` | Port and service enumeration |
+| `smbclient` | Anonymous SMB share enumeration |
+| NFS mount | Access /opt/conf export to retrieve redis.conf |
+| `redis-cli` | Authenticate and enumerate Redis keys |
+| `rsync` | List and write to sys-internal's home directory |
+| `ssh` | Login via injected public key and port forward to TeamCity |
+
+## 🚩 Flags
+
+| Flag | Value |
+| --- | --- |
+| `internal.flag` | `THM{ff8e518addbbddb74531a724236a8221}` |
+| `user.txt` | `TBD` |
+| `root.txt` | `TBD` |

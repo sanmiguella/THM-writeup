@@ -164,3 +164,23 @@ cat /root/root.txt
 - Credentials in `web.xml` are a recurring real-world finding in Tomcat deployments; secrets should be injected via environment variables or a secrets manager, not hardcoded in config files
 - Storing a PGP-encrypted credential file alongside its private key on the same host defeats the purpose of encryption — the key is the secret, and it needs to be kept separately
 - `sudo zip` is a direct GTFOBins root; any unrestricted sudo binary should be cross-referenced against GTFOBins before deployment
+
+---
+
+## 🛠️ Tools Used
+
+| Tool | Purpose |
+| --- | --- |
+| `nmap` | Port and service enumeration |
+| Python exploit | CVE-2020-1938 GhostCat — read /WEB-INF/web.xml via AJP |
+| `ssh` | Login as skyfuck with leaked credentials |
+| `gpg2john` | Extract hash from armored GPG private key |
+| `john` | Crack GPG key passphrase |
+| `gpg` | Import key and decrypt credential.pgp |
+
+## 🚩 Flags
+
+| Flag | Value |
+| --- | --- |
+| `user.txt` | `THM{GhostCat_1s_so_cr4sy}` |
+| `root.txt` | `THM{Z1P_1S_FAKE}` |

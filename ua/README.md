@@ -157,3 +157,22 @@ ls -lah /bin/bash
 - `eval "echo $input"` with a blacklist is not safe; the blacklist must be exhaustive and the approach fundamentally flawed — use allowlists or eliminate eval entirely
 - Steganography is niche but occasionally appears; when a JPEG won't process with steghide, always check magic bytes first with `xxd`
 - Writing to `/etc/crontab` as a low-privilege user via a misconfigured sudo script is an immediate root path — crontab write access is equivalent to code execution as any user listed in the job
+
+---
+
+## 🛠️ Tools Used
+
+| Tool | Purpose |
+| --- | --- |
+| `nmap` | Port and service enumeration |
+| `rce.py` | Custom exploit for hidden PHP RCE parameter in index.php |
+| `nc` | Reverse shell listener |
+| `socat` | Full PTY shell stabilisation |
+| `steghide` | Extract credentials from JPEG (after magic byte fix) |
+
+## 🚩 Flags
+
+| Flag | Value |
+| --- | --- |
+| `user.txt` | `TBD` |
+| `root.txt` | `TBD` |

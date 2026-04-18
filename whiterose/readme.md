@@ -133,7 +133,7 @@ password is not defined
 
 The app is Node.js + Express + EJS. EJS versions before 3.1.7 pass render options directly to the template engine without sanitisation, allowing `settings[view options][outputFunctionName]` to inject arbitrary JavaScript that executes during template compilation.
 
-Payload — mkfifo netcat reverse shell from [revshells.com](https://www.revshells.com), URL-encoded, injected via `execSync`:
+Payload — mkfifo netcat reverse shell, injected via `execSync`:
 
 ```http
 POST /settings HTTP/1.1
@@ -280,3 +280,23 @@ THM{4nd_uR_p4ck4g3s}
 * sudoedit's CVE-2023-22809 is a clean, reliable privilege escalation when the sudo version is ≤ 1.9.12p1 and any `sudoedit` rule exists — check it immediately on any box with a scoped `sudoedit` entry
 * Verbose 500 errors leaking stack traces with full filesystem paths are a gift — always poke error states before looking for anything more complex
 * `env_keep` in sudoers is often configured sloppily; attacker-controlled env vars surviving into privileged contexts are a classic foothold
+
+---
+
+## 🛠️ Tools Used
+
+| Tool | Purpose |
+| --- | --- |
+| `nmap` | Port and service enumeration |
+| `ffuf` | Virtual host and directory enumeration |
+| Burp Suite | IDOR on /messages/ endpoint, EJS RCE payload delivery |
+| `nc` | Reverse shell listener |
+| `python3` | Shell stabilisation (pty.spawn) |
+| `sudoedit` | CVE-2023-22809 arbitrary file write to /etc/sudoers |
+
+## 🚩 Flags
+
+| Flag | Value |
+| --- | --- |
+| `user.txt` | `THM{4lways_upd4te_uR_d3p3nd3nc!3s}` |
+| `root.txt` | `THM{4nd_uR_p4ck4g3s}` |

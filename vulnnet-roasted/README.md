@@ -171,3 +171,24 @@ evil-winrm -i vulnnet.local -u a-whitehat -p bNdKVkjv3RR9ht
 - SID brute-forcing via a guest SMB session (`lookupsid`) bypasses LDAP/RPC auth restrictions and reliably enumerates all domain users — restrict guest access entirely
 - ASREPRoasting and Kerberoasting require no special privileges once you have valid domain credentials; weak passwords on service accounts and pre-auth-disabled users are high-risk
 - Hardcoded credentials in logon scripts stored in NETLOGON are a persistent real-world finding — any script that resets passwords or performs automation should use a secrets manager, not embedded plaintext
+
+---
+
+## 🛠️ Tools Used
+
+| Tool | Purpose |
+| --- | --- |
+| `nmap` | Port and service enumeration |
+| `smbclient` | Anonymous SMB share enumeration, username harvesting |
+| `impacket-lookupsid` | SID brute-force for full AD user list |
+| `impacket-GetNPUsers` | ASREPRoast t-skid hash |
+| `hashcat` | Crack AS-REP and TGS hashes |
+| `impacket-GetUserSPNs` | Kerberoast enterprise-core-vn |
+| `evil-winrm` | WinRM shell as enterprise-core-vn, then a-whitehat |
+
+## 🚩 Flags
+
+| Flag | Value |
+| --- | --- |
+| `user.txt` | `TBD` |
+| `root.txt` | `TBD` |
