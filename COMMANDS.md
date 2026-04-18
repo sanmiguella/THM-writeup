@@ -4,6 +4,41 @@ Personal cheatsheet of commonly used commands across recon, enumeration, exploit
 
 ---
 
+## 📋 Table of Contents
+
+- [📡 TCP and UDP Scan](#-tcp-and-udp-scan)
+- [📂 File and Directory Brute-Forcing](#-file-and-directory-brute-forcing)
+- [🔓 Apache Password Hash Cracking](#-apache-password-hash-cracking)
+- [🔑 Basic Auth Brute Force](#-basic-auth-brute-force)
+- [🌐 Subdomain Enumeration](#-subdomain-enumeration)
+- [🖥️ Add IP to Hosts](#%EF%B8%8F-add-ip-to-hosts)
+- [🖱️ Set STTY (Fix Terminal Size)](#%EF%B8%8F-set-stty-fix-terminal-size)
+- [🔗 Make All Necessary Symlinks](#-make-all-necessary-symlinks)
+- [🐚 Reverse Shell Listeners & Payloads](#-reverse-shell-listeners--payloads)
+- [🔐 SSH Key Cracking & Stripping](#-ssh-key-cracking--stripping)
+- [🔐 GPG / PGP](#-gpg--pgp)
+- [📁 FTP Enumeration](#-ftp-enumeration)
+- [🗄️ Hash Cracking — Common Modes](#%EF%B8%8F-hash-cracking--common-modes)
+- [🔍 Post-Exploitation Enumeration](#-post-exploitation-enumeration)
+- [🏆 GTFOBins — Common sudo Escapes](#-gtfobins--common-sudo-escapes)
+- [🔧 Systemd Service Abuse](#-systemd-service-abuse)
+- [🐳 Docker / LXD Privilege Escalation](#-docker--lxd-privilege-escalation)
+- [🪟 Windows / Active Directory](#-windows--active-directory)
+- [🔌 SMB Enumeration](#-smb-enumeration)
+- [📂 NFS Enumeration & Exploitation](#-nfs-enumeration--exploitation)
+- [🔴 Redis Enumeration](#-redis-enumeration)
+- [📡 rsync Enumeration](#-rsync-enumeration)
+- [🔒 SSH Tunneling](#-ssh-tunneling)
+- [🗝️ WordPress (WPScan)](#%EF%B8%8F-wordpress-wpscan)
+- [🎭 Steganography](#-steganography)
+- [🏷️ Payload Generation (msfvenom)](#%EF%B8%8F-payload-generation-msfvenom)
+- [🗃️ SQLite Credential Extraction](#%EF%B8%8F-sqlite-credential-extraction)
+- [🨤 Tar Wildcard Injection (cron privesc)](#-tar-wildcard-injection-cron-privesc)
+- [🔃 PATH Hijack (SUID binary)](#-path-hijack-suid-binary)
+- [🖥️ Serve Files (HTTP server)](#%EF%B8%8F-serve-files-http-server)
+
+---
+
 ## 📡 TCP and UDP Scan
 
 Full TCP scan with version + scripts
@@ -555,7 +590,7 @@ sudo /bin/systemctl start <timer-name>
 
 ---
 
-## 🐋 Docker / LXD Privilege Escalation
+## 🐳 Docker / LXD Privilege Escalation
 
 Docker group — mount host filesystem
 ```bash
@@ -838,7 +873,7 @@ SELECT * FROM users;
 
 ---
 
-## 🪤 Tar Wildcard Injection (cron privesc)
+## 🨤 Tar Wildcard Injection (cron privesc)
 
 When a cron job runs `tar *` in a directory you control:
 ```bash
