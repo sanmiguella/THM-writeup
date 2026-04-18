@@ -69,6 +69,6 @@ Every writeup follows the same skeleton:
 
 ## ⚠️ Disclaimer
 
-These writeups are for educational purposes. All activity was performed on isolated TryHackMe lab environments. Don't be an idiot.
+All activity documented here was conducted exclusively within TryHackMe's isolated lab environments. These writeups are intended for educational purposes and personal reference.
 
 ---
