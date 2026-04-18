@@ -10,6 +10,16 @@ Each writeup covers: enumeration → initial access → privilege escalation, wi
 
 ---
 
+## 📋 Table of Contents
+
+- [📁 Index](#-index)
+- [🗂️ Structure](#️-structure)
+- [⚙️ Methodology](#️-methodology)
+- [📋 Command Reference](#-command-reference)
+- [⚠️ Disclaimer](#️-disclaimer)
+
+---
+
 ## 📁 Index
 
 | Room | Difficulty | OS | Key Techniques |
