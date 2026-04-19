@@ -241,6 +241,16 @@ root@mustacchio:/root# cat root.txt
 
 ---
 
+## 🎯 MITRE ATT&CK Mapping
+
+| Tactic | Technique | ID |
+|---|---|---|
+| Initial Access | Exploit Public-Facing Application | [T1190](https://attack.mitre.org/techniques/T1190) |
+| Credential Access | Unsecured Credentials: Private Keys | [T1552.004](https://attack.mitre.org/techniques/T1552/004) |
+| Privilege Escalation | Hijack Execution Flow: Path Interception by PATH Environment Variable | [T1574.007](https://attack.mitre.org/techniques/T1574/007) |
+
+---
+
 ## 🛠️ Tools Used
 
 | Tool | Purpose |
