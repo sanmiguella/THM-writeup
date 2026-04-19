@@ -267,7 +267,16 @@ root@mustacchio:/root# cat root.txt
 
 ## 🚩 Flags
 
-| Flag | Value |
-| --- | --- |
-| `user.txt` | `62d77a4d5f97d47c5aa38b3b2651b831` |
-| `root.txt` | `3223581420d906c4dd1a5f9b530393a5` |
+<details>
+<summary><code>user.txt</code></summary>
+
+`62d77a4d5f97d47c5aa38b3b2651b831`
+
+</details>
+
+<details>
+<summary><code>root.txt</code></summary>
+
+`3223581420d906c4dd1a5f9b530393a5`
+
+</details>
