@@ -453,6 +453,18 @@ THM{220b671dd8adc301b34c2738ee8295ba}
 
 ---
 
+## 🎯 MITRE ATT&CK Mapping
+
+| Tactic | Technique | ID |
+|---|---|---|
+| Reconnaissance | Active Scanning: Wordlist Scanning | [T1595.003](https://attack.mitre.org/techniques/T1595/003) |
+| Discovery | File and Directory Discovery | [T1083](https://attack.mitre.org/techniques/T1083) |
+| Initial Access | Exploit Public-Facing Application | [T1190](https://attack.mitre.org/techniques/T1190) |
+| Credential Access | Unsecured Credentials: Private Keys | [T1552.004](https://attack.mitre.org/techniques/T1552/004) |
+| Privilege Escalation | Scheduled Task/Job: Cron | [T1053.003](https://attack.mitre.org/techniques/T1053/003) |
+
+---
+
 ## 🛠️ Tools Used
 
 | Tool | Purpose |
