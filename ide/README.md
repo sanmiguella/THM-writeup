@@ -321,7 +321,16 @@ bash-4.4# cat /root/root.txt
 
 ## 🚩 Flags
 
-| Flag | Value |
-| --- | --- |
-| `user.txt` | `02930d21a8eb009f6d26361b2d24a466` |
-| `root.txt` | `ce258cb16f47f1c66f0b0b77f4e0fb8d` |
+<details>
+<summary><code>user.txt</code></summary>
+
+`02930d21a8eb009f6d26361b2d24a466`
+
+</details>
+
+<details>
+<summary><code>root.txt</code></summary>
+
+`ce258cb16f47f1c66f0b0b77f4e0fb8d`
+
+</details>
