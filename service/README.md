@@ -167,6 +167,13 @@ SeDebugPrivilege, SeImpersonatePrivilege, SeTakeOwnershipPrivilege... (full set)
 
 ---
 
+## 🎯 MITRE ATT&CK Mapping
+
+| Tactic | Technique | ID |
+|---|---|---|
+| Defense Evasion | Deploy Container | [T1610](https://attack.mitre.org/techniques/T1610) |
+| Privilege Escalation | Escape to Host | [T1611](https://attack.mitre.org/techniques/T1611) |
+
 ## 🛠️ Tools Used
 
 | Tool | Purpose |
