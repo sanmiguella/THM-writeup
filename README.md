@@ -66,7 +66,7 @@ THM-writeup/
 │   └── ...                ← exploit scripts written during engagements
 ├── Powershell-Scripts/
 │   └── ...                ← PowerShell utility scripts
-├── COMMANDS.md            ← personal command cheatsheet (nmap, ffuf, hydra, etc.)
+├── COMMANDS.md            ← personal command cheatsheet
 └── README.md              ← this file
 ```
 
@@ -89,7 +89,7 @@ Every writeup follows the same skeleton:
 
 ## 📋 Command Reference
 
-Commonly used commands across recon, enumeration, exploitation, and post-exploitation are documented in [COMMANDS.md](./COMMANDS.md). Covers nmap, ffuf, gobuster, feroxbuster, hydra, hash cracking, vhost fuzzing, shell stabilisation, and more.
+Commonly used commands across recon, enumeration, exploitation, and post-exploitation are documented in [COMMANDS.md](./COMMANDS.md). Covers nmap, ffuf, wpscan, cadaver, sqlmap, LFI via `php://filter` and PHP filter chain RCE, SMB/NFS/Redis enumeration, Tomcat WAR deployment, GPG decryption, hash cracking (MD5 through Kerberoasting), steganography, shell stabilisation, and Linux/Windows privilege escalation.
 
 ---
 
