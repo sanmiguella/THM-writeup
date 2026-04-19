@@ -245,6 +245,14 @@ cat /root/root.txt
 
 ---
 
+## 🎯 MITRE ATT&CK Mapping
+
+| Tactic | Technique | ID |
+|---|---|---|
+| Initial Access | Valid Accounts: Default Accounts | [T1078.001](https://attack.mitre.org/techniques/T1078/001) |
+| Execution | Server Software Component: Web Shell | [T1505.003](https://attack.mitre.org/techniques/T1505/003) |
+| Privilege Escalation | Scheduled Task/Job: Cron | [T1053.003](https://attack.mitre.org/techniques/T1053/003) |
+
 ## 🛠️ Tools Used
 
 | Tool | Purpose |
