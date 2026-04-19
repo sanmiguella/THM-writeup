@@ -183,6 +183,15 @@ THM{pr1v1l3g3_3sc4l4t10n}
 
 ---
 
+## 🎯 MITRE ATT&CK Mapping
+
+| Tactic | Technique | ID |
+|---|---|---|
+| Initial Access | Server Software Component: Web Shell | [T1505.003](https://attack.mitre.org/techniques/T1505/003) |
+| Privilege Escalation | Abuse Elevation Control Mechanism: Setuid and Setgid | [T1548.001](https://attack.mitre.org/techniques/T1548/001) |
+
+---
+
 ## 🛠️ Tools Used
 
 | Tool | Purpose |
