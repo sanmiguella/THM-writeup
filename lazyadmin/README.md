@@ -152,6 +152,16 @@ ls -lah /bin/bash
 
 ---
 
+## 🎯 MITRE ATT&CK Mapping
+
+| Tactic | Technique | ID |
+|---|---|---|
+| Initial Access | Exploit Public-Facing Application | [T1190](https://attack.mitre.org/techniques/T1190) |
+| Execution | Server Software Component: Web Shell | [T1505.003](https://attack.mitre.org/techniques/T1505/003) |
+| Privilege Escalation | Abuse Elevation Control Mechanism: Sudo and Sudo Caching | [T1548.003](https://attack.mitre.org/techniques/T1548/003) |
+
+---
+
 ## 🛠️ Tools Used
 
 | Tool | Purpose |
