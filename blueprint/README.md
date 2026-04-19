@@ -145,7 +145,16 @@ hashcat -m 1000 hash.txt ./kaonashi.txt
 
 ## 🚩 Flags
 
-| Flag | Value |
-| --- | --- |
-| `user.txt` | `TBD` |
-| `root.txt` | `TBD` |
+<details>
+<summary><code>user.txt</code></summary>
+
+`TBD`
+
+</details>
+
+<details>
+<summary><code>root.txt</code></summary>
+
+`TBD`
+
+</details>
