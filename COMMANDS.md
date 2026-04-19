@@ -183,11 +183,23 @@ hashcat -m 0 hash.txt /usr/share/wordlists/rockyou.txt
 # SHA1
 hashcat -m 100 hash.txt /usr/share/wordlists/rockyou.txt
 
+# SHA256
+hashcat -m 1400 hash.txt /usr/share/wordlists/rockyou.txt
+
 # bcrypt
 hashcat -m 3200 hash.txt /usr/share/wordlists/rockyou.txt
 
 # NTLM
 hashcat -m 1000 hash.txt /usr/share/wordlists/rockyou.txt
+
+# NetNTLMv2
+hashcat -m 5600 hash.txt /usr/share/wordlists/rockyou.txt
+
+# Kerberos 5 TGS (Kerberoasting)
+hashcat -m 13100 hash.txt /usr/share/wordlists/rockyou.txt
+
+# Kerberos 5 AS-REP (AS-REP roasting)
+hashcat -m 18200 hash.txt /usr/share/wordlists/rockyou.txt
 
 # Show cracked
 hashcat --show hash.txt
@@ -213,6 +225,37 @@ john id_rsa.hash --wordlist=/usr/share/wordlists/rockyou.txt
 ```bash
 openssl passwd -1 -salt xyz <password>   # MD5crypt
 openssl passwd -6 -salt xyz <password>   # SHA512crypt
+```
+
+### htpasswd — Generate Apache .htpasswd hash
+
+```bash
+htpasswd -nb <username> <password>          # bcrypt (default)
+htpasswd -nbm <username> <password>         # MD5
+htpasswd -nbs <username> <password>         # SHA1
+```
+
+---
+
+## 🖼️ Steganography
+
+```bash
+# steghide — extract hidden data
+steghide extract -sf <image.jpg>
+steghide extract -sf <image.jpg> -p <passphrase>
+
+# steghide — inspect without extracting
+steghide info <image.jpg>
+
+# stegseek — fast passphrase bruteforce against rockyou
+stegseek <image.jpg> /usr/share/wordlists/rockyou.txt
+
+# binwalk — detect and extract embedded files
+binwalk <file>
+binwalk -e <file>
+
+# strings — quick check for hidden plaintext
+strings <file> | grep -i flag
 ```
 
 ---
