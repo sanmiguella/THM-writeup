@@ -315,8 +315,23 @@ cat /root/root.flag
 
 ## 🚩 Flags
 
-| Flag | Value |
-| --- | --- |
-| `web.flag` | `thm{0ae72f7870c3687129f7a824194be09d}` |
-| `user.flag` | `thm{3693fc86661faa21f16ac9508a43e1ae}` |
-| `root.flag` | `thm{a4f6adb70371a4bceb32988417456c44}` |
+<details>
+<summary><code>web.flag</code></summary>
+
+`thm{0ae72f7870c3687129f7a824194be09d}`
+
+</details>
+
+<details>
+<summary><code>user.flag</code></summary>
+
+`thm{3693fc86661faa21f16ac9508a43e1ae}`
+
+</details>
+
+<details>
+<summary><code>root.flag</code></summary>
+
+`thm{a4f6adb70371a4bceb32988417456c44}`
+
+</details>
