@@ -304,7 +304,16 @@ cat /root/proof.txt
 
 ## 🚩 Flags
 
-| Flag | Value |
-| --- | --- |
-| `user.txt` | `{USER-FLAG: e8vpd3323cfvlp0qpxxx9qtr5iq37oww}` |
-| `root.txt` | `{ROOT-FLAG: w18gfpn9xehsgd3tovhk0hby4gdp89bg}` |
+<details>
+<summary><code>user.txt</code></summary>
+
+`{USER-FLAG: e8vpd3323cfvlp0qpxxx9qtr5iq37oww}`
+
+</details>
+
+<details>
+<summary><code>root.txt</code></summary>
+
+`{ROOT-FLAG: w18gfpn9xehsgd3tovhk0hby4gdp89bg}`
+
+</details>
