@@ -264,6 +264,17 @@ This room is about as far from a real engagement as it gets. Here's what you'd a
 
 ---
 
+## 🎯 MITRE ATT&CK Mapping
+
+| Tactic | Technique | ID |
+|---|---|---|
+| Initial Access | Valid Accounts: Default Accounts | [T1078.001](https://attack.mitre.org/techniques/T1078/001) |
+| Defense Evasion | Obfuscated Files or Information: Steganography | [T1027.003](https://attack.mitre.org/techniques/T1027/003) |
+| Collection | Data from Local System | [T1005](https://attack.mitre.org/techniques/T1005) |
+| Privilege Escalation | Abuse Elevation Control Mechanism: Sudo and Sudo Caching | [T1548.003](https://attack.mitre.org/techniques/T1548/003) |
+
+---
+
 ## 🛠️ Tools Used
 
 | Tool | Purpose |
