@@ -250,6 +250,16 @@ Kernel 4.4.0 and Sudo 1.8.16 are both potentially vulnerable to other exploits, 
 
 ---
 
+## 🎯 MITRE ATT&CK Mapping
+
+| Tactic | Technique | ID |
+|---|---|---|
+| Initial Access | Valid Accounts: Default Accounts | [T1078.001](https://attack.mitre.org/techniques/T1078/001) |
+| Execution | Server Software Component: Web Shell | [T1505.003](https://attack.mitre.org/techniques/T1505/003) |
+| Privilege Escalation | Abuse Elevation Control Mechanism: Sudo and Sudo Caching | [T1548.003](https://attack.mitre.org/techniques/T1548/003) |
+
+---
+
 ## 🛠️ Tools Used
 
 | Tool | Purpose |
