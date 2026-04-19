@@ -2,7 +2,7 @@
 
 ### TryHackMe Writeup
 
-[![Platform](https://img.shields.io/badge/Platform-TryHackMe-red?style=for-the-badge&logo=tryhackme)](https://tryhackme.com)
+[![Platform](https://img.shields.io/badge/Platform-TryHackMe-red?style=for-the-badge&logo=tryhackme)](https://tryhackme.com/room/vulnnetinternal)
 [![Difficulty](https://img.shields.io/badge/Difficulty-Easy-brightgreen?style=for-the-badge)](https://tryhackme.com)
 [![Status](https://img.shields.io/badge/Status-Pwned-blueviolet?style=for-the-badge)](https://tryhackme.com)
 [![Type](https://img.shields.io/badge/Type-Linux-informational?style=for-the-badge&logo=linux)](https://tryhackme.com)
@@ -80,7 +80,7 @@ get "internal flag"
 # THM{ff8e518addbbddb74531a724236a8221}
 
 LRANGE authlist 0 -1
-# QXV0aG9yaXphdGlvbi...== (base64 repeated)
+# QXV0aG9yaXpha...== (base64 repeated)
 ```
 
 Decoded authlist value:
