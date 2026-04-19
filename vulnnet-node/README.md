@@ -382,6 +382,17 @@ THM{abea728f211b105a608a720a37adabf9}
 
 ---
 
+## 🎯 MITRE ATT&CK Mapping
+
+| Tactic | Technique | ID |
+|---|---|---|
+| Initial Access | Exploit Public-Facing Application | [T1190](https://attack.mitre.org/techniques/T1190) |
+| Execution | Command and Scripting Interpreter: JavaScript | [T1059.007](https://attack.mitre.org/techniques/T1059/007) |
+| Privilege Escalation | Abuse Elevation Control Mechanism: Sudo and Sudo Caching | [T1548.003](https://attack.mitre.org/techniques/T1548/003) |
+| Privilege Escalation | Scheduled Task/Job: Systemd Timers | [T1053.006](https://attack.mitre.org/techniques/T1053/006) |
+
+---
+
 ## 🛠️ Tools Used
 
 | Tool | Purpose |
