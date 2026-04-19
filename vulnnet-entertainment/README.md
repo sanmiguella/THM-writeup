@@ -480,7 +480,16 @@ THM{220b671dd8adc301b34c2738ee8295ba}
 
 ## 🚩 Flags
 
-| Flag | Value |
-| --- | --- |
-| `user.txt` | `THM{907e420d979d8e2992f3d7e16bee1e8b}` |
-| `root.txt` | `THM{220b671dd8adc301b34c2738ee8295ba}` |
+<details>
+<summary><code>user.txt</code></summary>
+
+`THM{907e420d979d8e2992f3d7e16bee1e8b}`
+
+</details>
+
+<details>
+<summary><code>root.txt</code></summary>
+
+`THM{220b671dd8adc301b34c2738ee8295ba}`
+
+</details>
