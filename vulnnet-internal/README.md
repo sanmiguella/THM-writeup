@@ -187,6 +187,15 @@ ls -lah /bin/bash
 
 ---
 
+## 🎯 MITRE ATT&CK Mapping
+
+| Tactic | Technique | ID |
+|---|---|---|
+| Initial Access | Exploit Public-Facing Application | [T1190](https://attack.mitre.org/techniques/T1190) |
+| Discovery | Network Share Discovery | [T1135](https://attack.mitre.org/techniques/T1135) |
+| Credential Access | Unsecured Credentials: Credentials In Files | [T1552.001](https://attack.mitre.org/techniques/T1552/001) |
+| Privilege Escalation | Abuse Elevation Control Mechanism | [T1548](https://attack.mitre.org/techniques/T1548) |
+
 ## 🛠️ Tools Used
 
 | Tool | Purpose |
