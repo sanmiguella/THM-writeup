@@ -266,7 +266,16 @@ cat /root/root.txt
 
 ## 🚩 Flags
 
-| Flag | Value |
-| --- | --- |
-| `user.txt` | `39400c90bc683a41a8935e4719f181bf` |
-| `root.txt` | `d89d5391984c0450a95497153ae7ca3a` |
+<details>
+<summary><code>user.txt</code></summary>
+
+`39400c90bc683a41a8935e4719f181bf`
+
+</details>
+
+<details>
+<summary><code>root.txt</code></summary>
+
+`d89d5391984c0450a95497153ae7ca3a`
+
+</details>
