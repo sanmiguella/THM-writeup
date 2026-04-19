@@ -444,7 +444,16 @@ root@ip-10-49-168-178:~#
 
 ## 🚩 Flags
 
-| Flag | Value |
-| --- | --- |
-| `user.txt` | `THM{9f2ce3df1beeecaf695b3a8560c682704c31b17a}` |
-| `root.txt` | `THM{dca75486094810807faf4b7b0a929b11e5e0167c}` |
+<details>
+<summary><code>user.txt</code></summary>
+
+`THM{9f2ce3df1beeecaf695b3a8560c682704c31b17a}`
+
+</details>
+
+<details>
+<summary><code>root.txt</code></summary>
+
+`THM{dca75486094810807faf4b7b0a929b11e5e0167c}`
+
+</details>
