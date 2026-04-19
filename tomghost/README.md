@@ -188,7 +188,16 @@ cat /root/root.txt
 
 ## 🚩 Flags
 
-| Flag | Value |
-| --- | --- |
-| `user.txt` | `THM{GhostCat_1s_so_cr4sy}` |
-| `root.txt` | `THM{Z1P_1S_FAKE}` |
+<details>
+<summary><code>user.txt</code></summary>
+
+`THM{GhostCat_1s_so_cr4sy}`
+
+</details>
+
+<details>
+<summary><code>root.txt</code></summary>
+
+`THM{Z1P_1S_FAKE}`
+
+</details>
