@@ -288,7 +288,16 @@ This room is about as far from a real engagement as it gets. Here's what you'd a
 
 ## 🚩 Flags
 
-| Flag | Value |
-| --- | --- |
-| `user.txt` | `THM{P30P7E_K33P_53CRET5__C0MPUT3R5_D0N'T}` |
-| `root.txt` | `THM{MY_W0RD_I5_MY_B0ND_IF_I_ACC3PT_YOUR_CONTRACT_THEN_IT_WILL_BE_COMPL3TED_OR_I'LL_BE_D34D}` |
+<details>
+<summary><code>user.txt</code></summary>
+
+`THM{P30P7E_K33P_53CRET5__C0MPUT3R5_D0N'T}`
+
+</details>
+
+<details>
+<summary><code>root.txt</code></summary>
+
+`THM{MY_W0RD_I5_MY_B0ND_IF_I_ACC3PT_YOUR_CONTRACT_THEN_IT_WILL_BE_COMPL3TED_OR_I'LL_BE_D34D}`
+
+</details>
