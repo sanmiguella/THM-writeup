@@ -297,7 +297,16 @@ b1b968b37519ad1daa6408188649263d
 
 ## 🚩 Flags
 
-| Flag | Value |
-| --- | --- |
-| `user_flag.txt` | `057c67131c3d5e42dd5cd3075b198ff6` |
-| `root_flag.txt` | `b1b968b37519ad1daa6408188649263d` |
+<details>
+<summary><code>user_flag.txt</code></summary>
+
+`057c67131c3d5e42dd5cd3075b198ff6`
+
+</details>
+
+<details>
+<summary><code>root_flag.txt</code></summary>
+
+`b1b968b37519ad1daa6408188649263d`
+
+</details>
