@@ -288,6 +288,17 @@ cat /root/root.flag
 
 ---
 
+## 🎯 MITRE ATT&CK Mapping
+
+| Tactic | Technique | ID |
+|---|---|---|
+| Credential Access | Unsecured Credentials: Credentials In Files | [T1552.001](https://attack.mitre.org/techniques/T1552/001) |
+| Initial Access | Valid Accounts | [T1078](https://attack.mitre.org/techniques/T1078) |
+| Execution | Server Software Component: Web Shell | [T1505.003](https://attack.mitre.org/techniques/T1505/003) |
+| Privilege Escalation | Abuse Elevation Control Mechanism | [T1548](https://attack.mitre.org/techniques/T1548) |
+
+---
+
 ## 🛠️ Tools Used
 
 | Tool | Purpose |
