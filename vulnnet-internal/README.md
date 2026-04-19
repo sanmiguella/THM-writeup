@@ -86,7 +86,7 @@ LRANGE authlist 0 -1
 Decoded authlist value:
 
 ```bash
-echo "QXV0aG9yaXph..." | base64 -d
+echo "QXV0aG9yaXpha..." | base64 -d
 # Authorization for rsync://rsync-connect@127.0.0.1 with password Hcg3HP67@TW@Bc72v
 ```
 
@@ -209,8 +209,23 @@ ls -lah /bin/bash
 
 ## 🚩 Flags
 
-| Flag | Value |
-| --- | --- |
-| `internal.flag` | `THM{ff8e518addbbddb74531a724236a8221}` |
-| `user.txt` | `TBD` |
-| `root.txt` | `TBD` |
+<details>
+<summary><code>internal.flag</code></summary>
+
+`THM{ff8e518addbbddb74531a724236a8221}`
+
+</details>
+
+<details>
+<summary><code>user.txt</code></summary>
+
+`TBD`
+
+</details>
+
+<details>
+<summary><code>root.txt</code></summary>
+
+`TBD`
+
+</details>
