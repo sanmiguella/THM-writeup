@@ -274,6 +274,15 @@ b1b968b37519ad1daa6408188649263d
 
 ---
 
+## 🎯 MITRE ATT&CK Mapping
+
+| Tactic | Technique | ID |
+|---|---|---|
+| Credential Access | Unsecured Credentials: Private Keys | [T1552.004](https://attack.mitre.org/techniques/T1552/004) |
+| Privilege Escalation | Abuse Elevation Control Mechanism: Sudo and Sudo Caching | [T1548.003](https://attack.mitre.org/techniques/T1548/003) |
+
+---
+
 ## 🛠️ Tools Used
 
 | Tool | Purpose |
