@@ -174,6 +174,17 @@ evil-winrm -i vulnnet.local -u a-whitehat -p bNdKVkjv3RR9ht
 
 ---
 
+## 🎯 MITRE ATT&CK Mapping
+
+| Tactic | Technique | ID |
+|---|---|---|
+| Reconnaissance | Active Scanning | [T1595](https://attack.mitre.org/techniques/T1595) |
+| Credential Access | Steal or Forge Kerberos Tickets: AS-REP Roasting | [T1558.004](https://attack.mitre.org/techniques/T1558/004) |
+| Credential Access | Steal or Forge Kerberos Tickets: Kerberoasting | [T1558.003](https://attack.mitre.org/techniques/T1558/003) |
+| Credential Access | OS Credential Dumping: DCSync | [T1003.006](https://attack.mitre.org/techniques/T1003/006) |
+
+---
+
 ## 🛠️ Tools Used
 
 | Tool | Purpose |
