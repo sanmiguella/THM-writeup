@@ -413,6 +413,19 @@ root@ip-10-49-168-178:~#
 
 ---
 
+## 🎯 MITRE ATT&CK Mapping
+
+| Tactic | Technique | ID |
+|---|---|---|
+| Initial Access | Exploit Public-Facing Application | [T1190](https://attack.mitre.org/techniques/T1190) |
+| Discovery | File and Directory Discovery | [T1083](https://attack.mitre.org/techniques/T1083) |
+| Credential Access | Unsecured Credentials: Credentials In Files | [T1552.001](https://attack.mitre.org/techniques/T1552/001) |
+| Persistence | Account Manipulation: SSH Authorized Keys | [T1098.004](https://attack.mitre.org/techniques/T1098/004) |
+| Privilege Escalation | Scheduled Task/Job: Systemd Timers | [T1053.006](https://attack.mitre.org/techniques/T1053/006) |
+| Privilege Escalation | Abuse Elevation Control Mechanism: Setuid and Setgid | [T1548.001](https://attack.mitre.org/techniques/T1548/001) |
+
+---
+
 ## 🛠️ Tools Used
 
 | Tool | Purpose |
