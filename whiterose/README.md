@@ -308,7 +308,16 @@ THM{4nd_uR_p4ck4g3s}
 
 ## 🚩 Flags
 
-| Flag | Value |
-| --- | --- |
-| `user.txt` | `THM{4lways_upd4te_uR_d3p3nd3nc!3s}` |
-| `root.txt` | `THM{4nd_uR_p4ck4g3s}` |
+<details>
+<summary><code>user.txt</code></summary>
+
+`THM{4lways_upd4te_uR_d3p3nd3nc!3s}`
+
+</details>
+
+<details>
+<summary><code>root.txt</code></summary>
+
+`THM{4nd_uR_p4ck4g3s}`
+
+</details>
