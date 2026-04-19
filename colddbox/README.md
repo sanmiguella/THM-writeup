@@ -375,7 +375,16 @@ The host's entire filesystem is accessible from inside the container as root, wi
 
 ## 🚩 Flags
 
-| Flag | Value |
-| --- | --- |
-| `user.txt` | `RmVsaWNpZGFkZXMsIHByaW1lciBuaXZlbCBjb25zZWd1aWRvIQ==` |
-| `root.txt` | `wqFGZWxpY2lkYWRlcywgbcOhcXVpbmEgY29tcGxldGFkYSE=` |
+<details>
+<summary><code>user.txt</code></summary>
+
+`RmVsaWNpZGFkZXMsIHByaW1lciBuaXZlbCBjb25zZWd1aWRvIQ==`
+
+</details>
+
+<details>
+<summary><code>root.txt</code></summary>
+
+`wqFGZWxpY2lkYWRlcywgbcOhcXVpbmEgY29tcGxldGFkYSE=`
+
+</details>
