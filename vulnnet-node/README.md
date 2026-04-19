@@ -407,7 +407,16 @@ THM{abea728f211b105a608a720a37adabf9}
 
 ## 🚩 Flags
 
-| Flag | Value |
-| --- | --- |
-| `user.txt` | `THM{064640a2f880ce9ed7a54886f1bde821}` |
-| `root.txt` | `THM{abea728f211b105a608a720a37adabf9}` |
+<details>
+<summary><code>user.txt</code></summary>
+
+`THM{064640a2f880ce9ed7a54886f1bde821}`
+
+</details>
+
+<details>
+<summary><code>root.txt</code></summary>
+
+`THM{abea728f211b105a608a720a37adabf9}`
+
+</details>
