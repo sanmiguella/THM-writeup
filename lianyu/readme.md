@@ -2,7 +2,7 @@
 
 ### TryHackMe Writeup
 
-![Platform](https://img.shields.io/badge/Platform-TryHackMe-red?style=for-the-badge&logo=tryhackme)
+[![Platform](https://img.shields.io/badge/Platform-TryHackMe-red?style=for-the-badge&logo=tryhackme)](https://tryhackme.com/room/lianyu)
 ![Difficulty](https://img.shields.io/badge/Difficulty-Easy-brightgreen?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Status-Pwned-blueviolet?style=for-the-badge)
 ![Type](https://img.shields.io/badge/Type-Linux-informational?style=for-the-badge&logo=linux)
