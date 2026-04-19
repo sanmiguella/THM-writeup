@@ -205,7 +205,16 @@ THM{pr1v1l3g3_3sc4l4t10n}
 
 ## 🚩 Flags
 
-| Flag | Value |
-| --- | --- |
-| `user.txt` | `THM{y0u_g0t_a_sh3ll}` |
-| `root.txt` | `THM{pr1v1l3g3_3sc4l4t10n}` |
+<details>
+<summary><code>user.txt</code></summary>
+
+`THM{y0u_g0t_a_sh3ll}`
+
+</details>
+
+<details>
+<summary><code>root.txt</code></summary>
+
+`THM{pr1v1l3g3_3sc4l4t10n}`
+
+</details>
