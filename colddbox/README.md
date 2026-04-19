@@ -93,7 +93,7 @@ wpscan --url http://colddbox.thm \
 
 With admin credentials in hand, a malicious WordPress plugin is the cleanest path to code execution. Used [reversePress](https://github.com/MachadoOtto/reversePress/blob/main/reversePress.py) — a tool that packages a reverse shell payload into a valid WordPress plugin, uploads it via the admin panel, and triggers it automatically.
 
-The default payload was swapped out for a `mkfifo` netcat shell generated on [revshells.com](https://www.revshells.com/), which was more reliable in this environment:
+The default payload was swapped out for a `mkfifo` netcat reverse shell generated on [revshells.com](https://www.revshells.com/), which was more reliable in this environment:
 
 ```bash
 # payload used (nc mkfifo — from revshells.com)
@@ -347,6 +347,17 @@ The host's entire filesystem is accessible from inside the container as root, wi
 - `sudo` entries for `vim`, `ftp`, and `chmod` are instant root — all three are well-documented on GTFOBins and should never appear in a `sudoers` file in production
 - LXD/LXC group membership is effectively root access; treat it identically to `sudo ALL` in any security audit
 - Non-standard SSH ports (`4512`) don't add meaningful security — they'll be found by any full port scan
+
+---
+
+## 🎯 MITRE ATT&CK Mapping
+
+| Tactic | Technique | ID |
+|---|---|---|
+| Reconnaissance | Active Scanning: Vulnerability Scanning | [T1595.002](https://attack.mitre.org/techniques/T1595/002) |
+| Initial Access | Exploit Public-Facing Application | [T1190](https://attack.mitre.org/techniques/T1190) |
+| Execution | Server Software Component: Web Shell | [T1505.003](https://attack.mitre.org/techniques/T1505/003) |
+| Privilege Escalation | Escape to Host | [T1611](https://attack.mitre.org/techniques/T1611) |
 
 ---
 
