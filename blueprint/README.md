@@ -123,6 +123,16 @@ hashcat -m 1000 hash.txt ./kaonashi.txt
 
 ---
 
+## 🎯 MITRE ATT&CK Mapping
+
+| Tactic | Technique | ID |
+|---|---|---|
+| Initial Access | Exploit Public-Facing Application | [T1190](https://attack.mitre.org/techniques/T1190) |
+| Credential Access | OS Credential Dumping: SAM | [T1003.002](https://attack.mitre.org/techniques/T1003/002) |
+| Lateral Movement | Use Alternate Authentication Material: Pass the Hash | [T1550.002](https://attack.mitre.org/techniques/T1550/002) |
+
+---
+
 ## 🛠️ Tools Used
 
 | Tool | Purpose |
