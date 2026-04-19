@@ -173,7 +173,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 Two findings: hardcoded DB credentials (`comte` / `VeryCheesyPassword`, database `users`), and the injectable query is plainly visible. The `$filteredInput` is passed unsanitised into a single-quoted string context — closing the quote and appending `|| 1=1 -- -` authenticates as any user.
 
-Direct SSH with the DB credentials failed for both `comte` and `ubuntu` — password authentication disabled.
+Tried SSHing directly with the leaked credentials — `VeryCheesyPassword` is the DB password, not the system account password. Both `comte` and `ubuntu` rejected it.
 
 ### Database Enumeration — SQLmap Time-Based Blind
 
@@ -373,7 +373,7 @@ root@ip-10-49-168-178:~#
           ▼
 [LFI — secret-script.php?file=]
     php://filter base64 → login.php source
-    DB creds: comte / VeryCheesyPassword
+    DB creds: comte / VeryCheesyPassword (wrong password for SSH)
     /etc/passwd → users: comte, ubuntu
           │
           ▼
