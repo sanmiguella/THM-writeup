@@ -4,6 +4,22 @@ Personal cheatsheet of frequently used commands across TryHackMe engagements. Or
 
 ---
 
+## 📑 Table of Contents
+
+- [Recon & Port Scanning](#-recon--port-scanning)
+- [Web Enumeration](#-web-enumeration)
+- [SQL Injection](#-sql-injection)
+- [LFI / Path Traversal](#-lfi--path-traversal)
+- [Shells](#-shells)
+- [SSH](#-ssh)
+- [Hash Cracking](#-hash-cracking)
+- [Steganography](#%EF%B8%8F-steganography)
+- [Privilege Escalation — Linux](#%EF%B8%8F-privilege-escalation--linux)
+- [Privilege Escalation — Windows](#%EF%B8%8F-privilege-escalation--windows)
+- [Miscellaneous](#-miscellaneous)
+
+---
+
 ## 🔍 Recon & Port Scanning
 
 ### nmap
