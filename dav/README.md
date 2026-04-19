@@ -272,7 +272,16 @@ Kernel 4.4.0 and Sudo 1.8.16 are both potentially vulnerable to other exploits, 
 
 ## 🚩 Flags
 
-| Flag | Value |
-| --- | --- |
-| `user.txt` | `449b40fe93f78a938523b7e4dcd66d2a` |
-| `root.txt` | `101101ddc16b0cdf65ba0b8a7af7afa5` |
+<details>
+<summary><code>user.txt</code></summary>
+
+`449b40fe93f78a938523b7e4dcd66d2a`
+
+</details>
+
+<details>
+<summary><code>root.txt</code></summary>
+
+`101101ddc16b0cdf65ba0b8a7af7afa5`
+
+</details>
