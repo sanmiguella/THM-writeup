@@ -199,7 +199,16 @@ evil-winrm -i vulnnet.local -u a-whitehat -p bNdKVkjv3RR9ht
 
 ## 🚩 Flags
 
-| Flag | Value |
-| --- | --- |
-| `user.txt` | `TBD` |
-| `root.txt` | `TBD` |
+<details>
+<summary><code>user.txt</code></summary>
+
+`TBD`
+
+</details>
+
+<details>
+<summary><code>root.txt</code></summary>
+
+`TBD`
+
+</details>
