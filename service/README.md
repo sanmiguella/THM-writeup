@@ -187,7 +187,16 @@ SeDebugPrivilege, SeImpersonatePrivilege, SeTakeOwnershipPrivilege... (full set)
 
 ## 🚩 Flags
 
-| Flag | Value |
-| --- | --- |
-| `user.txt` | `TBD` |
-| `root.txt` | `TBD` |
+<details>
+<summary><code>user.txt</code></summary>
+
+`TBD`
+
+</details>
+
+<details>
+<summary><code>root.txt</code></summary>
+
+`TBD`
+
+</details>
