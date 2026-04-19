@@ -158,6 +158,16 @@ The entire host filesystem is accessible under `/mnt/root` as root inside the co
 
 ---
 
+## 🎯 MITRE ATT&CK Mapping
+
+| Tactic | Technique | ID |
+|---|---|---|
+| Discovery | File and Directory Discovery | [T1083](https://attack.mitre.org/techniques/T1083) |
+| Credential Access | Unsecured Credentials: Private Keys | [T1552.004](https://attack.mitre.org/techniques/T1552/004) |
+| Privilege Escalation | Escape to Host | [T1611](https://attack.mitre.org/techniques/T1611) |
+
+---
+
 ## 🛠️ Tools Used
 
 | Tool | Purpose |
