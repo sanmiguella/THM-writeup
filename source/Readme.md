@@ -161,6 +161,13 @@ The flags tell the story: supply chain compromise (backdoored package) leads to 
 
 ---
 
+## 🎯 MITRE ATT&CK Mapping
+
+| Tactic | Technique | ID |
+|---|---|---|
+| Initial Access | Exploit Public-Facing Application | [T1190](https://attack.mitre.org/techniques/T1190) |
+| Execution | Command and Scripting Interpreter: Unix Shell | [T1059.004](https://attack.mitre.org/techniques/T1059/004) |
+
 ## 🛠️ Tools Used
 
 | Tool | Purpose |
