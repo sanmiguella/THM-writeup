@@ -167,6 +167,16 @@ shell
 
 ---
 
+## 🎯 MITRE ATT&CK Mapping
+
+| Tactic | Technique | ID |
+|---|---|---|
+| Initial Access | Exploit Public-Facing Application | [T1190](https://attack.mitre.org/techniques/T1190) |
+| Execution | Command and Scripting Interpreter: Python | [T1059.006](https://attack.mitre.org/techniques/T1059/006) |
+| Credential Access | Unsecured Credentials: Credentials In Files | [T1552.001](https://attack.mitre.org/techniques/T1552/001) |
+
+---
+
 ## 🛠️ Tools Used
 
 | Tool | Purpose |
