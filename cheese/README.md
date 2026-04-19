@@ -31,7 +31,7 @@ sudo nmap -sC -sV -p- -vv -T4 cheese -oA tcpscan-cheese
 sudo nmap -sU -p- -vv -T4 cheese -oA udpscan-cheese
 ```
 
-The TCP scan produced garbled output — the `.nmap` file came out at 120 bytes, essentially just header/footer with no port data. The target appeared to be rate-limiting or dropping probes during the full `-p-` sweep. Ports 22 and 80 were confirmed through direct service interaction rather than scan output.
+The full TCP scan (`-p-`) returned garbage — all 65535 ports came back open because the target responds to every probe, making the output useless. This is a common TryHackMe lab quirk. Ports 22 and 80 were confirmed through direct service interaction.
 
 ```
 22/tcp  open  ssh     OpenSSH (Ubuntu)
@@ -177,7 +177,9 @@ Direct SSH with the DB credentials failed for both `comte` and `ubuntu` — pass
 
 ### Database Enumeration — SQLmap Time-Based Blind
 
-The OR filter and MD5 pre-hashing of the password field blocked sqlmap's standard detection. With `--level=5 --risk=3 --code=302` and the `between` tamper, sqlmap found a time-based blind injection point on `username`:
+The OR filter and MD5 pre-hashing of the password field blocked sqlmap's standard detection. With `--level=5 --risk=3 --code=302` and the `between` tamper, sqlmap found a time-based blind injection point on `username`.
+
+`--tamper=between` replaces comparison operators in the injected payload — `>` becomes `NOT BETWEEN 0 AND` and `=` becomes `BETWEEN X AND X` — bypassing WAFs and input filters that block those characters. `--code=302` tells sqlmap to treat a redirect response as a true/positive indicator instead of relying on content differences, which is necessary here since a successful login returns a 302 rather than a distinct page body.
 
 ```bash
 sqlmap -r req.txt --dbms=mysql --level=5 --risk=3 --code=302 --batch --tamper=between --dbs
