@@ -178,7 +178,16 @@ The flags tell the story: supply chain compromise (backdoored package) leads to 
 
 ## 🚩 Flags
 
-| Flag | Value |
-| --- | --- |
-| `user.txt` | `THM{SUPPLY_CHAIN_COMPROMISE}` |
-| `root.txt` | `THM{UPDATE_YOUR_INSTALL}` |
+<details>
+<summary><code>user.txt</code></summary>
+
+`THM{SUPPLY_CHAIN_COMPROMISE}`
+
+</details>
+
+<details>
+<summary><code>root.txt</code></summary>
+
+`THM{UPDATE_YOUR_INSTALL}`
+
+</details>
