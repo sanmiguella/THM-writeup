@@ -81,8 +81,9 @@ Every writeup follows the same skeleton:
 3. **Privilege Escalation** — from foothold to root, with sudo/SUID/capability checks documented
 4. **Attack Chain** — ASCII diagram of the full kill chain
 5. **Key Takeaways** — what the box teaches, why it matters in real engagements
-6. **Tools Used** — table of every tool used during the engagement
-7. **Flags** — captured flag values
+6. **MITRE ATT&CK Mapping** — techniques mapped to ATT&CK tactics and IDs
+7. **Tools Used** — table of every tool used during the engagement
+8. **Flags** — captured flag values
 
 ---
 
