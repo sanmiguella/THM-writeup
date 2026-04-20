@@ -200,7 +200,7 @@ strace /usr/sbin/run_container 2>&1 | grep -i run_container
 ```
 
 ```
-execve("/usr/sbin/run_container", ["usr/sbin/run_container"], ...)
+execve("/usr/sbin/run_container", ["/usr/sbin/run_container"], ...)
 execve("/bin/bash", ["/bin/bash", "-p", "/opt/run_container.sh"], NULL)
 openat(AT_FDCWD, "/opt/run_container.sh", O_RDONLY) = 3
 stat("/opt/run_container.sh", {st_mode=S_IFREG|0777, ...})
@@ -306,6 +306,8 @@ bash-5.0# cat /root/root.txt
 ---
 
 ## 📌 Key Takeaways
+
+> **On difficulty rating:** This room is labeled "Easy" — that is flatly wrong. The AppArmor bypass is not documented, not hinted at, and requires understanding process confinement contexts well enough to recognise that `at` jobs escape the profile applied to the interactive shell. That is not an "Easy" concept. After rooting this box with 80% of the heavy lifting done through reasoning and intuition rather than any hint from the room itself, the "Easy" tag feels like a bad joke. The privesc chain is genuinely well-constructed — but authors owe players an honest difficulty label. Mislabeling wastes time, erodes platform credibility, and sets people up to question their own ability when the real problem is the tag.
 
 - Exposed CMS version strings (meta generator tags) short-circuit recon — always check page source before reaching for heavier tools
 - SPIP's `oubli` deserialization path is a textbook pre-auth RCE; vendor-managed CMSes need aggressive patch cadence, not just installation and forget
