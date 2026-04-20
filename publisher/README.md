@@ -11,6 +11,8 @@
 
 ## 📋 Overview
 
+> **On difficulty rating:** This room is labeled "Easy" — that is flatly wrong. The AppArmor bypass is not documented, not hinted at, and requires understanding process confinement contexts well enough to recognise that `at` jobs escape the profile applied to the interactive shell. That is not an "Easy" concept. After rooting this box with 80% of the heavy lifting done through reasoning and intuition rather than any hint from the room itself, the "Easy" tag is not just misleading — it's a waste of the player's time. Mislabeling difficulty sets false expectations, sends people down the wrong rabbit holes, and burns hours that a correct label would have saved. Authors owe players honesty. Slap "Medium" or "Hard" on it and stop pretending.
+
 | Field | Details |
 |---|---|
 | **Target** | `publisher` / `10.48.138.132` |
@@ -309,8 +311,6 @@ bash-5.0# cat /root/root.txt
 ---
 
 ## 📌 Key Takeaways
-
-> **On difficulty rating:** This room is labeled "Easy" — that is flatly wrong. The AppArmor bypass is not documented, not hinted at, and requires understanding process confinement contexts well enough to recognise that `at` jobs escape the profile applied to the interactive shell. That is not an "Easy" concept. After rooting this box with 80% of the heavy lifting done through reasoning and intuition rather than any hint from the room itself, the "Easy" tag is not just misleading — it's a waste of the player's time. Mislabeling difficulty sets false expectations, sends people down the wrong rabbit holes, and burns hours that a correct label would have saved. Authors owe players honesty. Slap "Medium" or "Hard" on it and stop pretending.
 
 - Exposed CMS version strings (meta generator tags) short-circuit recon — always check page source before reaching for heavier tools
 - SPIP's `oubli` deserialization path is a textbook pre-auth RCE; vendor-managed CMSes need aggressive patch cadence, not just installation and forget
