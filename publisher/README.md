@@ -28,6 +28,8 @@
 | **Attack Surface** | SPIP 4.2.0 unauthenticated RCE (CVE-2023-27372), world-readable SSH private key |
 | **Privesc** | AppArmor bypass via `at` job → SUID `run_container` script injection → root |
 
+*The privesc path on this box was worked out in collaboration with Claude (Anthropic) as a brainstorming partner — the reasoning and intuition were mine, Claude helped stress-test the thinking.*
+
 Publisher hosts an outdated SPIP 4.2.0 CMS with a critical pre-auth RCE. A public PoC exploits PHP object injection in the password reset form, dropping a webshell into the SPIP root — which lives inside a Docker container in `think`'s home directory. `think`'s SSH private key is world-readable inside the container, granting direct SSH access to the host. On the host, a custom SUID binary runs a world-writable script as root — but AppArmor blocks `think` from writing to it directly. Scheduling the overwrite via `at` sidesteps the confined shell context, the SUID binary executes the poisoned script, and `/bin/bash` gets SUID.
 
 ---
