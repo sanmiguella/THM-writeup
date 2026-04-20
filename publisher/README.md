@@ -11,7 +11,15 @@
 
 ## 📋 Overview
 
-> **On difficulty rating:** This room is labeled "Easy" — that is flatly wrong. The AppArmor bypass is not documented, not hinted at, and requires understanding process confinement contexts well enough to recognise that `at` jobs escape the profile applied to the interactive shell. That is not an "Easy" concept. After rooting this box with 80% of the heavy lifting done through reasoning and intuition rather than any hint from the room itself, the "Easy" tag is not just misleading — it's a waste of the player's time. Mislabeling difficulty sets false expectations, sends people down the wrong rabbit holes, and burns hours that a correct label would have saved. Authors owe players honesty. Slap "Medium" or "Hard" on it and stop pretending.
+> **On difficulty rating:** This room is labeled "Easy" — that is flatly wrong, and reading the official writeup after rooting only makes it worse.
+>
+> The room description does drop a hint: *"necessitating a deeper exploration into the system's security profile to ultimately exploit a loophole that enables the execution of an unconfined bash shell."* Fine — in hindsight, that points at the author's intended method: invoking the dynamic linker directly to escape AppArmor confinement:
+> ```
+> /lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 /bin/bash
+> ```
+> Knowing that the ELF dynamic loader can be used to spawn a shell outside an AppArmor profile is not something that belongs in an "Easy" box. That is a deep, obscure technique that most players — including experienced ones — would not reach for without prior exposure. The hint in the room description is too vague to be useful in the moment; it only makes sense in retrospect once you already know the answer.
+>
+> This box was rooted via `at` job scheduling to bypass AppArmor confinement — a valid alternate path arrived at through 80% reasoning and intuition with no meaningful guidance from the room. The "Easy" label wasted time, created false doubt, and sent enumeration down dead ends. Whether the intended path or not, neither solution is "Easy" by any reasonable standard. The difficulty tag needed to be Medium at minimum. Authors owe players an honest label — not one that sets them up to question their own ability when the real problem is the rating.
 
 | Field | Details |
 |---|---|
@@ -316,6 +324,7 @@ bash-5.0# cat /root/root.txt
 - SPIP's `oubli` deserialization path is a textbook pre-auth RCE; vendor-managed CMSes need aggressive patch cadence, not just installation and forget
 - Private keys with world-readable permissions (`644`) are as good as no protection — `chmod 600` is non-negotiable on any key material
 - AppArmor profiles restrict by process context, not just file permissions — `vi` being blocked is a strong hint the profile is broad; when editors fail, fall back to `echo >>` and reach for `at`/`cron` to escape the confined context
+- The author's intended bypass was invoking the ELF dynamic loader directly (`/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 /bin/bash`) to spawn a shell outside AppArmor confinement — worth keeping in the toolkit alongside `at` and `cron` as an immediate, non-scheduled alternative
 - World-writable scripts called by SUID binaries are an instant root path if you can write by any means; POSIX permissions alone are not sufficient protection when MAC (AppArmor/SELinux) is inconsistently applied
 
 ---
