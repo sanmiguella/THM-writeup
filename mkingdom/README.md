@@ -1,9 +1,9 @@
-# 👑 mKingdom: Medium
+# 👑 mKingdom: Easy*
 
 ### TryHackMe Writeup
 
 [![Platform](https://img.shields.io/badge/Platform-TryHackMe-red?style=for-the-badge&logo=tryhackme)](https://tryhackme.com/room/mkingdom)
-[![Difficulty](https://img.shields.io/badge/Difficulty-Medium-orange?style=for-the-badge)](https://tryhackme.com/room/mkingdom)
+[![Difficulty](https://img.shields.io/badge/Difficulty-Easy-brightgreen?style=for-the-badge)](https://tryhackme.com/room/mkingdom)
 [![Status](https://img.shields.io/badge/Status-Pwned-blueviolet?style=for-the-badge)](https://tryhackme.com/room/mkingdom)
 [![Type](https://img.shields.io/badge/Type-Linux-informational?style=for-the-badge&logo=linux)](https://tryhackme.com/room/mkingdom)
 
@@ -18,7 +18,7 @@
 | **Attack Surface** | Concrete5 8.5.2 CMS — default credentials, filetype whitelist bypass, PHP webshell |
 | **Privesc** | DB config credential leak → `.bashrc` base64 token → root cron HTTP hijack → SUID bash |
 
-Despite being listed as Easy, mKingdom is firmly Medium in practice. It chains five distinct steps with no hand-holding: a non-standard port, a CMS hidden under a nested path, credential reuse across three different users, and a root privesc that requires recognising a hostname-based HTTP fetch in a cron job and weaponising it via `/etc/hosts` poisoning. Beginners who haven't internalised the full enumeration workflow and lateral movement fundamentals will hit walls at multiple points.
+TryHackMe rates this Easy. That rating is wrong and will waste your time if you walk in expecting Easy-level thinking. This is a Medium box — five distinct pivots, zero hand-holding, and a root privesc that demands you connect pspy output to `/etc/hosts` writability to a served payload. If you haven't fully internalised enumeration fundamentals and lateral movement across credential reuse, you will stall here. Don't let the badge fool you.
 
 The chain: Concrete5 8.5.2 on port 85 falls to default credentials, an admin-configurable filetype whitelist is extended to allow PHP, and a webshell gives `www-data`. Plaintext database credentials in the CMS config pivot to `toad`, a base64-encoded password buried in `.bashrc` pivots to `mario`, and a root cron job that blindly fetches and executes a script over HTTP — resolved by hostname, not localhost — is hijacked by poisoning `/etc/hosts` and serving a malicious replacement that sets the SUID bit on `/bin/bash`.
 
@@ -311,7 +311,8 @@ cp /root/root.txt /tmp && cat /tmp/root.txt
 - CMS config files (`database.php`, `config.php`) almost always hold plaintext credentials — check them immediately post-foothold
 - Environment variables in `.bashrc` are a common credential stash; always inspect them on every lateral pivot
 - Root cron jobs fetching scripts over HTTP by hostname (not `localhost`) are fully exploitable via `/etc/hosts` if the attacker can write to it — `curl <url> | bash` with no integrity check is unconditional trust in the remote
-- This box is rated Easy but demands Medium-level thinking: five distinct pivots, zero explicit hints, and a privesc that requires connecting pspy output to `/etc/hosts` writability to a served payload — that's not a beginner chain
+- Marking a flag file `root:root` doesn't prevent reading once you have root — but it does mean standard user access fails even on world-readable files if parent directory ACLs interfere
+- The Easy rating is a disservice to anyone attempting this cold — five distinct pivots, no hints, and a privesc that only clicks if you already know to run pspy, read cron output critically, and think about hostname resolution; calling this Easy sets beginners up to waste hours and blame themselves
 
 ---
 

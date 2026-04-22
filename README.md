@@ -35,7 +35,7 @@ Each writeup covers: enumeration → initial access → privilege escalation, wi
 | [IDE](./ide/) | Easy | Linux | Anonymous FTP, Codiad 2.8.4 RCE (CVE-2018-14009), writable systemd service |
 | [Lazy Admin](./lazyadmin/) | Easy | Linux | SweetRice CMS exploit, sudo backup script abuse |
 | [Lian Yu](./lianyu/) | Easy | Linux | FTP enumeration, steganography, sudo pkexec |
-| [mKingdom](./mkingdom/) | Medium | Linux | Concrete5 default creds, PHP webshell, /etc/hosts poison, cron HTTP hijack |
+| [mKingdom](./mkingdom/) | Easy | Linux | Concrete5 default creds, PHP webshell, /etc/hosts poison, cron HTTP hijack |
 | [Mustacchio](./Mustacchio/) | Easy | Linux | XXE injection, SSH key crack, sudo path hijack |
 | [Overpass 3: Hosting](./overpass3/) | Medium | Linux | GPG credential leak, FTP webroot upload, NFS no_root_squash |
 | [Pyrat](./pyrat/) | Easy | Linux | Python eval RCE, git history credential leak |
