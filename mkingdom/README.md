@@ -344,7 +344,7 @@ cp /root/root.txt /tmp && cat /tmp/root.txt
 <details>
 <summary><code>user.txt</code></summary>
 
-`THM{...}` — owned by root; readable via root shell
+`thm{030a769febb1b3291da1375234b84283}`
 
 </details>
 
