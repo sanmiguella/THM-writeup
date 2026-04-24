@@ -3,7 +3,7 @@
 [![Platform](https://img.shields.io/badge/Platform-TryHackMe-red?style=for-the-badge&logo=tryhackme)](https://tryhackme.com/room/jack-of-all-trades)
 [![Difficulty](https://img.shields.io/badge/Difficulty-Easy-brightgreen?style=for-the-badge)](https://tryhackme.com/room/jack-of-all-trades)
 [![Status](https://img.shields.io/badge/Status-Completed-brightgreen?style=for-the-badge)](https://tryhackme.com/room/jack-of-all-trades)
-[![Type](https://img.shields.io/badge/Type-Boot2Root-blue?style=for-the-badge)](https://tryhackme.com/room/jack-of-all-trades)
+[![Type](https://img.shields.io/badge/Type-Boot2Root-blue?style=for-the-badge&logo=linux)](https://tryhackme.com/room/jack-of-all-trades)
 
 | | |
 |---|---|
