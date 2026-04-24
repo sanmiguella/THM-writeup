@@ -13,6 +13,7 @@ Each writeup covers: enumeration → initial access → privilege escalation, wi
 ## 📋 Table of Contents
 
 - [📁 Index](#-index)
+- [🤖 Generic Agents](#-generic-agents)
 - [🗂️ Structure](#%EF%B8%8F-structure)
 - [⚙️ Methodology](#%EF%B8%8F-methodology)
 - [📋 Command Reference](#-command-reference)
@@ -57,6 +58,25 @@ Each writeup covers: enumeration → initial access → privilege escalation, wi
 
 ---
 
+## 🤖 Generic Agents
+
+The [`generic-agents/`](./generic-agents/) folder contains a collection of reusable Claude agent definitions for common CTF and penetration testing workflows. These agents are available for anyone to use — feel free to copy, adapt, or extend them for your own engagements.
+
+| Agent | Purpose |
+|---|---|
+| [THM Writeup Agent](./generic-agents/THM-WRITEUP-AGENT.md) | Generates structured TryHackMe writeups from raw notes |
+| [Brainstorm Agent](./generic-agents/brainstorm-agent.md) | Explores attack paths and surface area when stuck |
+| [Coordinator Agent](./generic-agents/coordinator-agent.md) | Orchestrates multi-step engagement workflows |
+| [Cracking Agent](./generic-agents/cracking-agent.md) | Hash identification, wordlist selection, and cracking strategy |
+| [Exploit Scripting Agent](./generic-agents/exploit-scripting-agent.md) | Writes and debugs custom exploit scripts |
+| [ffuf Agent](./generic-agents/ffuf-agent.md) | Directory and vhost fuzzing with ffuf |
+| [LinPrivesc Agent](./generic-agents/linprivesc-agent.md) | Linux privilege escalation enumeration and analysis |
+| [Payload Agent](./generic-agents/payload-agent.md) | Generates and adapts payloads for various contexts |
+| [Recon Agent](./generic-agents/recon-agent.md) | Initial reconnaissance and port scanning workflow |
+| [WinPrivesc Agent](./generic-agents/winprivesc-agent.md) | Windows privilege escalation enumeration and analysis |
+
+---
+
 ## 🗂️ Structure
 
 Each room lives in its own folder with a `README.md` writeup following a consistent format:
@@ -69,6 +89,8 @@ THM-writeup/
 │   └── ...                ← exploit scripts written during engagements
 ├── Powershell-Scripts/
 │   └── ...                ← PowerShell utility scripts
+├── generic-agents/
+│   └── ...                ← reusable Claude agent definitions (open for anyone to use)
 ├── COMMANDS.md            ← personal command cheatsheet
 └── README.md              ← this file
 ```
