@@ -61,25 +61,68 @@ Each writeup covers: enumeration → initial access → privilege escalation, wi
 
 ## 🤖 Generic Agents
 
-The [`generic-agents/`](./generic-agents/) folder contains a collection of reusable Claude agent definitions for common CTF and penetration testing workflows. These agents are available for anyone to use — feel free to copy, adapt, or extend them for your own engagements.
+The [`generic-agents/`](./generic-agents/) folder is a plug-and-play multi-agent framework for TryHackMe and CTF engagements, built for [Claude Code](https://claude.ai/code). Drop the folder into a working directory, open Claude Code, and the agents coordinate automatically — routing each task to the right specialist without you having to think about which one to call.
 
-| Agent | Purpose |
-|---|---|
-| [Coordinator Agent](./generic-agents/coordinator-agent.md) | Entry point — routes input to the correct sub-agent automatically |
-| [Recon Agent](./generic-agents/recon-agent.md) | Full TCP + top UDP nmap scan against a target |
-| [ffuf Agent](./generic-agents/ffuf-agent.md) | Directory and file enumeration via ffuf |
-| [Brainstorm Agent](./generic-agents/brainstorm-agent.md) | Attack path reasoning from recon output or when stuck |
-| [Payload Agent](./generic-agents/payload-agent.md) | Reverse shells, web shells, msfvenom payloads, shellcode |
-| [Exploit Scripting Agent](./generic-agents/exploit-scripting-agent.md) | Python3 exploit scripts from CVE or vulnerability description |
-| [LinPrivesc Agent](./generic-agents/linprivesc-agent.md) | Linux privilege escalation enumeration and analysis |
-| [WinPrivesc Agent](./generic-agents/winprivesc-agent.md) | Windows privilege escalation enumeration and analysis |
-| [Cracking Agent](./generic-agents/cracking-agent.md) | Hash identification, hashcat/john cracking, extraction guides |
-| [OWASP Top 10 Agent](./generic-agents/owasp-top-10-agent.md) | Web vulnerability analysis and exploitation (OWASP Top 10:2025) |
-| [GTFOBins Agent](./generic-agents/gtfo-agent.md) | GTFOBins lookup for SUID, sudo, capabilities, and shell escapes |
-| [SearchSploit Agent](./generic-agents/searchsploit-agent.md) | Exploit-DB search, evaluation, and adaptation |
-| [CTF Commands Agent](./generic-agents/ctf-commands-agent.md) | Exact ready-to-run command reference for any CTF technique |
-| [HexStrike Agent](./generic-agents/hexstrike-agent.md) | MCP-backed agent for binary RE, OSINT, memory forensics, and multi-tool chains |
-| [THM Writeup Agent](./generic-agents/THM-WRITEUP-AGENT.md) | Generates structured TryHackMe writeups and pushes to GitHub |
+### How it works
+
+Every task goes through the **Coordinator**, which reads your input, classifies it, and invokes the right agent. You never call a sub-agent directly. Type an IP and it kicks off recon. Say "got a shell" and it asks Linux or Windows, then hands off to the right privesc agent. Say "writeup" and the whole publish pipeline runs end to end.
+
+When [HexStrike MCP](./generic-agents/hexstrike-agent.md) is running locally (port 8888), the coordinator routes recon, web enumeration, privesc, cracking, web vulns, stego, and forensics through it — 150+ tools in one call. When it's not available, it falls back to the individual specialist agents automatically.
+
+### Quick start
+
+**1. Copy the folder** into your CTF working directory:
+
+```bash
+cp -r generic-agents/ ~/your-ctf-dir/
+cd ~/your-ctf-dir/
+```
+
+**2. Edit [`USER-CONFIG.md`](./generic-agents/USER-CONFIG.md)** — this is the only file you need to change:
+
+```
+WRITEUP_REPO_URL: https://github.com/YOUR_GITHUB_USERNAME/THM-writeup
+COMMANDS_RAW_URL: https://raw.githubusercontent.com/YOUR_GITHUB_USERNAME/THM-writeup/main/COMMANDS.md
+SECLISTS_PATH: ~/SecLists
+```
+
+Replace `YOUR_GITHUB_USERNAME` with your GitHub username. Set `SECLISTS_PATH` to wherever SecLists is installed on your machine (e.g. `/usr/share/seclists` on Kali).
+
+**3. Create the wordlist symlinks** (run once from your working directory):
+
+```bash
+ln -sf ~/SecLists/Discovery/DNS/               DNS
+ln -sf ~/SecLists/Passwords/                   Passwords
+ln -sf ~/SecLists/Usernames/                   Usernames
+ln -sf ~/SecLists/Discovery/Web-Content/       Web-Content
+ln -sf /etc/hosts                              hosts
+```
+
+**4. Open Claude Code** in that directory and start a session. The framework bootstraps itself on first run.
+
+> **No writeup repo yet?** Fork this repo to get a pre-built `COMMANDS.md` and writeup index to start from, then point `USER-CONFIG.md` at your fork.
+
+---
+
+### Agent roster
+
+| Agent | Trigger | What it does |
+|---|---|---|
+| [Coordinator](./generic-agents/coordinator-agent.md) | Everything — entry point | Reads input, classifies the task, routes to the right agent. Never calls sub-agents directly. |
+| [HexStrike](./generic-agents/hexstrike-agent.md) | IP, URL, hash, "shell", binary, OSINT *(MCP up)* | Primary agent when HexStrike MCP is running. Invokes 150+ tools via localhost:8888 — rustscan, nmap, feroxbuster, nuclei, linpeas/winpeas, hashcat, ghidra, volatility, shodan, and more. |
+| [Recon](./generic-agents/recon-agent.md) | IP or hostname *(MCP down)* | Full TCP connect scan + top 200 UDP ports via nmap. Outputs open ports and service versions. |
+| [ffuf](./generic-agents/ffuf-agent.md) | URL, web port discovered *(MCP down)* | Directory and file enumeration. Handles vhost fuzzing and extension sweeps. |
+| [Brainstorm](./generic-agents/brainstorm-agent.md) | Recon dump, "stuck", "what next" | Reasons over findings and surfaces the most promising attack paths. Always available, runs after every recon. |
+| [LinPrivesc](./generic-agents/linprivesc-agent.md) | "shell" + Linux *(MCP down)* | Runs the full Linux privesc checklist: sudo, SUID, cron, writable paths, capabilities, services. |
+| [WinPrivesc](./generic-agents/winprivesc-agent.md) | "shell" + Windows *(MCP down)* | Windows privesc: token abuse, unquoted paths, AlwaysInstallElevated, scheduled tasks, credential hunting. |
+| [Payload](./generic-agents/payload-agent.md) | LHOST + LPORT, "reverse shell", "web shell" | Generates reverse shells, web shells, and msfvenom payloads. Always available — HexStrike doesn't do this. |
+| [Cracking](./generic-agents/cracking-agent.md) | Hash, "crack", credential file *(MCP down)* | Identifies hash type, picks the right hashcat mode or john rule, handles SSH/zip/KeePass extraction. |
+| [Exploit Scripting](./generic-agents/exploit-scripting-agent.md) | CVE ID, "write an exploit" | Writes Python 3 exploit scripts from a CVE or vuln description. Always available. |
+| [OWASP Top 10](./generic-agents/owasp-top-10-agent.md) | "OWASP", XSS/SSRF/IDOR/injection *(MCP down or chained)* | Full OWASP Top 10:2025 analysis and exploitation. Also chains after HexStrike for deep manual bypass logic. |
+| [GTFOBins](./generic-agents/gtfo-agent.md) | Binary name + privesc context | Looks up shell escapes, file read/write, SUID, sudo, and capability abuse for any Unix binary. Always available. |
+| [SearchSploit](./generic-agents/searchsploit-agent.md) | Service + version, "find exploit" | Searches Exploit-DB, evaluates matches, adapts the exploit to the target. Always available. |
+| [CTF Commands](./generic-agents/ctf-commands-agent.md) | "how do I", "command for", technique name | Fetches the live `COMMANDS.md` from your repo on every call and returns exact, context-filled commands ready to run. |
+| [THM Writeup](./generic-agents/THM-WRITEUP-AGENT.md) | "writeup", box completion | Generates the full writeup, runs a standards compliance check, audits `COMMANDS.md`, updates the repo index, and pushes everything in one commit. |
 
 ---
 
