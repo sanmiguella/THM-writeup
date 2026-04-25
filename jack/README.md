@@ -22,7 +22,6 @@ Services run on deliberately swapped ports — SSH on 80, HTTP on 22 — forcing
 
 ```bash
 nmap -sT -sC -sV -p- -T4 --open -oA 10.49.163.39_tcp 10.49.163.39
-sudo nmap -sU --top-ports 200 -T4 --open -oA 10.49.163.39_udp 10.49.163.39
 ```
 
 ```
