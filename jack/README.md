@@ -3,7 +3,7 @@
 [![Platform](https://img.shields.io/badge/Platform-TryHackMe-red?style=for-the-badge&logo=tryhackme)](https://tryhackme.com/room/jackofalltrades)
 [![Difficulty](https://img.shields.io/badge/Difficulty-Easy-brightgreen?style=for-the-badge)](https://tryhackme.com/room/jackofalltrades)
 [![Status](https://img.shields.io/badge/Status-Completed-brightgreen?style=for-the-badge)](https://tryhackme.com/room/jackofalltrades)
-[![Type](https://img.shields.io/badge/Type-Boot2Root-blue?style=for-the-badge&logo=linux)](https://tryhackme.com/room/jackofalltrades)
+[![Type](https://img.shields.io/badge/Type-Linux-blue?style=for-the-badge&logo=linux)](https://tryhackme.com/room/jackofalltrades)
 
 | | |
 |---|---|
@@ -271,7 +271,3 @@ ToDo:
 `securi-tay2020_{6f125d32f38fb8ff9e720d2dbce2210a}`
 
 </details>
-
----
-
-> All activity documented here was conducted exclusively within TryHackMe's isolated lab environments. These writeups are intended for educational purposes and personal reference.
