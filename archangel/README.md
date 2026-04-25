@@ -309,6 +309,3 @@ Not required for this engagement.
 
 </details>
 
----
-
-> All activity documented here was conducted exclusively within TryHackMe's isolated lab environments. These writeups are intended for educational purposes and personal reference.
