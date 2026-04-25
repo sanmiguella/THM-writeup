@@ -25,7 +25,7 @@ Each writeup covers: enumeration → initial access → privilege escalation, wi
 
 | Room | Difficulty | OS | Key Techniques |
 |---|---|---|---|
-| [Archangel](./archangel/) | Easy | Linux | Vhost discovery via email leak, LFI filter bypass, PHP filter chain RCE |
+| [Archangel](./archangel/) | Easy | Linux | Vhost discovery via email leak, LFI filter bypass, PHP filter chain RCE, cron world-writable script, PATH hijacking SUID binary |
 | [Blueprint](./blueprint/) | Easy | Windows | Unpatched service exploit, hash dump, pass-the-hash |
 | [The Cheese Shop](./cheese/) | Easy | Linux | SQLi OR filter bypass, LFI via php://filter, PHP filter chain RCE, SUID xxd privesc |
 | [Chill Hack](./chill/) | Easy | Linux | Command injection + blacklist bypass, steganography, Docker group abuse |
