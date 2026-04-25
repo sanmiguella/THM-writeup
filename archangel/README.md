@@ -214,7 +214,7 @@ cat /home/archangel/user.txt
 
 ## 🔁 Privilege Escalation
 
-Not required for this engagement.
+This box was used to build and test the multi-agent CTF workflow. Privilege escalation was not attempted — the engagement stopped at the `www-data` shell after capturing the user flag.
 
 ---
 
