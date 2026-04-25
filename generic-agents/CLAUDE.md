@@ -36,10 +36,11 @@ When starting a session in a directory where `.claude/settings.json` does not ex
 
 At the start of every session, before doing anything else:
 1. Run the Bootstrap steps above if `.claude/settings.json` is missing.
-2. Read `coordinator-agent.md` and follow its session-start protocol (includes hexstrike_mcp availability check).
-   - If `ctf-commands-agent.md` is being invoked, it must fetch `https://raw.githubusercontent.com/sanmiguella/THM-writeup/main/COMMANDS.md` via WebFetch before answering any question.
-3. If `box-state.md` does not exist, create it immediately once a target is provided — do not wait for an agent to complete.
-4. If `progress.md` does not exist, create it at the same time as `box-state.md`.
+2. Read `USER-CONFIG.md` to load user-specific settings (GitHub repo URL, SecLists path).
+3. Read `coordinator-agent.md` and follow its session-start protocol (includes hexstrike_mcp availability check).
+   - If `ctf-commands-agent.md` is being invoked, it must read `USER-CONFIG.md` for `COMMANDS_RAW_URL`, then fetch that URL via WebFetch before answering any question.
+4. If `box-state.md` does not exist, create it immediately once a target is provided — do not wait for an agent to complete.
+5. If `progress.md` does not exist, create it at the same time as `box-state.md`.
 
 ---
 
@@ -49,22 +50,24 @@ A multi-agent CTF/penetration-testing framework for TryHackMe. Each `.md` file i
 
 ## Agent Roster and Triggers
 
+**Routing priority:** When `hexstrike_mcp` is available (`MCP_Available=true`), the coordinator routes recon, web enum, privesc, cracking, web vuln scanning, stego, forensics, and OSINT tasks to `hexstrike-agent.md` first. Specialized fallback agents are used only when MCP is down.
+
 | File | Triggers |
 |------|---------|
 | `coordinator-agent.md` | Entry point — reads `box-state.md`, routes, updates state |
-| `recon-agent.md` | IP or hostname given |
-| `ffuf-agent.md` | URL / web port discovered |
-| `brainstorm-agent.md` | Recon dump, "what next", "stuck" |
-| `payload-agent.md` | LHOST + LPORT, reverse/web shell requested |
-| `exploit-scripting-agent.md` | CVE ID, exploit description, "write an exploit" |
-| `linprivesc-agent.md` | "shell" + Linux context |
-| `winprivesc-agent.md` | "shell" + Windows context |
-| `cracking-agent.md` | Hash string, "crack", credential file |
-| `owasp-top-10-agent.md` | Web vulnerability class mentioned |
-| `gtfo-agent.md` | Binary name + privilege-escalation context |
-| `searchsploit-agent.md` | Service/version needing exploit search |
-| `ctf-commands-agent.md` | "command for", "how do I", technique needing exact syntax — fetches live COMMANDS.md from GitHub on every init |
-| `hexstrike-agent.md` | "hexstrike", "MCP", binary RE (checksec/ghidra/radare2/angr/rop/gdb), memory forensics (volatility), OSINT (shodan/sherlock), "autorecon", "comprehensive scan" — requires hexstrike_mcp at localhost:8888 |
+| `hexstrike-agent.md` | **PRIMARY when MCP up** — IP/hostname, URL, "shell"+OS, hash/crack, web vuln, stego, forensics, OSINT, binary RE; "hexstrike", "MCP", checksec/ghidra/radare2/angr/rop/gdb, volatility, shodan/sherlock, autorecon — hexstrike_server at localhost:8888 |
+| `recon-agent.md` | **Fallback (MCP down)** — IP or hostname given |
+| `ffuf-agent.md` | **Fallback (MCP down)** — URL / web port discovered |
+| `linprivesc-agent.md` | **Fallback (MCP down)** — "shell" + Linux context |
+| `winprivesc-agent.md` | **Fallback (MCP down)** — "shell" + Windows context |
+| `cracking-agent.md` | **Fallback (MCP down)** — Hash string, "crack", credential file |
+| `owasp-top-10-agent.md` | **Fallback (MCP down)** or chained after hexstrike for deep bypass analysis |
+| `brainstorm-agent.md` | Recon dump, "what next", "stuck" — always available regardless of MCP |
+| `payload-agent.md` | LHOST + LPORT, reverse/web shell requested — always (hexstrike doesn't generate payloads) |
+| `exploit-scripting-agent.md` | CVE ID, exploit description, "write an exploit" — always (hexstrike doesn't write Python exploits) |
+| `gtfo-agent.md` | Binary name + privilege-escalation context — always (hexstrike doesn't have GTFOBins) |
+| `searchsploit-agent.md` | Service/version needing exploit search — always (hexstrike doesn't have searchsploit) |
+| `ctf-commands-agent.md` | "command for", "how do I", technique needing exact syntax — reads `USER-CONFIG.md` for URL, then fetches live COMMANDS.md on every init |
 | `THM-WRITEUP-AGENT.md` | "writeup", box completion |
 
 ## Session State Files (created at runtime)
@@ -76,42 +79,37 @@ A multi-agent CTF/penetration-testing framework for TryHackMe. Each `.md` file i
 
 ## Key Symlinks
 
-Create these once in your working directory (adjust `SECLISTS` if installed elsewhere):
-
-```bash
-SECLISTS=~/SecLists   # Kali default: /usr/share/seclists
-ln -s /etc/hosts hosts
-ln -s $SECLISTS/Discovery/DNS DNS
-ln -s $SECLISTS/Passwords Passwords
-ln -s $SECLISTS/Usernames Usernames
-ln -s $SECLISTS/Discovery/Web-Content Web-Content
-```
-
-| Symlink | Points to |
-|---------|-----------|
+| Symlink | Points to (default) |
+|---------|---------------------|
 | `hosts` | `/etc/hosts` |
-| `DNS/` | `$SECLISTS/Discovery/DNS/` |
-| `Passwords/` | `$SECLISTS/Passwords/` |
-| `Usernames/` | `$SECLISTS/Usernames/` |
-| `Web-Content/` | `$SECLISTS/Discovery/Web-Content/` |
+| `DNS/` | `~/SecLists/Discovery/DNS/` |
+| `Passwords/` | `~/SecLists/Passwords/` |
+| `Usernames/` | `~/SecLists/Usernames/` |
+| `Web-Content/` | `~/SecLists/Discovery/Web-Content/` |
+
+Set your actual SecLists path in `USER-CONFIG.md` and run the symlink commands listed there.
 
 ## Automatic Agent Chains
 
-1. **IP given** → recon → brainstorm → ffuf (if web ports found)
-2. **"got a shell"** → ask OS → payload + matching privesc agent
-3. **CVE + target** → exploit-scripting → payload generation
-4. **"stuck" / dead end** → brainstorm → recommend next agent
-5. **"writeup"** → THM-WRITEUP-AGENT → update repo README → git push
-6. **Binary / OSINT / forensics** → hexstrike → brainstorm (if paths ambiguous)
+1. **IP given** → IF MCP up: hexstrike (rustscan→nmap→autorecon+web enum) → brainstorm; ELSE: recon → brainstorm → ffuf (if web ports found)
+2. **URL given** → IF MCP up: hexstrike (feroxbuster+nuclei+nikto); ELSE: ffuf
+3. **"got a shell"** → ask OS → payload; THEN IF MCP up: hexstrike (linpeas/winpeas via 8080) → brainstorm; ELSE: matching privesc agent
+4. **Hash / crack** → IF MCP up: hexstrike (hash_identifier→hashcat/john via MCP); ELSE: cracking-agent
+5. **CVE + target** → exploit-scripting → payload generation
+6. **"stuck" / dead end** → brainstorm → recommend next agent
+7. **"writeup"** → THM-WRITEUP-AGENT → standards compliance check → COMMANDS.md audit → update repo README → git push
+8. **Binary / OSINT / forensics / stego** → IF MCP up: hexstrike → brainstorm (if paths ambiguous); ELSE: ctf-commands-agent for syntax
 
 ## Design Rules
 
 - **No confirmation prompts** — all agents execute on trigger.
 - **One clarifying question max** — only when input is genuinely ambiguous.
 - **Exploit scripts are Python 3 only.**
-- **Hashcat GPU flag** — use `-D 2` on macOS (Metal backend); omit or use `-D 1` on Linux (CPU) unless an NVIDIA/AMD GPU is available.
+- **Hashcat GPU flag** — always `-D 2` (Metal backend).
 - **Output sections** — use labelled blocks (`[QUICK WINS]`, `[ATTACK PATHS]`, `[NEXT STEPS]`).
-- **hexstrike fallback** — if hexstrike_mcp is unreachable, route to the equivalent specialized agent.
+- **hexstrike first** — when hexstrike_mcp is reachable, it handles recon, web enum, privesc, cracking, web vulns, stego, forensics, and OSINT. Specialized agents are fallbacks only.
+- **hexstrike fallback** — if hexstrike_mcp is unreachable (MCP_Available=false), route to the equivalent specialized agent. If hexstrike fails mid-session, update MCP_Available=false and re-route immediately.
+- **Port 8888 is hexstrike_server** — never use 8888 for http.server or any other listener. Use 8080 instead.
 - **No disclaimers** — do not add a disclaimer section to any room writeup. A site-wide disclaimer already exists in the repo-level README.md.
 
 ## Extending the Framework

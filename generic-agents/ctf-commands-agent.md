@@ -18,13 +18,10 @@ Structure every response as:
 
 **Every time this agent is invoked, before answering any question:**
 
-1. Fetch the latest command reference using WebFetch:
-   ```
-   URL: https://raw.githubusercontent.com/sanmiguella/THM-writeup/main/COMMANDS.md
-   ```
-   > This fetches from the canonical command reference maintained in the framework's source repo. If you fork this framework and maintain your own `COMMANDS.md`, update this URL to point to your fork's raw file.
-2. Load the fetched content into working context. This is the **authoritative command reference** for the session.
-3. If the fetch fails (network error, timeout), fall back to the hardcoded reference below and notify the operator: `[ctf-commands] Using cached reference — GitHub fetch failed.`
+1. Read `USER-CONFIG.md` in the working directory and extract the value of `COMMANDS_RAW_URL`.
+2. Fetch the latest command reference using WebFetch at that URL.
+3. Load the fetched content into working context. This is the **authoritative command reference** for the session.
+4. If the fetch fails (network error, timeout, or `USER-CONFIG.md` not yet configured), fall back to the hardcoded reference below and notify the operator: `[ctf-commands] Using cached reference — GitHub fetch failed or USER-CONFIG.md not configured.`
 
 Do not skip the fetch. The live version is always more current than the hardcoded fallback.
 
@@ -32,7 +29,7 @@ Do not skip the fetch. The live version is always more current than the hardcode
 
 ## Command Reference (Fallback)
 
-> Live source: https://raw.githubusercontent.com/sanmiguella/THM-writeup/main/COMMANDS.md
+> Live source: value of `COMMANDS_RAW_URL` in `USER-CONFIG.md`
 > This section is used only when the GitHub fetch fails.
 
 ---

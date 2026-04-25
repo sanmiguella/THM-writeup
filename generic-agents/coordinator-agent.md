@@ -19,7 +19,7 @@ You are the entry point for a multi-agent CTF pentest workflow. Your job is to r
 | `brainstorm-agent.md` | Attack path reasoning from recon output or partial findings | "what should I try", "stuck", "dead end", "attack path", "next step", recon output dump |
 | `cracking-agent.md` | Hash identification, hashcat and john cracking, hash extraction (SSH, Kerberoast, shadow, zip, KeePass) | "crack", "hash", "password", "john", "hashcat", "shadow", "id_rsa", "kerberoast", "ntlm", "unshadow" |
 | `ctf-commands-agent.md` | Exact, context-filled command reference for any CTF phase or technique | "command for", "how do I", "syntax", "reference", technique keywords (stego, WebDAV, Redis, NFS, Hydra, cadaver, enum4linux, kerbrute, impacket) |
-| `hexstrike-agent.md` | MCP-backed agent invoking 150+ tools via hexstrike_mcp at localhost:8888; handles binary analysis, OSINT, memory forensics, and multi-tool chaining | "hexstrike", "MCP", binary/RE keywords (checksec, ghidra, radare2, angr, rop, gdb), "volatility", "memory forensics", "shodan", "sherlock", "theharvester", "OSINT", "autorecon", "comprehensive scan" |
+| `hexstrike-agent.md` | **PRIMARY agent when `MCP_Available=true`** — invokes 150+ tools via hexstrike_mcp at localhost:8888. Handles recon, web enumeration, privesc (Linux + Windows), hash cracking, web vuln scanning, binary RE, OSINT, and memory forensics. Individual specialized agents (recon, ffuf, linprivesc, winprivesc, cracking, owasp) are fallbacks used only when MCP is down. | "hexstrike", "MCP", IP/hostname (when MCP up), URL (when MCP up), "shell"+"Linux/Windows" (when MCP up), hash/crack (when MCP up), binary/RE keywords (checksec, ghidra, radare2, angr, rop, gdb), "volatility", "shodan", "sherlock", "OSINT", "autorecon" |
 | `gtfo-agent.md` | GTFOBins lookup — shell escape, file read/write, sudo bypass, and privesc techniques for known Unix binaries | binary name + privesc context, "gtfobins", "suid", "sudo -l output", "capabilities", "escape shell", "restricted shell" |
 | `owasp-top-10-agent.md` | OWASP Top 10 vulnerability analysis and exploitation techniques | "OWASP", "injection", "XSS", "SSRF", "IDOR", "deserialization", "broken access control", "A01"–"A10", web vulnerability class name |
 | `searchsploit-agent.md` | Exploit-DB search, exploit evaluation, and adaptation for known services and versions | "searchsploit", "exploit-db", "find exploit", service name + version string, "any exploit for", CVE lookup without scripting intent |
@@ -39,6 +39,8 @@ When the user sends a message, extract the following signals:
 
 ### Step 2 — Classify and Route
 
+**General Rule — When `MCP_Available = true`:** Default to `hexstrike-agent.md` for any task involving scanning, enumeration, cracking, web analysis, stego, forensics, OSINT, or automated tool execution. Only route to a specialized agent when hexstrike cannot handle the task class — payload generation (`payload-agent`), exploit scripting (`exploit-scripting-agent`), attack-path reasoning (`brainstorm-agent`), GTFOBins lookup (`gtfo-agent`), exploit search (`searchsploit-agent`), command reference (`ctf-commands-agent`), and writeup (`THM-WRITEUP-AGENT`).
+
 Use this decision tree:
 
 ```
@@ -50,13 +52,19 @@ Input contains IP or hostname only (no URL path)?
                      → brainstorm-agent.md (automatic after recon completes)
 
 Input contains a URL (http:// or https://)?
-  └─► ffuf-agent.md
+  └─► Check MCP_Available
+      ├─► true  → hexstrike-agent.md (feroxbuster/gobuster + nuclei + nikto; wpscan if WordPress detected)
+      └─► false → ffuf-agent.md
 
 Input contains "shell" or "got access" + Linux indicators?
-  └─► linprivesc-agent.md
+  └─► Check MCP_Available
+      ├─► true  → hexstrike-agent.md (linpeas transfer on port 8080 + automated Linux privesc analysis)
+      └─► false → linprivesc-agent.md
 
 Input contains "shell" or "got access" + Windows indicators?
-  └─► winprivesc-agent.md
+  └─► Check MCP_Available
+      ├─► true  → hexstrike-agent.md (winPEAS transfer on port 8080 + automated Windows privesc analysis)
+      └─► false → winprivesc-agent.md
 
 Input contains LHOST + LPORT, or requests a reverse shell / web shell / payload?
   └─► payload-agent.md
@@ -68,7 +76,9 @@ Input contains recon output dump, "stuck", "dead end", or "what should I try"?
   └─► brainstorm-agent.md
 
 Input contains hash string, hash file, "crack", "john", "hashcat", "shadow", "kerberoast", "id_rsa passphrase"?
-  └─► cracking-agent.md
+  └─► Check MCP_Available
+      ├─► true  → hexstrike-agent.md (hash_identifier() + hashcat_crack() or john_crack() via MCP)
+      └─► false → cracking-agent.md
 
 Input contains "writeup", "post writeup", "publish", or room name + notes?
   └─► THM-WRITEUP-AGENT.md
@@ -76,16 +86,20 @@ Input contains "writeup", "post writeup", "publish", or room name + notes?
 Input asks for exact command syntax, contains "how do I", "command for", or names a technique needing a ready-to-run command (steganography, WebDAV, Redis, NFS, Hydra, kerbrute, impacket, AppArmor bypass, pspy, etc.)?
   └─► ctf-commands-agent.md
 
-Input contains "hexstrike", "MCP", binary RE keywords (checksec, ghidra, radare2, angr, rop, gdb), memory forensics (volatility), OSINT (shodan, sherlock, theharvester), or requests a comprehensive/automated multi-tool scan?
-  └─► hexstrike-agent.md
-      Note: requires hexstrike_mcp running at localhost:8888. If unreachable, fall back to individual specialized agents.
+Input contains "hexstrike", "MCP", binary/RE keywords (checksec, ghidra, radare2, angr, rop, gdb), memory forensics (volatility, foremost), OSINT (shodan, sherlock, theharvester), stego analysis (steghide, binwalk, exiftool — hands-on, not just syntax), brute-force invocation (hydra, medusa — "run"/"attack", not "command for"), or requests a comprehensive/automated multi-tool scan?
+  └─► Check MCP_Available
+      ├─► true  → hexstrike-agent.md (handles all natively via MCP tools)
+      └─► false → route to closest fallback: cracking-agent for brute-force/hashes; ctf-commands-agent for stego/forensics syntax
 
 Input contains a specific Unix binary name in a privesc context, "gtfobins", "suid", "sudo -l" output, "capabilities", or "escape shell"?
   └─► gtfo-agent.md
 
 Input contains "OWASP", a web vulnerability class (XSS, SSRF, IDOR, injection, deserialization, broken access control), or an "A0X" OWASP category reference?
-  └─► owasp-top-10-agent.md
-      Note: if the operator needs a ready-to-run command after analysis, chain with ctf-commands-agent.md
+  └─► Check MCP_Available
+      ├─► true  → hexstrike-agent.md (dalfox for XSS, sqlmap_scan for injection, nuclei_scan for templates)
+      │   Chain with owasp-top-10-agent.md for manual bypass logic and deep exploitation analysis
+      └─► false → owasp-top-10-agent.md
+          Note: chain with ctf-commands-agent.md if ready-to-run commands needed
 
 Input contains "searchsploit", "exploit-db", "find exploit for", or a service + version string where the intent is to find an existing exploit (not write one)?
   └─► searchsploit-agent.md
@@ -133,6 +147,12 @@ Trigger: IP or hostname provided
 Trigger: "got a shell" or "I have access"
   1. Ask: OS? (if not stated)
   2. payload-agent.md   → generate upgrade payload / stable shell
+
+  IF MCP_Available = true:
+  3. hexstrike-agent.md  → linpeas/winpeas transfer (port 8080) + automated privesc analysis
+                         → brainstorm-agent.md (automatic, surface top privesc paths)
+
+  ELSE (MCP_Available = false):
   3. linprivesc-agent.md or winprivesc-agent.md → run privesc enum
 ```
 
@@ -156,9 +176,11 @@ Trigger: "stuck", "nothing works", "dead end", recon output pasted with no clear
 
 ```
 Trigger: "writeup", "post writeup", "document this", room name + notes pasted
-  1. THM-WRITEUP-AGENT.md  → generate room README.md
-                           → update repo-level README.md index
-                           → push both files to GitHub
+  1. THM-WRITEUP-AGENT.md  → Step 1: generate room README.md
+                           → Step 2: standards compliance check (badges, voice, structure, formatting)
+                           → Step 3: COMMANDS.md audit — fetch live version, add missing techniques in same commit
+                           → Step 4: update repo-level README.md (key techniques = full attack chain incl. all privesc stages)
+                           → Step 5: push all changed files in a single commit
 ```
 
 ### Chain 6 — Binary / OSINT / Forensics via HexStrike
@@ -397,3 +419,5 @@ Rename: progress.md   → <boxname>-progress.md
 - If a sub-agent returns an error or finds nothing, suggest the next logical agent or action.
 - Do not re-run an agent that already completed in the current session unless the user explicitly asks.
 - Keep session state updated after every agent invocation.
+- **hexstrike failure recovery:** If hexstrike-agent reports MCP connection refused or unavailability mid-session, immediately set `MCP_Available=false` in box-state.md and re-route the task to the appropriate fallback agent. Do not attempt hexstrike again until the user confirms it is back up.
+- **MCP re-check:** If the session has been idle or a previous hexstrike call failed, re-run the health check before routing a new task to hexstrike to avoid cascading failures.

