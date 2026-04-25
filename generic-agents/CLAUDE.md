@@ -2,118 +2,120 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## What This Repository Is
+## Bootstrap (Run Once Per Fresh Directory)
 
-A collection of **system prompt files** (Markdown) for a multi-agent CTF/penetration testing orchestration framework targeting TryHackMe engagements. There is no build system, no source code, and no test suite — these are instruction files loaded into Claude instances.
+When starting a session in a directory where `.claude/settings.json` does not exist:
 
-## Agent Architecture
+1. Create the `.claude/` directory if it is missing.
+2. Write `.claude/settings.json` with the following content exactly:
 
-The system uses a **coordinator + specialist** pattern:
-
-- **`coordinator-agent.md`** — Entry point. Reads `box-state.md` on start, classifies user input, routes to sub-agents, chains multi-agent workflows, and writes state updates after every agent completes.
-- **Specialist agents** — Each handles one domain; the coordinator never performs tasks directly, only delegates.
-
-| Agent File | Responsibility |
-|---|---|
-| `recon-agent.md` | Full TCP connect scan (`-sT -sC -sV -p- -T4`) + top-200 UDP scan, run in parallel |
-| `ffuf-agent.md` | Directory + file enumeration via ffuf, two scans in parallel |
-| `brainstorm-agent.md` | Attack path analysis from recon output — **no commands, reasoning only** |
-| `linprivesc-agent.md` | Linux privesc: Phase 1 quick wins → linpeas → manual deep dive |
-| `winprivesc-agent.md` | Windows privesc (standalone only, no AD): Phase 1 quick wins → winPEAS → manual |
-| `payload-agent.md` | Reverse shells, web shells, msfvenom payloads, shell upgrade steps |
-| `exploit-scripting-agent.md` | Python3 CVE exploit development using one of six templates (Web RCE, Authenticated Web, LFI/Traversal, SQLi, Buffer Overflow via pwntools, Raw Socket) |
-| `cracking-agent.md` | Hash identification, hashcat/john cracking — see Platform Setup section in that file for macOS vs Linux paths |
-| `THM-WRITEUP-AGENT.md` | Writeup generation and push to your configured GitHub writeup repo |
-
-## Coordinator Routing Logic
-
-The coordinator uses this decision tree (defined in `coordinator-agent.md` lines 39–74):
-
-| Input signal | Agent triggered |
-|---|---|
-| IP or hostname only | recon-agent → brainstorm (automatic) |
-| URL (`http://` or `https://`) | ffuf-agent |
-| "shell" / "got access" + Linux | linprivesc-agent |
-| "shell" / "got access" + Windows | winprivesc-agent |
-| LHOST + LPORT, or payload/reverse shell request | payload-agent |
-| CVE ID, exploit request, version + vuln behaviour | exploit-scripting-agent |
-| Recon dump, "stuck", "dead end", "what should I try" | brainstorm-agent |
-| Hash string, "crack", "john", "hashcat", "kerberoast" | cracking-agent |
-| "writeup", "publish", room name + notes | THM-WRITEUP-AGENT |
-| OS unclear with shell access confirmed | Ask: "Linux or Windows?" (one question only) |
-
-**Ambiguity rule:** Ask exactly one clarifying question before routing. Never ask multiple questions.
-
-| Ambiguous input | Ask |
-|---|---|
-| Bare IP with no context | "Scan only, or do you have a service/port in mind?" |
-| "Got a shell" with no OS | "Linux or Windows?" |
-| URL with no port | "HTTP or HTTPS? Any non-standard port?" |
-| CVE with no target OS | "Is the target Linux or Windows?" |
-| Generic "exploit this" | "What service, version, and OS?" |
-| "Post writeup" with no notes | "Paste your notes for the room and confirm the room name." |
-
-## Predefined Multi-Agent Chains
-
-The coordinator runs these automatically without user re-triggering:
-
-1. **Full Recon:** `recon-agent` → `brainstorm-agent` → `ffuf-agent` (if web port found)
-2. **Shell to Root:** Ask OS → `payload-agent` (shell upgrade) → `(lin|win)privesc-agent`
-3. **CVE Exploitation:** `exploit-scripting-agent` → `payload-agent` (if RCE)
-4. **Dead End Recovery:** → `brainstorm-agent` → route to top recommended agent
-5. **Writeup Publication:** → `THM-WRITEUP-AGENT` (generates room README + updates repo index + pushes)
-
-## Session State
-
-The coordinator maintains two files per engagement (not tracked by the repo):
-
-- **`box-state.md`** — Read at session start; created after first agent completes; overwritten after every agent with current target, ports, shell user, dead ends, and pending action.
-- **`progress.md`** — Append-only timestamped log; never overwritten.
-
-**Box completion:** When root/SYSTEM is achieved or writeup is posted, both files are archived:
-```
-box-state.md  → <boxname>-completed.md
-progress.md   → <boxname>-progress.md
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -c \"import sys,json,datetime; d=json.load(sys.stdin); cmd=d.get('tool_input',{}).get('command',''); ts=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'); open('logged-commands.md','a').write('### {}\\n\\n```bash\\n{}\\n```\\n\\n'.format(ts,cmd)) if cmd else None\""
+          }
+        ]
+      }
+    ]
+  }
+}
 ```
 
-## Output Format Contracts
+3. Create `logged-commands.md` with the header `# Command Log` if it does not already exist.
+4. Confirm bootstrap is complete, then continue with the session start protocol below.
 
-Each agent produces a structured output block that the coordinator and chaining logic depend on. When editing an agent:
-- Preserve the output format sections exactly — downstream agents parse them.
-- Keep tool flags explicit (exact nmap flags, ffuf wordlist paths, etc.) rather than leaving them for the runtime agent to infer.
-- `ffuf-agent.md` has a 3-tier wordlist fallback: `/usr/share/seclists/` → `/usr/share/wordlists/dirbuster/` → `/opt/SecLists/` — preserve this order if editing wordlist paths.
-- If adding a new agent, update the routing table and agent registry in `coordinator-agent.md`.
+---
 
-## Required External Tools
+## Session Start (Required)
 
-Agents assume these are available in `PATH`:
+At the start of every session, before doing anything else:
+1. Run the Bootstrap steps above if `.claude/settings.json` is missing.
+2. Read `coordinator-agent.md` and follow its session-start protocol (includes hexstrike_mcp availability check).
+   - If `ctf-commands-agent.md` is being invoked, it must fetch `https://raw.githubusercontent.com/sanmiguella/THM-writeup/main/COMMANDS.md` via WebFetch before answering any question.
+3. If `box-state.md` does not exist, create it immediately once a target is provided — do not wait for an agent to complete.
+4. If `progress.md` does not exist, create it at the same time as `box-state.md`.
 
-- `nmap`, `ffuf`, `msfvenom`, `rlwrap`
-- `john` (jumbo build — required for `ssh2john`, `zip2john`, etc.), `hashcat`
-- `python3` with `requests` and `pwntools`
-- `git` with push access to `https://github.com/YOUR_GITHUB_USERNAME/THM-writeup`
-- Wordlists: SecLists at `/usr/share/seclists/`, `rockyou.txt`
-- linpeas / linenum / winPEAS (served on demand via `python3 -m http.server`)
+---
 
-**cracking-agent platform note:** The file has a Platform Setup section covering both macOS (Homebrew, `~/wordlists/`, Metal GPU) and Linux/Kali (`apt`, `/usr/share/wordlists/`, CUDA/OpenCL GPU). Read that section before running extraction commands — the john helper script paths differ by OS.
+## What This Project Is
 
-## Other Files
+A multi-agent CTF/penetration-testing framework for TryHackMe. Each `.md` file is a specialized agent prompt. The coordinator routes tasks to sub-agents; sub-agents execute immediately without confirmation.
 
-- **`frequently-used-commands.md`** — Placeholder for a personal command reference link. Update it with your own cheat sheet URL.
+## Agent Roster and Triggers
 
-## Writeup Agent Notes
+| File | Triggers |
+|------|---------|
+| `coordinator-agent.md` | Entry point — reads `box-state.md`, routes, updates state |
+| `recon-agent.md` | IP or hostname given |
+| `ffuf-agent.md` | URL / web port discovered |
+| `brainstorm-agent.md` | Recon dump, "what next", "stuck" |
+| `payload-agent.md` | LHOST + LPORT, reverse/web shell requested |
+| `exploit-scripting-agent.md` | CVE ID, exploit description, "write an exploit" |
+| `linprivesc-agent.md` | "shell" + Linux context |
+| `winprivesc-agent.md` | "shell" + Windows context |
+| `cracking-agent.md` | Hash string, "crack", credential file |
+| `owasp-top-10-agent.md` | Web vulnerability class mentioned |
+| `gtfo-agent.md` | Binary name + privilege-escalation context |
+| `searchsploit-agent.md` | Service/version needing exploit search |
+| `ctf-commands-agent.md` | "command for", "how do I", technique needing exact syntax — fetches live COMMANDS.md from GitHub on every init |
+| `hexstrike-agent.md` | "hexstrike", "MCP", binary RE (checksec/ghidra/radare2/angr/rop/gdb), memory forensics (volatility), OSINT (shodan/sherlock), "autorecon", "comprehensive scan" — requires hexstrike_mcp at localhost:8888 |
+| `THM-WRITEUP-AGENT.md` | "writeup", box completion |
 
-- `THM-WRITEUP-AGENT.md` contains a room slug table (folder name → TryHackMe URL slug) with example non-obvious mappings. Users populate it as they complete rooms; the agent falls back to extracting the slug from the TryHackMe URL if a room isn't listed.
-- The canonical formatting reference is the first writeup you complete — update the reference in `THM-WRITEUP-AGENT.md` to point to it once it exists.
-- Flags must use `<details>`/`<summary>` collapsible blocks — never a plain table.
-- The repo is used as a professional portfolio, so writeup language should be neutral and educational.
+## Session State Files (created at runtime)
 
-## Getting Started
+- `box-state.md` — coordinator state: target, OS, ports, shell user, dead ends, pending action
+- `progress.md` — timestamped log of every agent run and findings
+- `findings.md` — hexstrike-agent MCP findings; read alongside `box-state.md` when hexstrike is active
+- `logged-commands.md` — auto-generated audit log of all Bash commands run (hook-managed)
 
-These are system prompt files. Load them into Claude like this:
+## Key Symlinks
 
-1. **Create a Claude Project** at [claude.ai/projects](https://claude.ai/projects)
-2. **Paste `coordinator-agent.md`** as the project's system prompt / custom instructions
-3. **Upload all other agent files** to the project knowledge base so the coordinator can reference them by filename
-4. **For each new box**, start a fresh conversation in a dedicated working directory — state files (`box-state.md`, `progress.md`) are created there automatically
-5. **Before using the writeup agent**, create your GitHub writeup repo and replace `YOUR_GITHUB_USERNAME` in `THM-WRITEUP-AGENT.md` with your actual username
+Create these once in your working directory (adjust `SECLISTS` if installed elsewhere):
+
+```bash
+SECLISTS=~/SecLists   # Kali default: /usr/share/seclists
+ln -s /etc/hosts hosts
+ln -s $SECLISTS/Discovery/DNS DNS
+ln -s $SECLISTS/Passwords Passwords
+ln -s $SECLISTS/Usernames Usernames
+ln -s $SECLISTS/Discovery/Web-Content Web-Content
+```
+
+| Symlink | Points to |
+|---------|-----------|
+| `hosts` | `/etc/hosts` |
+| `DNS/` | `$SECLISTS/Discovery/DNS/` |
+| `Passwords/` | `$SECLISTS/Passwords/` |
+| `Usernames/` | `$SECLISTS/Usernames/` |
+| `Web-Content/` | `$SECLISTS/Discovery/Web-Content/` |
+
+## Automatic Agent Chains
+
+1. **IP given** → recon → brainstorm → ffuf (if web ports found)
+2. **"got a shell"** → ask OS → payload + matching privesc agent
+3. **CVE + target** → exploit-scripting → payload generation
+4. **"stuck" / dead end** → brainstorm → recommend next agent
+5. **"writeup"** → THM-WRITEUP-AGENT → update repo README → git push
+6. **Binary / OSINT / forensics** → hexstrike → brainstorm (if paths ambiguous)
+
+## Design Rules
+
+- **No confirmation prompts** — all agents execute on trigger.
+- **One clarifying question max** — only when input is genuinely ambiguous.
+- **Exploit scripts are Python 3 only.**
+- **Hashcat GPU flag** — use `-D 2` on macOS (Metal backend); omit or use `-D 1` on Linux (CPU) unless an NVIDIA/AMD GPU is available.
+- **Output sections** — use labelled blocks (`[QUICK WINS]`, `[ATTACK PATHS]`, `[NEXT STEPS]`).
+- **hexstrike fallback** — if hexstrike_mcp is unreachable, route to the equivalent specialized agent.
+- **No disclaimers** — do not add a disclaimer section to any room writeup. A site-wide disclaimer already exists in the repo-level README.md.
+
+## Extending the Framework
+
+1. Follow: **Role → Trigger → Workflow → Output Format → Rules**.
+2. Register trigger keywords in `coordinator-agent.md` (registry table + routing tree).
+3. Add a row to the Agent Roster above.

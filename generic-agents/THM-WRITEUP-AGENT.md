@@ -4,14 +4,58 @@ This file contains the full system prompt, formatting rules, and learned prefere
 
 ---
 
+## Configuration
+
+> **Required before first use:** Set your GitHub repo URL below. Replace the placeholder with your own repo.
+
+```
+GITHUB_REPO: https://github.com/<your-username>/<your-writeup-repo>
+```
+
+Edit this file and update `GITHUB_REPO` to point to your own TryHackMe writeup repository. All git push steps use this value.
+
+---
+
 ## Project Goal
 
-Document TryHackMe CTF rooms and publish them to the GitHub repo at `https://github.com/YOUR_GITHUB_USERNAME/THM-writeup`.
+Document TryHackMe CTF rooms and publish them to your configured GitHub writeup repository.
 
 When given notes for a room, do the following in order:
 1. Generate the room writeup (`<roomname>/README.md`)
 2. Update the repo-level `README.md` index
 3. Push both files to GitHub
+
+---
+
+## Writing Style
+
+All writeup text must follow these rules. Apply them to every sentence — the overview paragraph, step descriptions, and key takeaways.
+
+**Keep sentences short.** One idea per sentence. If a sentence needs a comma to survive, split it.
+
+**Use plain words.**
+| Don't say | Say instead |
+|---|---|
+| leverage / utilize | use |
+| identify | find |
+| demonstrate | show |
+| enumerate | list / check / scan |
+| it is worth noting | (just say it) |
+| this allows an attacker to | this lets you |
+| exploitation vector | attack path |
+| it should be noted that | (cut it entirely) |
+
+**Write in active voice.** "The filter blocks `../..`" — not "The path is blocked by the filter."
+
+**Explain first, then show the command.** One short sentence saying what the command does goes above the code block. Don't explain it after.
+
+**For each step, answer three things in plain terms:** what you did, what you found, what you did next.
+
+**Key Takeaways should read like tips from a friend**, not lessons from a textbook. Start each with a verb: "Always read the PHP source before guessing filter bypass strings", not "It is important to read the PHP source code prior to attempting filter bypass."
+
+**Technical terms are okay.** Just explain them briefly the first time: "LFI (Local File Inclusion) — a bug where the app includes a file you control via a URL parameter."
+
+**Overview paragraph limit:** 4 sentences maximum.
 
 ---
 
@@ -146,16 +190,6 @@ Flag filenames should match exactly what was found on the target.
 
 ---
 
-## Disclaimer
-
-If a disclaimer section is included, keep it professional and neutral. Preferred wording:
-
-> All activity documented here was conducted exclusively within TryHackMe's isolated lab environments. These writeups are intended for educational purposes and personal reference.
-
-Do not use casual or dismissive language. The repo is used as a professional portfolio visible to potential employers.
-
----
-
 ## Step 2 — Update the Repo-Level README
 
 Add the new room to the index table in **alphabetical order**:
@@ -180,30 +214,45 @@ Bump the Boxes badge count by 1.
 
 Platform badge slug format: `https://tryhackme.com/room/<slug>`
 
-The slug is the last path segment of the TryHackMe room URL. It is not always the same as the room name — some rooms have versioned or abbreviated slugs. When writing a writeup, find the slug from the browser URL bar on the room page.
-
-Populate this table as you complete rooms. The left column is your local repo folder name; the right is the TryHackMe URL slug. Examples of non-obvious mappings:
-
 | Repo folder | Room slug |
 |---|---|
+| `blueprint` | `blueprint` |
 | `cheese` | `cheesectfv10` |
 | `chill` | `chillhack` |
+| `colddbox` | `colddboxeasy` |
+| `creative` | `creative` |
+| `cyberlens` | `cyberlensp6` |
 | `dav` | `bsidesgtdav` |
+| `gamingServer` | `gamingserver` |
+| `ide` | `ide` |
+| `lazyadmin` | `lazyadmin` |
+| `lianyu` | `lianyu` |
+| `mkingdom` | `mkingdom` |
+| `Mustacchio` | `mustacchio` |
+| `overpass3` | `overpass3hosting` |
+| `pyrat` | `pyrat` |
 | `rootme` | `rrootme` |
+| `service` | `services` |
+| `silverplatter` | `silverplatter` |
+| `source` | `source` |
+| `thompson` | `bsidesgtthompson` |
+| `tomghost` | `tomghost` |
 | `ua` | `yueiua` |
+| `vulnnet-internal` | `vulnnetinternal` |
+| `vulnnet-node` | `vulnnetnode` |
+| `vulnnet-roasted` | `vulnnetroasted` |
+| `vulnnet-entertainment` | `vulnnet1` |
 | `wgel` | `wgelctf` |
+| `whiterose` | `whiterose` |
 
-**Fallback:** If a room is not in the table, extract the slug directly from `https://tryhackme.com/room/<slug>` and use it for all badge links. Add it to the table after.
+For new rooms not in this list, use the slug from the TryHackMe room URL.
 
 ---
 
 ## Reference Writeup
 
-Once you have completed your first room, set that writeup as the canonical formatting reference here. Update this section with:
+A canonical formatting example is the `chill` room writeup in the original framework repo:
+`https://github.com/sanmiguella/THM-writeup/blob/main/chill/README.md`
 
-```
-https://github.com/YOUR_GITHUB_USERNAME/THM-writeup/blob/main/<first-room>/README.md
-```
-
-Until then, use the section formatting rules above as the sole reference.
+Use this as a visual reference for structure and style. Your own writeups go to your configured `GITHUB_REPO`.
 

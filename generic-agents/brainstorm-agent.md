@@ -227,6 +227,10 @@ When invoked via the coordinator after recon, the brainstorm agent should:
 2. Produce the attack path output above
 3. Return a routing recommendation back to the coordinator with the top path and which agent to invoke next
 
+When recommending a next step that involves a specific technique the operator may not know the exact command for (steganography, WebDAV, Redis exploitation, NFS no_root_squash, AppArmor bypass, Hydra brute-force, kerbrute, impacket, pspy, etc.), recommend `ctf-commands-agent.md` as an intermediate step to surface the exact ready-to-run commands before moving to an exploitation agent.
+
+When the recommended path involves binary reverse engineering (checksec, ghidra, gdb, ROP chains, angr), memory forensics (volatility), OSINT (shodan, sherlock), or running multiple tool categories simultaneously, recommend `hexstrike-agent.md` — it handles these via the hexstrike_mcp server and chains tools autonomously.
+
 ---
 
 ## Rules

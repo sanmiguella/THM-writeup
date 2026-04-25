@@ -65,16 +65,21 @@ The [`generic-agents/`](./generic-agents/) folder contains a collection of reusa
 
 | Agent | Purpose |
 |---|---|
-| [THM Writeup Agent](./generic-agents/THM-WRITEUP-AGENT.md) | Generates structured TryHackMe writeups from raw notes |
-| [Brainstorm Agent](./generic-agents/brainstorm-agent.md) | Explores attack paths and surface area when stuck |
-| [Coordinator Agent](./generic-agents/coordinator-agent.md) | Orchestrates multi-step engagement workflows |
-| [Cracking Agent](./generic-agents/cracking-agent.md) | Hash identification, wordlist selection, and cracking strategy |
-| [Exploit Scripting Agent](./generic-agents/exploit-scripting-agent.md) | Writes and debugs custom exploit scripts |
-| [ffuf Agent](./generic-agents/ffuf-agent.md) | Directory and vhost fuzzing with ffuf |
+| [Coordinator Agent](./generic-agents/coordinator-agent.md) | Entry point — routes input to the correct sub-agent automatically |
+| [Recon Agent](./generic-agents/recon-agent.md) | Full TCP + top UDP nmap scan against a target |
+| [ffuf Agent](./generic-agents/ffuf-agent.md) | Directory and file enumeration via ffuf |
+| [Brainstorm Agent](./generic-agents/brainstorm-agent.md) | Attack path reasoning from recon output or when stuck |
+| [Payload Agent](./generic-agents/payload-agent.md) | Reverse shells, web shells, msfvenom payloads, shellcode |
+| [Exploit Scripting Agent](./generic-agents/exploit-scripting-agent.md) | Python3 exploit scripts from CVE or vulnerability description |
 | [LinPrivesc Agent](./generic-agents/linprivesc-agent.md) | Linux privilege escalation enumeration and analysis |
-| [Payload Agent](./generic-agents/payload-agent.md) | Generates and adapts payloads for various contexts |
-| [Recon Agent](./generic-agents/recon-agent.md) | Initial reconnaissance and port scanning workflow |
 | [WinPrivesc Agent](./generic-agents/winprivesc-agent.md) | Windows privilege escalation enumeration and analysis |
+| [Cracking Agent](./generic-agents/cracking-agent.md) | Hash identification, hashcat/john cracking, extraction guides |
+| [OWASP Top 10 Agent](./generic-agents/owasp-top-10-agent.md) | Web vulnerability analysis and exploitation (OWASP Top 10:2025) |
+| [GTFOBins Agent](./generic-agents/gtfo-agent.md) | GTFOBins lookup for SUID, sudo, capabilities, and shell escapes |
+| [SearchSploit Agent](./generic-agents/searchsploit-agent.md) | Exploit-DB search, evaluation, and adaptation |
+| [CTF Commands Agent](./generic-agents/ctf-commands-agent.md) | Exact ready-to-run command reference for any CTF technique |
+| [HexStrike Agent](./generic-agents/hexstrike-agent.md) | MCP-backed agent for binary RE, OSINT, memory forensics, and multi-tool chains |
+| [THM Writeup Agent](./generic-agents/THM-WRITEUP-AGENT.md) | Generates structured TryHackMe writeups and pushes to GitHub |
 
 ---
 
