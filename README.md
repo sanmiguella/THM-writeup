@@ -113,7 +113,7 @@ ln -sf /etc/hosts                              hosts
 | [HexStrike](./generic-agents/hexstrike-agent.md) | IP, URL, hash, "shell", binary, OSINT *(MCP up)* | Primary agent when HexStrike MCP is running. Invokes 150+ tools via localhost:8888 — rustscan, nmap, feroxbuster, nuclei, linpeas/winpeas, hashcat, ghidra, volatility, shodan, and more. |
 | [Recon](./generic-agents/recon-agent.md) | IP or hostname *(MCP down)* | Full TCP connect scan + top 200 UDP ports via nmap. Outputs open ports and service versions. |
 | [ffuf](./generic-agents/ffuf-agent.md) | URL, web port discovered *(MCP down)* | Directory and file enumeration. Handles vhost fuzzing and extension sweeps. |
-| [Brainstorm](./generic-agents/brainstorm-agent.md) | Recon dump, "stuck", "what next" | Reasons over findings and surfaces the most promising attack paths. Always available, runs after every recon. |
+| [Brainstorm](./generic-agents/brainstorm-agent.md) | Recon dump, "stuck", "what next" | Reads `box-state.md` automatically for full session context, then reasons over findings and surfaces the most promising attack paths. Always available, runs after every recon. |
 | [LinPrivesc](./generic-agents/linprivesc-agent.md) | "shell" + Linux *(MCP down)* | Runs the full Linux privesc checklist: sudo, SUID, cron, writable paths, capabilities, services. |
 | [WinPrivesc](./generic-agents/winprivesc-agent.md) | "shell" + Windows *(MCP down)* | Windows privesc: token abuse, unquoted paths, AlwaysInstallElevated, scheduled tasks, credential hunting. |
 | [Payload](./generic-agents/payload-agent.md) | LHOST + LPORT, "reverse shell", "web shell" | Generates reverse shells, web shells, and msfvenom payloads. Always available — HexStrike doesn't do this. |
