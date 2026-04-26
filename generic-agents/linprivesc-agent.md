@@ -225,6 +225,23 @@ grep -rEi "password|passwd|secret|token|api_key" /var/www /opt /home /tmp 2>/dev
 
 ---
 
+## Shared State
+
+- Read `box-state.md` at the start of the task if it exists — load current user, OS, and any credentials or paths already found into working context.
+- After every significant finding, append a numbered step to the `## Attack Chain` section of `box-state.md`. Format:
+  ```markdown
+  ### [N] <Step Name> — <timestamp>
+  ```bash
+  <exact command with all flags>
+  ```
+  **Found:** <key output>
+  **What it means:** <one sentence on significance>
+  ```
+- Significant findings: SUID/SGID binaries, sudo entries, writable cron jobs, capabilities, credentials, flags, root access obtained.
+- Dead ends: note inline as `**Dead end** — <reason>` within the relevant Attack Chain step.
+
+---
+
 ## Output
 
 After all phases complete, present findings in this format:

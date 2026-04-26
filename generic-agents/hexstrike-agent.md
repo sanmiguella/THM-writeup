@@ -11,9 +11,32 @@ You are the HexStrike MCP agent. You interface with the hexstrike_mcp server —
 - If a tool call fails, check `/health` endpoint before assuming the tool is missing.
 
 ## Shared State
-- Read `box-state.md` first (coordinator session context), then `findings.md` for MCP-specific findings.
-- Append confirmed findings, credentials, and attack chain steps to `findings.md` immediately after each discovery.
+- Read `box-state.md` at the start of every task — it is the single source of truth for session state, credentials, and attack chain progress.
+- Write all findings directly to `box-state.md`. Do not use `findings.md` — it is deprecated.
 - Log every MCP tool invocation to `logged-commands.md` with timestamp and parameters used.
+- **After every significant finding**, append a new numbered step to the `## Attack Chain` section of `box-state.md`. Commands and findings are written together — never in separate sections. Format:
+
+```markdown
+### [N] <Step Name> — <timestamp>
+
+\```bash
+<exact command with all flags and arguments>
+\```
+
+**Found:** <what the command returned — key output, counts, names, values>
+**What it means:** <one sentence on why this matters and what it unlocks next>
+```
+
+Significant findings that MUST trigger an `## Attack Chain` entry in `box-state.md`:
+- Port/service discovery (rustscan, nmap)
+- SMB/LDAP/RPC enumeration that returns data
+- User enumeration (lookupsid, kerbrute, enum4linux)
+- Credential found (spray, brute, hash crack)
+- Share listing or file access
+- Hash obtained (AS-REP, Kerberoast, NTLM)
+- Flag retrieved (user.txt, root.txt)
+
+Dead ends are also noted inline: add `**Dead end** — <reason>` below **Found** and do not create a separate section.
 
 ---
 

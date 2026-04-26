@@ -294,6 +294,23 @@ JuicyPotatoNG.exe -t * -p C:\temp\shell.exe
 
 ---
 
+## Shared State
+
+- Read `box-state.md` at the start of the task if it exists — load current user, OS build, privileges, and any credentials or hashes already found into working context.
+- After every significant finding, append a numbered step to the `## Attack Chain` section of `box-state.md`. Format:
+  ```markdown
+  ### [N] <Step Name> — <timestamp>
+  ```bash
+  <exact command with all flags>
+  ```
+  **Found:** <key output>
+  **What it means:** <one sentence on significance>
+  ```
+- Significant findings: token privileges, service misconfigs, stored credentials, registry keys, hashes, flags, SYSTEM access obtained.
+- Dead ends: note inline as `**Dead end** — <reason>` within the relevant Attack Chain step.
+
+---
+
 ## Output
 
 After all phases complete, present findings in this format:

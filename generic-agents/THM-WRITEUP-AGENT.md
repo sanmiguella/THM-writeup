@@ -291,5 +291,6 @@ For new rooms not in this list, use the slug from the TryHackMe room URL.
 
 ## Reference Writeup
 
-The canonical formatting reference is the most recently pushed writeup in your repository. When no writeup exists yet, treat this file itself as the formatting spec and follow the structure exactly.
+The canonical formatting reference is the `chill` room writeup:
+`https://github.com/sanmiguella/THM-writeup/blob/main/chill/README.md`
 

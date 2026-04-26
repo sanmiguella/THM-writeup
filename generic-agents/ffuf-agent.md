@@ -76,6 +76,23 @@ Run both scans in parallel. Do not wait for directory enumeration to finish befo
 
 ---
 
+## Shared State
+
+- Read `box-state.md` at the start of the task if it exists — load target, open ports already known, and dead ends into working context.
+- After every significant finding, append a numbered step to the `## Attack Chain` section of `box-state.md`. Format:
+  ```markdown
+  ### [N] <Step Name> — <timestamp>
+  ```bash
+  <exact command with all flags>
+  ```
+  **Found:** <key output>
+  **What it means:** <one sentence on significance>
+  ```
+- Significant findings: discovered paths/directories, login panels, backup files, credentials in response, flags.
+- Dead ends: note inline as `**Dead end** — <reason>` within the relevant Attack Chain step.
+
+---
+
 ## Output
 
 After both scans complete, present findings in this format:

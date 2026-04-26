@@ -40,7 +40,6 @@ At the start of every session, before doing anything else:
 3. Read `coordinator-agent.md` and follow its session-start protocol (includes hexstrike_mcp availability check).
    - If `ctf-commands-agent.md` is being invoked, it must read `USER-CONFIG.md` for `COMMANDS_RAW_URL`, then fetch that URL via WebFetch before answering any question.
 4. If `box-state.md` does not exist, create it immediately once a target is provided — do not wait for an agent to complete.
-5. If `progress.md` does not exist, create it at the same time as `box-state.md`.
 
 ---
 
@@ -67,14 +66,12 @@ A multi-agent CTF/penetration-testing framework for TryHackMe. Each `.md` file i
 | `exploit-scripting-agent.md` | CVE ID, exploit description, "write an exploit" — always (hexstrike doesn't write Python exploits) |
 | `gtfo-agent.md` | Binary name + privilege-escalation context — always (hexstrike doesn't have GTFOBins) |
 | `searchsploit-agent.md` | Service/version needing exploit search — always (hexstrike doesn't have searchsploit) |
-| `ctf-commands-agent.md` | "command for", "how do I", technique needing exact syntax — reads `USER-CONFIG.md` for URL, then fetches live COMMANDS.md on every init |
+| `ctf-commands-agent.md` | "command for", "how do I", technique needing exact syntax — fetches live COMMANDS.md from GitHub on every init |
 | `THM-WRITEUP-AGENT.md` | "writeup", box completion |
 
 ## Session State Files (created at runtime)
 
-- `box-state.md` — coordinator state: target, OS, ports, shell user, dead ends, pending action
-- `progress.md` — timestamped log of every agent run and findings
-- `findings.md` — hexstrike-agent MCP findings; read alongside `box-state.md` when hexstrike is active
+- `box-state.md` — single source of truth: target, OS, ports, credentials, attack chain, dead ends, pending action
 - `logged-commands.md` — auto-generated audit log of all Bash commands run (hook-managed)
 
 ## Key Symlinks

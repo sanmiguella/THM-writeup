@@ -9,8 +9,8 @@ Edit this file once before your first session. All agents that need GitHub or wo
 Replace `YOUR_GITHUB_USERNAME` with your GitHub username. Fork or create a repo named `THM-writeup` (or rename the variables to match your repo name).
 
 ```
-WRITEUP_REPO_URL: https://github.com/YOUR_GITHUB_USERNAME/THM-writeup
-COMMANDS_RAW_URL: https://raw.githubusercontent.com/YOUR_GITHUB_USERNAME/THM-writeup/main/COMMANDS.md
+WRITEUP_REPO_URL:     https://github.com/YOUR_GITHUB_USERNAME/THM-writeup
+COMMANDS_RAW_URL:     https://raw.githubusercontent.com/YOUR_GITHUB_USERNAME/THM-writeup/main/COMMANDS.md
 ```
 
 ---
@@ -24,7 +24,7 @@ Common locations:
 - Manual clone to home: `~/SecLists`
 
 ```
-SECLISTS_PATH: ~/SecLists
+SECLISTS_PATH:    ~/SecLists
 ```
 
 Update the symlinks in your working directory to match:

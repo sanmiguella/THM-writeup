@@ -188,8 +188,8 @@ Trigger: "writeup", "post writeup", "document this", room name + notes pasted
 ```
 Trigger: binary challenge, memory dump, OSINT request, or "run everything"
   1. hexstrike-agent.md  → autonomous multi-tool execution via MCP
-                         → reads box-state.md + findings.md for context
-                         → appends all discoveries to findings.md
+                         → reads box-state.md for context
+                         → appends all discoveries to box-state.md Attack Chain
   2. brainstorm-agent.md → if hexstrike surfaces ambiguous paths (optional)
 ```
 
@@ -254,7 +254,7 @@ Before doing anything else:
    - `MCP_UP` → set `MCP_Available: true`. Prefer `hexstrike-agent.md` for recon and enumeration tasks.
    - `MCP_DOWN` → set `MCP_Available: false`. Fall back to individual specialized agents.
 
-2. Check if `box-state.md` exists in the project root. Also check for `findings.md` — if present, hexstrike has been active; load it as supplementary context.
+2. Check if `box-state.md` exists in the project root.
 
 - **If it exists** — read it, load the state into working context, and inform the user:
   ```
@@ -266,11 +266,15 @@ Before doing anything else:
   ```
   Then ask: "Continue from where you left off?"
 
-- **If it does not exist** — create `box-state.md` and `progress.md` immediately once the target is known. Do not wait for an agent to complete. Populate with target details and a session-started timestamp, leave remaining sections as `TBD`.
+- **If it does not exist** — create `box-state.md` immediately once the target is known. Do not wait for an agent to complete. Populate with target details and a session-started timestamp, leave remaining sections as `TBD`.
 
 #### After Every Agent Completes
 
+Before routing to the next agent or presenting results, confirm that `box-state.md` has been updated with all findings from the completed run. Do not proceed to the next step until this is done.
+
 Write the updated state to `box-state.md` immediately. The schema mirrors the THM-WRITEUP-AGENT.md writeup sections so the writeup agent can lift content directly without reconstruction. Fill in each section as findings arrive — never leave a section blank if there is data for it.
+
+**Key rule:** Commands and findings flow together in the `## Attack Chain` section — never in separate "Findings" and "Commands" sections. Each Attack Chain step contains: the exact command run, what it returned, and what it unlocks. Dead ends are noted inline within the relevant step.
 
 ```markdown
 # box-state.md — <room name>
@@ -358,7 +362,26 @@ Write the updated state to `box-state.md` immediately. The schema mirrors the TH
 
 ---
 
-## 🛠️ Tools Used
+## Attack Chain
+
+> Each step is written here as it happens — command(s) + what was found + what it unlocks next. Commands and findings are never in separate sections.
+
+```markdown
+### [N] <Step Name> — <timestamp>
+
+\```bash
+<exact command with all flags and arguments>
+\```
+
+**Found:** <key output — ports, usernames, creds, flags, etc.>
+**What it means:** <one sentence on significance and what attack path this opens>
+```
+
+Dead ends: note inline with `**Dead end** — <reason>`. No separate dead-ends section needed unless the Session State block is updated.
+
+---
+
+## �🛠️ Tools Used
 | Tool | Purpose |
 |---|---|
 | `nmap` | Port scan |
@@ -384,18 +407,13 @@ Write the updated state to `box-state.md` immediately. The schema mirrors the TH
 <next recommended action>
 ```
 
-Also append a timestamped entry to `progress.md` after each agent completes. Format:
+#### MCP Mid-Session Failover
 
-```markdown
-### <timestamp> — <Agent Name>
-
-- <key finding 1>
-- <key finding 2>
-- <what was tried>
-- <outcome or next step>
-```
-
-If `progress.md` does not exist, create it at session start alongside `box-state.md`. If it already exists, append only — never overwrite existing content.
+If a hexstrike MCP tool call fails during the session (connection refused, timeout, or error response from localhost:8888):
+1. Set `MCP_Available=false` in box-state.md Session State block immediately.
+2. Do not retry the same MCP call.
+3. Route the current task to the appropriate fallback agent (recon-agent, ffuf-agent, linprivesc-agent, winprivesc-agent, or cracking-agent).
+4. Notify the user: `[COORDINATOR] HexStrike MCP unreachable — switched to fallback agent for this task.`
 
 #### On Box Completion
 

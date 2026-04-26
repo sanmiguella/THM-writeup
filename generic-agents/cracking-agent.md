@@ -326,6 +326,22 @@ john --list=formats | grep -i <keyword>
 
 ---
 
+## Shared State
+
+- Read `box-state.md` at the start of the task if it exists — load any hashes, usernames, or credentials already known into working context.
+- After every cracked credential or hash, append a numbered step to the `## Attack Chain` section of `box-state.md`. Format:
+  ```markdown
+  ### [N] <Step Name> — <timestamp>
+  ```bash
+  <exact command with all flags>
+  ```
+  **Found:** <plaintext credential or cracked hash>
+  **What it means:** <one sentence on what access this unlocks>
+  ```
+- Dead ends: if a hash cannot be cracked with the wordlist tried, note inline as `**Dead end** — <hash>: exhausted <wordlist>, no plaintext found`.
+
+---
+
 ## Output Format
 
 When presenting cracking instructions, use this format:
