@@ -48,14 +48,53 @@ Classic AD DC fingerprint. SMB signing is required, so relay attacks are off the
 
 ### SMB Enumeration
 
-Check shares and auth posture without credentials.
+Run a full SMB/AD probe without credentials to establish the auth posture.
 
 ```bash
 enum4linux-ng -A 10.48.134.192
+```
+
+```text
+[+] Appears to be root/parent DC
+[+] Long domain name is: SOUPEDECODE.LOCAL
+
+NetBIOS computer name: DC01
+DNS domain: SOUPEDECODE.LOCAL
+FQDN: DC01.SOUPEDECODE.LOCAL
+
+Supported dialects:
+  SMB 1.0: false
+  SMB 3.1.1: true
+SMB signing required: true
+
+[-] Could not establish null session: STATUS_ACCESS_DENIED
+[+] Server allows authentication via username 'vdlkcqoi' and password ''
+
+OS version: '10.0'
+OS build: '20348'
+```
+
+Three things stand out. SMB signing is mandatory — relay attacks won't work. Null sessions are blocked, but the server accepts **any** username with a blank password (guest fallback). OS build 20348 is Windows Server 2022.
+
+Map share permissions using the random-username guest trick.
+
+```bash
 smbmap -H 10.48.134.192 -u guest -p ''
 ```
 
-Guest auth works with any username and blank password. nxc shows seven shares: `ADMIN$`, `C$`, `IPC$`, `NETLOGON`, `SYSVOL`, `Users`, and `backup`. Guest can read the `Users` share. The `backup` share is non-default and access-denied — make it a priority.
+```text
+Disk          Permissions     Comment
+----          -----------     -------
+ADMIN$        NO ACCESS       Remote Admin
+backup        NO ACCESS
+C$            NO ACCESS       Default share
+IPC$          READ ONLY       Remote IPC
+NETLOGON      NO ACCESS       Logon server share
+SYSVOL        NO ACCESS       Logon server share
+Users         NO ACCESS
+```
+
+Guest gets read on `IPC$` only — enough to RID-cycle. The `backup` share is non-default with no comment. Flag it for the moment you get credentials.
 
 ### Domain User Enumeration (RID Cycling)
 
