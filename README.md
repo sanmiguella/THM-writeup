@@ -1,7 +1,7 @@
 # 🔐 TryHackMe Writeups
 
 [![Platform](https://img.shields.io/badge/Platform-TryHackMe-red?style=for-the-badge&logo=tryhackme)](https://tryhackme.com)
-[![Boxes](https://img.shields.io/badge/Boxes-32-blueviolet?style=for-the-badge)]()
+[![Boxes](https://img.shields.io/badge/Boxes-33-blueviolet?style=for-the-badge)]()
 [![Focus](https://img.shields.io/badge/Focus-Realistic_Chains-informational?style=for-the-badge)]()
 
 Writeups for TryHackMe rooms. Emphasis on methodology, realistic attack chains, and understanding the *why* behind each step — not just dumping commands. Written as personal reference between professional engagements.
@@ -25,6 +25,7 @@ Each writeup covers: enumeration → initial access → privilege escalation, wi
 
 | Room | Difficulty | OS | Key Techniques |
 |---|---|---|---|
+| [All in One](./allinone/) | Easy | Linux | Vigenère cipher decode, WordPress theme editor RCE, malicious plugin upload, cron world-writable script hijack, /etc/passwd backdoor, sudo socat, LXD group abuse |
 | [Archangel](./archangel/) | Easy | Linux | Vhost discovery via email leak, LFI filter bypass, PHP filter chain RCE, cron world-writable script, PATH hijacking SUID binary |
 | [Blueprint](./blueprint/) | Easy | Windows | Unpatched service exploit, hash dump, pass-the-hash |
 | [The Cheese Shop](./cheese/) | Easy | Linux | SQLi OR filter bypass, LFI via php://filter, PHP filter chain RCE, SUID xxd privesc |

