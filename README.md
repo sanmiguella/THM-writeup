@@ -1,7 +1,7 @@
 # 🔐 TryHackMe Writeups
 
 [![Platform](https://img.shields.io/badge/Platform-TryHackMe-red?style=for-the-badge&logo=tryhackme)](https://tryhackme.com)
-[![Boxes](https://img.shields.io/badge/Boxes-33-blueviolet?style=for-the-badge)]()
+[![Boxes](https://img.shields.io/badge/Boxes-34-blueviolet?style=for-the-badge)]()
 [![Focus](https://img.shields.io/badge/Focus-Realistic_Chains-informational?style=for-the-badge)]()
 
 Writeups for TryHackMe rooms. Emphasis on methodology, realistic attack chains, and understanding the *why* behind each step — not just dumping commands. Written as personal reference between professional engagements.
@@ -38,6 +38,7 @@ Each writeup covers: enumeration → initial access → privilege escalation, wi
 | [IDE](./ide/) | Easy | Linux | Anonymous FTP, Codiad 2.8.4 RCE (CVE-2018-14009), writable systemd service |
 | [Jack-of-all-trades](./jack/) | Easy | Linux | Swapped ports, multi-layer encoding, steganography, SUID strings arbitrary file read |
 | [Lazy Admin](./lazyadmin/) | Easy | Linux | SweetRice CMS exploit, sudo backup script abuse |
+| [Magician](./magician/) | Medium | Linux | ImageTragick CVE-2016-3714 RCE, curl file:// SSRF exfil, SSRF to local Flask oracle, CVE-2021-3493 OverlayFS LPE |
 | [Lian Yu](./lianyu/) | Easy | Linux | FTP enumeration, steganography, sudo pkexec |
 | [mKingdom](./mkingdom/) | Easy | Linux | Concrete5 default creds, PHP webshell, /etc/hosts poison, cron HTTP hijack |
 | [Mustacchio](./Mustacchio/) | Easy | Linux | XXE injection, SSH key crack, sudo path hijack |
