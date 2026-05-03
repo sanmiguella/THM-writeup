@@ -112,7 +112,7 @@ ln -sf /etc/hosts                              hosts
 | Agent | Trigger | What it does |
 |---|---|---|
 | [Coordinator](./generic-agents/coordinator-agent.md) | Everything — entry point | Reads input, classifies the task, routes to the right agent. Never calls sub-agents directly. |
-| [HexStrike](./generic-agents/hexstrike-agent.md) | IP, URL, hash, "shell", binary, OSINT *(MCP up)* | Primary agent when HexStrike MCP is running. Invokes 150+ tools via localhost:8888 — rustscan, nmap, feroxbuster, nuclei, linpeas/winpeas, hashcat, ghidra, volatility, shodan, and more. |
+| [HexStrike](./generic-agents/hexstrike-agent.md) | IP, URL, hash, "shell", binary, OSINT *(MCP up)* | Primary agent when HexStrike MCP is running. Registered as a stdio MCP server (`/usr/bin/hexstrike_mcp`) — tools appear as `mcp__hexstrike__*`. Invokes 150+ tools: rustscan, nmap, feroxbuster, nuclei, linpeas/winpeas, hashcat, ghidra, volatility, shodan, and more. |
 | [Recon](./generic-agents/recon-agent.md) | IP or hostname *(MCP down)* | Full TCP connect scan + top 200 UDP ports via nmap. Outputs open ports and service versions. |
 | [ffuf](./generic-agents/ffuf-agent.md) | URL, web port discovered *(MCP down)* | Directory and file enumeration. Handles vhost fuzzing and extension sweeps. |
 | [Brainstorm](./generic-agents/brainstorm-agent.md) | Recon dump, "stuck", "what next" | Reads `box-state.md` automatically for full session context, then reasons over findings and surfaces the most promising attack paths. Always available, runs after every recon. |
@@ -125,7 +125,7 @@ ln -sf /etc/hosts                              hosts
 | [GTFOBins](./generic-agents/gtfo-agent.md) | Binary name + privesc context | Looks up shell escapes, file read/write, SUID, sudo, and capability abuse for any Unix binary. Always available. |
 | [SearchSploit](./generic-agents/searchsploit-agent.md) | Service + version, "find exploit" | Searches Exploit-DB, evaluates matches, adapts the exploit to the target. Always available. |
 | [CTF Commands](./generic-agents/ctf-commands-agent.md) | "how do I", "command for", technique name | Fetches the live `COMMANDS.md` from your repo on every call and returns exact, context-filled commands ready to run. |
-| [THM Writeup](./generic-agents/THM-WRITEUP-AGENT.md) | "writeup", box completion | Generates the full writeup, runs a standards compliance check, audits `COMMANDS.md`, updates the repo index, and pushes everything in one commit. |
+| [THM Writeup](./generic-agents/THM-WRITEUP-AGENT.md) | "writeup", box completion | Generates the full writeup, runs a standards compliance check, audits `COMMANDS.md`, updates the repo index, and pushes everything in one commit. Supports dual-path writeups — prompts before writing whether the box was solved via Human+AI Assisted path, a fully Autonomous AI path, or both, and structures the writeup accordingly. |
 
 ---
 

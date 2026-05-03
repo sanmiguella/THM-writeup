@@ -6,7 +6,7 @@ This file contains the full system prompt, formatting rules, and learned prefere
 
 ## Project Goal
 
-Document TryHackMe CTF rooms and publish them to the GitHub repo at `https://github.com/sanmiguella/THM-writeup`.
+Document TryHackMe CTF rooms and publish them to the GitHub repo configured in `USER-CONFIG.md` (`WRITEUP_REPO_URL`).
 
 When given notes for a room, do the following in order:
 1. **Ask the dual-path question** (Step 0 below) — before writing anything
@@ -273,10 +273,10 @@ Check each item:
 
 Before pushing, check whether the writeup uses any commands or techniques not already covered in `COMMANDS.md`.
 
-Fetch the live version:
+Fetch the live version using the `COMMANDS_RAW_URL` from `USER-CONFIG.md`:
 
 ```
-https://raw.githubusercontent.com/sanmiguella/THM-writeup/main/COMMANDS.md
+# Read USER-CONFIG.md → extract COMMANDS_RAW_URL → WebFetch that URL
 ```
 
 For each technique in the writeup, check if COMMANDS.md already has it. A technique counts as covered if the concept and example commands are there — not just if the tool name appears.
@@ -332,43 +332,14 @@ Commit message format:
 
 Platform badge slug format: `https://tryhackme.com/room/<slug>`
 
+Most room slugs match the room name exactly in lowercase. When they differ, the slug is in the TryHackMe URL for the room page. Add new rooms to this table as you complete them:
+
 | Repo folder | Room slug |
 |---|---|
-| `blueprint` | `blueprint` |
-| `cheese` | `cheesectfv10` |
-| `chill` | `chillhack` |
-| `colddbox` | `colddboxeasy` |
-| `creative` | `creative` |
-| `cyberlens` | `cyberlensp6` |
-| `dav` | `bsidesgtdav` |
-| `gamingServer` | `gamingserver` |
-| `ide` | `ide` |
-| `lazyadmin` | `lazyadmin` |
-| `lianyu` | `lianyu` |
-| `magician` | `magician` |
-| `mkingdom` | `mkingdom` |
-| `Mustacchio` | `mustacchio` |
-| `overpass3` | `overpass3hosting` |
-| `pyrat` | `pyrat` |
-| `rootme` | `rrootme` |
-| `service` | `services` |
-| `silverplatter` | `silverplatter` |
-| `source` | `source` |
-| `thompson` | `bsidesgtthompson` |
-| `tomghost` | `tomghost` |
-| `ua` | `yueiua` |
-| `vulnnet-internal` | `vulnnetinternal` |
-| `vulnnet-node` | `vulnnetnode` |
-| `vulnnet-roasted` | `vulnnetroasted` |
-| `vulnnet-entertainment` | `vulnnet1` |
-| `wgel` | `wgelctf` |
-| `whiterose` | `whiterose` |
-
-For new rooms not in this list, use the slug from the TryHackMe room URL.
+| *(add your rooms here)* | *(slug from room URL)* |
 
 ---
 
 ## Reference Writeup
 
-The canonical formatting reference is the `chill` room writeup:
-`https://github.com/sanmiguella/THM-writeup/blob/main/chill/README.md`
+Use any completed writeup in your repo as a formatting reference. Check that it passes all items in the Step 2 compliance checklist before using it as a template.

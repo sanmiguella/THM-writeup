@@ -44,4 +44,4 @@ ln -sf /etc/hosts                              hosts
 - [ ] Replace `YOUR_GITHUB_USERNAME` above with your actual GitHub username
 - [ ] Confirm SecLists path is correct for your system
 - [ ] Run the symlink commands above from your working directory
-- [ ] (Optional) Fork `https://github.com/sanmiguella/THM-writeup` to get a pre-built COMMANDS.md and writeup index to start from
+- [ ] (Optional) Create a `COMMANDS.md` in your repo — agents will fetch it live and add new techniques as you complete rooms

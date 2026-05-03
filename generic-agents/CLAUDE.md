@@ -11,23 +11,30 @@ When starting a session in a directory where `.claude/settings.json` does not ex
 
 ```json
 {
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 -c \"import sys,json,datetime; d=json.load(sys.stdin); cmd=d.get('tool_input',{}).get('command',''); ts=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'); open('logged-commands.md','a').write('### {}\\n\\n```bash\\n{}\\n```\\n\\n'.format(ts,cmd)) if cmd else None\""
-          }
-        ]
-      }
-    ]
+  "mcpServers": {
+    "hexstrike": {
+      "type": "stdio",
+      "command": "/usr/bin/hexstrike_mcp"
+    }
   }
 }
 ```
 
-3. Create `logged-commands.md` with the header `# Command Log` if it does not already exist.
+> **Note on hexstrike_mcp:** This registers hexstrike as a native **stdio MCP server**. Claude Code spawns `/usr/bin/hexstrike_mcp` which connects to `hexstrike_server` at `http://127.0.0.1:8888`. Tools appear as `mcp__hexstrike__<toolname>` in the active tool list. Never call the HTTP API at localhost:8888 directly — always use the MCP tool calls.
+
+3. Also create `.mcp.json` in the project root (required for VS Code extension):
+
+```json
+{
+  "mcpServers": {
+    "hexstrike": {
+      "type": "stdio",
+      "command": "/usr/bin/hexstrike_mcp"
+    }
+  }
+}
+```
+
 4. Confirm bootstrap is complete, then continue with the session start protocol below.
 
 ---
@@ -66,13 +73,12 @@ A multi-agent CTF/penetration-testing framework for TryHackMe. Each `.md` file i
 | `exploit-scripting-agent.md` | CVE ID, exploit description, "write an exploit" — always (hexstrike doesn't write Python exploits) |
 | `gtfo-agent.md` | Binary name + privilege-escalation context — always (hexstrike doesn't have GTFOBins) |
 | `searchsploit-agent.md` | Service/version needing exploit search — always (hexstrike doesn't have searchsploit) |
-| `ctf-commands-agent.md` | "command for", "how do I", technique needing exact syntax — fetches live COMMANDS.md from GitHub on every init |
+| `ctf-commands-agent.md` | "command for", "how do I", technique needing exact syntax — fetches live COMMANDS.md from user's repo on every init |
 | `THM-WRITEUP-AGENT.md` | "writeup", box completion |
 
 ## Session State Files (created at runtime)
 
 - `box-state.md` — single source of truth: target, OS, ports, credentials, attack chain, dead ends, pending action
-- `logged-commands.md` — auto-generated audit log of all Bash commands run (hook-managed)
 
 ## Key Symlinks
 
@@ -94,7 +100,7 @@ Set your actual SecLists path in `USER-CONFIG.md` and run the symlink commands l
 4. **Hash / crack** → IF MCP up: hexstrike (hash_identifier→hashcat/john via MCP); ELSE: cracking-agent
 5. **CVE + target** → exploit-scripting → payload generation
 6. **"stuck" / dead end** → brainstorm → recommend next agent
-7. **"writeup"** → THM-WRITEUP-AGENT → standards compliance check → COMMANDS.md audit → update repo README → git push
+7. **"writeup"** → THM-WRITEUP-AGENT → dual-path check → standards compliance → COMMANDS.md audit → update repo README → git push
 8. **Binary / OSINT / forensics / stego** → IF MCP up: hexstrike → brainstorm (if paths ambiguous); ELSE: ctf-commands-agent for syntax
 
 ## Design Rules
