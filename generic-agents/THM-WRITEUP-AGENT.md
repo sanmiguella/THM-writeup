@@ -6,14 +6,74 @@ This file contains the full system prompt, formatting rules, and learned prefere
 
 ## Project Goal
 
-Document TryHackMe CTF rooms and publish them to the GitHub repo configured in `USER-CONFIG.md` (`WRITEUP_REPO_URL`). Read `USER-CONFIG.md` at the start of every session to get the repo URL before doing anything else.
+Document TryHackMe CTF rooms and publish them to the GitHub repo at `https://github.com/sanmiguella/THM-writeup`.
 
 When given notes for a room, do the following in order:
-1. Generate the room writeup (`<roomname>/README.md`)
-2. Run the standards compliance check (Step 2 below) — fix all violations before continuing
-3. Run the COMMANDS.md audit (Step 3 below) — add any missing techniques in the same commit
-4. Update the repo-level `README.md` index (Step 4 below)
-5. Push all changed files in a single commit (Step 5 below)
+1. **Ask the dual-path question** (Step 0 below) — before writing anything
+2. Generate the room writeup (`<roomname>/README.md`)
+3. Run the standards compliance check (Step 2 below) — fix all violations before continuing
+4. Run the COMMANDS.md audit (Step 3 below) — add any missing techniques in the same commit
+5. **Update the repo-level `README.md` index** (Step 4 below) — **this is mandatory, never skip it**
+6. Push all changed files in a single commit (Step 5 below)
+
+---
+
+## Step 0 — Dual-Path Check (Ask Before Writing)
+
+Before generating anything, ask the user this exact question:
+
+> **Was this box solved in two ways — a Human + AI assisted path AND a fully autonomous AI path?**
+> - If **yes**: the writeup will have two clearly labelled sections. The main body covers the Human + AI assisted path. A separate `## 🤖 Autonomous AI Path` section at the bottom covers what the AI did independently.
+> - If **no**: write a single standard writeup.
+
+If the user says yes, apply the **Dual-Path Format** (see below). If the user says no or doesn't answer, write the standard format.
+
+---
+
+## Dual-Path Format
+
+When both paths exist, structure the writeup as follows:
+
+### Overview blurb addition
+
+Add this note directly below the overview paragraph (before the first section header):
+
+```markdown
+> This writeup has two paths. **Human + AI assisted** — the main writeup below — is where the human drove and the AI helped. **Autonomous AI** — the section at the bottom — is where the AI solved the box independently.
+```
+
+### Main body label
+
+Add this header immediately before `## 🔍 Enumeration`:
+
+```markdown
+## 👤 Human + AI Assisted Path
+
+---
+```
+
+### Autonomous AI section
+
+Append after `## 🚩 Flags` as the final section:
+
+```markdown
+## 🤖 Autonomous AI Path — <short description, e.g. "SSRF-Only (no interactive shell)">
+
+> <One sentence describing what the AI did and what constraint it operated under — e.g. "The AI solved this box independently with zero human input. No interactive shell was obtained. Both flags were captured by chaining curl requests through the injection alone.">
+
+### Why no shell? (if applicable)
+<Explain what was blocked and what the AI used instead>
+
+### <technique 1>
+<commands and explanation>
+
+### <technique 2>
+<commands and explanation>
+```
+
+### Flag redaction rule (dual-path only)
+
+In dual-path writeups, redact all flag values everywhere **except** inside the `## 🚩 Flags` collapsible blocks. Use `THM{***************************}` as the redacted form.
 
 ---
 
@@ -90,6 +150,7 @@ Follow with a short paragraph (2–4 sentences) summarising the full attack chai
 ## 🎯 MITRE ATT&CK Mapping
 ## 🛠️ Tools Used
 ## 🚩 Flags
+[## 🤖 Autonomous AI Path  ← only if dual-path]
 ```
 
 ---
@@ -193,7 +254,7 @@ Check each item:
 - [ ] No `## 📋 Overview` section header — table comes directly after the badges
 - [ ] Overview table uses blank header row: `| | |`
 - [ ] Overview paragraph is 4 sentences or fewer
-- [ ] Sections appear in the correct order: Enumeration → Initial Access → Privilege Escalation → Attack Chain → Key Takeaways → MITRE ATT&CK → Tools Used → Flags
+- [ ] Sections appear in the correct order: Enumeration → Initial Access → Privilege Escalation → Attack Chain → Key Takeaways → MITRE ATT&CK → Tools Used → Flags → (Autonomous AI if dual-path)
 - [ ] Every command has a one-sentence explanation above it, not after it
 - [ ] No passive voice — rewrite any sentence where the subject is not doing the action
 - [ ] No banned words: leverage, utilize, identify, demonstrate, enumerate, it is worth noting, this allows an attacker to, exploitation vector, it should be noted that
@@ -204,6 +265,7 @@ Check each item:
 - [ ] MITRE table contains only techniques actually used
 - [ ] Tools table contains only tools actually used
 - [ ] No disclaimer section
+- [ ] **Dual-path only:** flag values redacted everywhere outside the Flags section
 
 ---
 
@@ -211,7 +273,11 @@ Check each item:
 
 Before pushing, check whether the writeup uses any commands or techniques not already covered in `COMMANDS.md`.
 
-Fetch the live version using the `COMMANDS_RAW_URL` from `USER-CONFIG.md`:
+Fetch the live version:
+
+```
+https://raw.githubusercontent.com/sanmiguella/THM-writeup/main/COMMANDS.md
+```
 
 For each technique in the writeup, check if COMMANDS.md already has it. A technique counts as covered if the concept and example commands are there — not just if the tool name appears.
 
@@ -223,9 +289,13 @@ If nothing is missing, skip the COMMANDS.md update — do not add padding.
 
 ---
 
-## Step 4 — Update the Repo-Level README
+## Step 4 — Update the Repo-Level README ⚠️ MANDATORY — DO NOT SKIP
 
-Add the new room to the index table in **alphabetical order**:
+**This step is required on every writeup. Skipping it breaks the index.**
+
+Open `README.md` in the repo root and do two things:
+
+**1. Add the room to the index table in alphabetical order:**
 
 ```markdown
 | [Room Name](./roomname/) | Difficulty | OS | Key techniques |
@@ -233,15 +303,23 @@ Add the new room to the index table in **alphabetical order**:
 
 Key techniques must cover the **full attack chain** — initial access AND all privesc stages. Do not stop at initial foothold.
 
-If the room already has a row (updated writeup), update the Key Techniques column to reflect the full chain. Bump the Boxes badge count by 1 only when adding a new room — not for updates.
+If the room already has a row (updated writeup), update the Key Techniques column to reflect the full chain.
+
+**2. Bump the Boxes badge count by 1** (only when adding a new room, not for updates):
+
+```markdown
+[![Boxes](https://img.shields.io/badge/Boxes-<N>-blueviolet?style=for-the-badge)]()
+```
+
+Do not push until both the index row and the badge count are updated.
 
 ---
 
 ## Step 5 — Push to GitHub
 
-Push all changed files in a single commit:
+Push all changed files in a **single commit**:
 - `<roomname>/README.md` — the writeup
-- `README.md` — updated index (if changed)
+- `README.md` — updated index (**always included**)
 - `COMMANDS.md` — updated commands (if changed)
 
 Commit message format:
@@ -267,6 +345,7 @@ Platform badge slug format: `https://tryhackme.com/room/<slug>`
 | `ide` | `ide` |
 | `lazyadmin` | `lazyadmin` |
 | `lianyu` | `lianyu` |
+| `magician` | `magician` |
 | `mkingdom` | `mkingdom` |
 | `Mustacchio` | `mustacchio` |
 | `overpass3` | `overpass3hosting` |
@@ -293,4 +372,3 @@ For new rooms not in this list, use the slug from the TryHackMe room URL.
 
 The canonical formatting reference is the `chill` room writeup:
 `https://github.com/sanmiguella/THM-writeup/blob/main/chill/README.md`
-
